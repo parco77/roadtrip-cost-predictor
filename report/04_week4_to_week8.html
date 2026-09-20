@@ -1,0 +1,344 @@
+<!-- ============================== PART 6 ============================== -->
+<h1 class="part"><span class="num">Part 6 &middot; Week 4</span>Proving the dataset is synthetic</h1>
+
+<h2>6.1 The question that started it</h2>
+<p>Week 3 ended at R&sup2; = 0.9928. That is a suspiciously good score for a dataset with weather,
+traffic and human behaviour in it. So Week 4 asked a different question &mdash; <strong>not
+&ldquo;how well can we predict the target&rdquo; but &ldquo;what actually generated
+it?&rdquo;</strong></p>
+
+<p>The method is deliberately simple: <strong>subtract the cost components we already know about
+and study what is left.</strong> If the residual is structured rather than random, the data came
+from a formula.</p>
+
+<pre>raw['fuel_cost'] = raw.fuel_consumption_litres * raw.fuel_price
+raw['residual']  = raw.total_trip_cost - raw.fuel_cost - raw.toll_cost - raw.parking_cost</pre>
+
+<h2>6.2 The residual is not noise</h2>
+<table>
+  <tr><th class="n">count</th><th class="n">mean</th><th class="n">std</th><th class="n">min</th><th class="n">25%</th><th class="n">50%</th><th class="n">75%</th><th class="n">max</th></tr>
+  <tr><td class="n">1140</td><td class="n">166.16</td><td class="n">67.29</td><td class="n">48.50</td><td class="n">111.59</td><td class="n">159.43</td><td class="n">206.47</td><td class="n">448.25</td></tr>
+</table>
+<p>Two facts jump out. The residual is <strong>never negative and never zero</strong> &mdash; so
+something is systematically missing, not randomly scattered. And it correlates
+<strong>+0.8462 with distance</strong>. Something proportional to distance is unaccounted for.</p>
+
+<h2>6.3 Finding which column controls it</h2>
+<p>Dividing the residual by distance gives a per-kilometre rate. Grouping that rate by each
+categorical column shows which one governs it:</p>
+<table>
+  <tr><th style="width:44mm">Grouped by</th><th>Mean residual per km, by category</th><th style="width:34mm">Verdict</th></tr>
+  <tr class="hl"><td><span class="mono">vehicle_type</span></td><td>Hatchback <strong>0.5694</strong> &middot; Sedan <strong>0.6943</strong> &middot; SUV <strong>0.8366</strong> (sd 0.077&ndash;0.108)</td><td><strong>This is it</strong> &mdash; a clean 47% spread</td></tr>
+  <tr><td><span class="mono">fuel_type</span></td><td>CNG 0.6958 &middot; Diesel 0.6890 &middot; Petrol 0.7006</td><td>No effect &mdash; all within noise</td></tr>
+  <tr><td><span class="mono">traffic_level</span></td><td>High 0.6862 &middot; Low 0.7008 &middot; Medium 0.6968</td><td>No effect</td></tr>
+  <tr><td><span class="mono">weather_condition</span></td><td>Clear 0.6917 &middot; Cloudy 0.7032 &middot; Fog 0.7147 &middot; Rain 0.6923</td><td>No effect</td></tr>
+</table>
+<p>Only <span class="mono">vehicle_type</span> splits it, and it splits it cleanly. That residual is
+a <strong>per-kilometre maintenance / wear-and-tear charge that depends on the vehicle</strong>.</p>
+
+<h2>6.4 The recovered formula</h2>
+<pre>total_trip_cost = fuel_consumption_litres x fuel_price
+                + toll_cost
+                + parking_cost
+                + distance_km x maintenance_rate(vehicle_type)
+
+maintenance_rate (Rs/km):   Hatchback 0.5694   Sedan 0.6943   SUV 0.8366
+
+fuel_consumption_litres = (distance_km / mileage) x traffic_multiplier
+traffic_multiplier:         Low 0.9445   Medium 1.0446   High 1.1653
+estimated_time_min/km:      Low 0.919    Medium 1.059    High 1.263
+toll = distance x N(1.301, 0.360) Rs/km
+parking is drawn uniformly from {0, 40, 60, 80, 120, 150}
+weather_condition has NO effect on anything</pre>
+
+<h4>How well does the recovered formula reproduce the data?</h4>
+<table>
+  <tr><th class="n">R&sup2; of reconstruction</th><th class="n">Mean absolute error</th><th class="n">Max absolute error</th></tr>
+  <tr class="hl"><td class="n"><strong>0.999162</strong></td><td class="n">&#8377;18.44</td><td class="n">&#8377;66.85</td></tr>
+</table>
+<p>The traffic multipliers were confirmed independently by taking the ratio of actual litres to
+ideal litres (<span class="mono">distance / mileage</span>) and grouping by traffic level:</p>
+<table>
+  <tr><th>Traffic level</th><th class="n">mean ratio</th><th class="n">min</th><th class="n">max</th></tr>
+  <tr><td>Low</td><td class="n">0.9445</td><td class="n">0.9118</td><td class="n">0.9770</td></tr>
+  <tr><td>Medium</td><td class="n">1.0446</td><td class="n">1.0089</td><td class="n">1.0817</td></tr>
+  <tr><td>High</td><td class="n">1.1653</td><td class="n">1.1256</td><td class="n">1.2063</td></tr>
+</table>
+<p class="small">Grouped by weather instead: Clear 1.0513, Cloudy 1.0434, Fog 1.0408, Rain 1.0478
+&mdash; flat, confirming weather does nothing.</p>
+
+<div class="box key">
+<h4>What this result means, and why it is the intellectual centre of the project</h4>
+<p><strong>R&sup2; = 0.999162 from arithmetic alone.</strong> No model was fitted &mdash; the
+formula was recovered by inspection and then evaluated. Two consequences follow:</p>
+<ul>
+  <li><strong>Week 3's R&sup2; = 0.9928 was measuring formula recovery, not predictive
+  skill.</strong> The model was rediscovering an equation that generates the data exactly, which is
+  why the score was so high.</li>
+  <li>It also unlocks Week 5: because the generating physics is known, a much larger dataset can be
+  generated over <em>real</em> geography that is <strong>physically consistent</strong> with the
+  original.</li>
+</ul>
+<p>This is also the reason the project reports two accuracy figures. If the target is a formula and
+the model is handed three of its four terms, a near-perfect score is arithmetic, not
+intelligence &mdash; the point Weeks 9 and 10 pursue to its conclusion.</p>
+</div>
+
+<!-- ============================== PART 7 ============================== -->
+<h1 class="part"><span class="num">Part 7 &middot; Week 5</span>Scaling from 9 routes to 534 cities</h1>
+
+<h2>7.1 Why this was necessary</h2>
+<p>The original dataset covers only <strong>9 fixed city pairs</strong>, 110&ndash;460 km. A model
+trained on it cannot serve a user who wants Kochi to Nagpur &mdash; it has never seen a route it
+was not given. To build something usable, the dataset had to cover arbitrary Indian routes.</p>
+
+<h2>7.2 How the wide dataset was built</h2>
+<table>
+  <tr><th style="width:44mm">Step</th><th>Detail</th></tr>
+  <tr><td>City source</td><td>GeoNames <span class="mono">cities15000</span> &rarr; 3,739 Indian cities with real latitude/longitude (CC BY 4.0)</td></tr>
+  <tr><td>Filter</td><td>Population &ge; 100,000 &rarr; <strong>537 cities</strong> in domain</td></tr>
+  <tr><td>Route sampling</td><td>5,000 distinct pairs, sampled with a short-trip preference (decay 350 km) so the set resembles real road trips rather than random long-haul pairs</td></tr>
+  <tr><td>Trips per route</td><td>5 &rarr; <strong>25,000 trips</strong>, covering <strong>534</strong> distinct cities</td></tr>
+  <tr><td>Distance band</td><td>50&ndash;1,500 km</td></tr>
+  <tr><td>Straight-line distance</td><td><strong>Haversine</strong> on the real coordinates</td></tr>
+  <tr><td>Road distance</td><td>haversine &times; N(1.2355, 0.082) &mdash; the winding factor measured on the project's own 9 routes</td></tr>
+  <tr><td>Costs</td><td>Generated with the Week 4 formula, so they are physically consistent with the original data</td></tr>
+</table>
+
+<p>Resulting distance distribution across the 25,000 trips:</p>
+<table>
+  <tr><th class="n">count</th><th class="n">mean</th><th class="n">std</th><th class="n">min</th><th class="n">25%</th><th class="n">50%</th><th class="n">75%</th><th class="n">max</th></tr>
+  <tr><td class="n">25,000</td><td class="n">485.0</td><td class="n">319.4</td><td class="n">50.0</td><td class="n">236.0</td><td class="n">412.5</td><td class="n">667.5</td><td class="n">1,500.0</td></tr>
+</table>
+
+<h2>7.3 What is real and what is modelled &mdash; stated openly</h2>
+<table>
+  <tr><th style="width:26mm">Status</th><th>Which parts</th></tr>
+  <tr><td><strong>Real</strong></td><td>City names, states, latitude and longitude (GeoNames, 3,739 cities). Straight-line distances computed by haversine on those real coordinates.</td></tr>
+  <tr><td><strong>Calibrated</strong></td><td>Road distance = haversine &times; 1.2355, measured on the project's own 9 routes and cross-checked against OSRM (agreed within 5&ndash;9%). Maintenance rate, traffic multipliers, toll rate and mileage ranges &mdash; all measured from the original CSV in Week 4.</td></tr>
+  <tr><td><strong>Partly real</strong></td><td>Fuel prices &mdash; 6 states verified from public reporting, 29 estimated. <span class="mono">data/fuel_prices.csv</span> records which is which per row.</td></tr>
+  <tr><td><strong>Generated</strong></td><td>Every trip record: vehicle, fuel, mileage, departure hour, month, traffic, weather, and all cost columns.</td></tr>
+</table>
+
+<div class="box warn">
+<h4>The one deliberate departure from the original data &mdash; disclose this before being asked</h4>
+<p>In the original CSV, <span class="mono">traffic_level</span> is <strong>statistically
+independent</strong> of <span class="mono">departure_hour</span>: P(High) wanders between 0.13 and
+0.35 with no rush-hour pattern. That makes traffic unpredictable, and any traffic classifier
+trained on it can do no better than the majority baseline.</p>
+<p>The generator therefore gives traffic a <strong>real rush-hour profile</strong> &mdash; morning
+8&ndash;11 and evening 17&ndash;21 weighted toward High, night weighted toward Low:</p>
+<table style="margin-top:2mm">
+  <tr><th>Window</th><th class="n">P(Low)</th><th class="n">P(Medium)</th><th class="n">P(High)</th></tr>
+  <tr><td>Peak (8&ndash;11, 17&ndash;21)</td><td class="n">0.10</td><td class="n">0.35</td><td class="n">0.55</td></tr>
+  <tr><td>Shoulder (6&ndash;7, 12&ndash;16, 22)</td><td class="n">0.30</td><td class="n">0.50</td><td class="n">0.20</td></tr>
+  <tr><td>Night / early morning</td><td class="n">0.62</td><td class="n">0.31</td><td class="n">0.07</td></tr>
+</table>
+<p>Weather is also made monsoon-aware (June&ndash;September weighted to Rain, December&ndash;January
+to Fog). <strong>This is more realistic AND it makes traffic classification a genuine task rather
+than decoration.</strong> It is a modelling choice, and it means the Week 7 traffic accuracy
+measures that design decision rather than Indian roads. Part 11 shows the two side by side.</p>
+</div>
+
+<!-- ============================== PART 8 ============================== -->
+<h1 class="part"><span class="num">Part 8 &middot; Week 6</span>One engineered feature beats two ensembles</h1>
+
+<h2>8.1 The testable claim</h2>
+<p>Week 3 named the linear model's structural blind spot:</p>
+<div class="box">
+<p>The real fuel bill is the <em>product</em> <span class="mono">litres &times; price</span>, and a
+linear model can only <strong>add</strong> its features together, never multiply them.</p>
+</div>
+<p>That is a claim that can be tested. If the missing product is really the bottleneck, then
+<strong>supplying it as a feature should beat throwing a nonlinear model at the problem</strong>
+&mdash; because a tree ensemble has to <em>approximate</em> a product it can never represent
+exactly, whereas we can simply hand it over.</p>
+
+<h2>8.2 The experiment</h2>
+<p>Four models, same 25,000 rows, same 80/20 split, same six base features
+(<span class="mono">distance_km, mileage, fuel_price, toll_cost, parking_cost,
+fuel_consumption_litres</span>):</p>
+<table>
+  <tr><th>Model</th><th class="n">Test R&sup2;</th><th class="n">Test MAE</th></tr>
+  <tr><td>Linear (no interaction)</td><td class="n">0.994666</td><td class="n">&#8377;143.85</td></tr>
+  <tr><td>RandomForest, 300 trees</td><td class="n">0.998543</td><td class="n">&#8377;69.97</td></tr>
+  <tr><td>GradientBoosting</td><td class="n">0.998560</td><td class="n">&#8377;73.50</td></tr>
+  <tr class="hl"><td><strong>Linear + <span class="mono">litres &times; price</span></strong></td><td class="n"><strong>0.999614</strong></td><td class="n"><strong>&#8377;42.60</strong></td></tr>
+</table>
+<p><strong>The prediction holds.</strong> One engineered column takes MAE from &#8377;143.85 to
+&#8377;42.60 &mdash; a <strong>3.4&times; improvement</strong> &mdash; and beats both ensembles,
+which had access to exactly the same information but had to learn the product implicitly.</p>
+
+<h2>8.3 The second missing feature</h2>
+<p>Week 4 found the per-km maintenance rate splits by vehicle: Hatchback 0.5694, Sedan 0.6943, SUV
+0.8366 &mdash; a 47% spread. None of the models above could see it, because
+<span class="mono">vehicle_type</span> is categorical and had never been encoded into the
+regression. That meant they returned the <strong>same cost for an SUV and a hatchback on an
+identical route</strong>, which is both wrong and obviously wrong to any user.</p>
+<p>One-hot encoding it (Hatchback as baseline) gives the model that ships from Week 6 onward:</p>
+<table>
+  <tr><th>Model</th><th class="n">Test R&sup2;</th><th class="n">Test MAE</th></tr>
+  <tr class="hl"><td>Linear + interaction + vehicle one-hots</td><td class="n"><strong>0.999707</strong></td><td class="n"><strong>&#8377;39.66</strong></td></tr>
+</table>
+<p>Learned per-vehicle offsets, relative to Hatchback: <strong>SUV +&#8377;129.63</strong>,
+<strong>Sedan +&#8377;64.43</strong> &mdash; the correct ordering, recovered from data.</p>
+
+<div class="box good">
+<h4>Two things worth drawing out</h4>
+<ul>
+  <li><strong>Domain understanding beat model complexity.</strong> The win came from knowing what
+  the number <em>means</em>, not from a bigger hypothesis class.</li>
+  <li><strong>The model stays linear.</strong> Everything from Week 3 &mdash; the closed-form
+  solution, the from-scratch gradient descent, the interpretable coefficients &mdash; still
+  applies. A Random Forest would have cost all of that <em>and</em> performed worse.</li>
+</ul>
+</div>
+<p class="small"><strong>Note for Part 12:</strong> this conclusion holds when distance and litres
+are <em>given</em>. Week 10 re-runs the same experiment when the model must infer distance from
+coordinates, and the result reverses. Knowing the boundary of your own finding is worth more than
+the finding.</p>
+
+<!-- ============================== PART 9 ============================== -->
+<h1 class="part"><span class="num">Part 9 &middot; Week 7</span>Classification &mdash; and which target is real</h1>
+
+<p>The task asked for classification where it adds value. Two targets were available, and they are
+<strong>not of equal quality</strong>. Saying which is which is part of the work.</p>
+
+<h2>9.1 Target 1 &mdash; <span class="mono">traffic_level</span> (the genuinely hard one)</h2>
+<p>First, why this was <em>impossible</em> on the original dataset. Cross-tabulating
+P(traffic | hour) across the 24 hours of the original CSV:</p>
+<table>
+  <tr><th>Finding</th><th>Value</th></tr>
+  <tr><td>P(High) across hours</td><td>wanders between <strong>0.13 and 0.35</strong> with no rush-hour structure</td></tr>
+  <tr><td>Majority-class baseline</td><td>0.5088</td></tr>
+  <tr><td>Conclusion</td><td>Traffic is independent of departure hour &rarr; <strong>no classifier can beat the baseline</strong></td></tr>
+</table>
+<p>On the wide dataset, which has the injected rush-hour profile, the task becomes learnable.</p>
+
+<h4>Feature encoding &mdash; and why hour is not fed as 0&ndash;23</h4>
+<p>Departure hour is <strong>cyclical</strong>: 23:00 and 00:00 are one hour apart, not
+twenty-three. Feeding the raw integer would make the model treat them as maximally distant. So hour
+and month go in as sine/cosine pairs:</p>
+<pre>hour_sin  = sin(2*pi*hour/24)      month_sin = sin(2*pi*month/12)
+hour_cos  = cos(2*pi*hour/24)      month_cos = cos(2*pi*month/12)
+is_peak   = 1 if (8 &lt;= hour &lt;= 11) or (17 &lt;= hour &lt;= 21) else 0</pre>
+<p><span class="mono">is_peak</span> is included because sin/cos alone cannot express
+&ldquo;high between 8&ndash;11 <em>and again</em> between 17&ndash;21&rdquo; &mdash; that is a
+two-humped shape a single sinusoid cannot make, so a linear model is handed it directly.</p>
+
+<h4>Result (Week 7, LogisticRegression)</h4>
+<table>
+  <tr><th class="n">Accuracy</th><th class="n">Majority baseline</th><th class="n">Lift</th></tr>
+  <tr><td class="n">53.9%</td><td class="n">38.8%</td><td class="n">+15.1 points</td></tr>
+</table>
+<p><strong>Modest, and correct to be modest.</strong> Departure hour genuinely only <em>partly</em>
+determines traffic. A classifier claiming 95% here would be evidence of leakage, not skill.</p>
+
+<h2>9.2 Target 2 &mdash; <span class="mono">cost_band</span> (useful, but high by construction)</h2>
+<p>The second target is a <strong>quartile split of &#8377;/km</strong> into Excellent / Good /
+Average / Poor. Note: cost <em>per kilometre</em>, not absolute cost &mdash; absolute cost is
+essentially determined by distance, so classifying it would tell a user nothing. Efficiency
+isolates the effect of vehicle, mileage, fuel and traffic.</p>
+<table>
+  <tr><th class="n">Accuracy</th><th class="n">Baseline (4 balanced classes)</th></tr>
+  <tr><td class="n">85.8%</td><td class="n">25%</td></tr>
+</table>
+<div class="box warn">
+<p><strong>85.8% is high by construction, not because the problem is hard.</strong>
+<span class="mono">cost_band</span> is a discretisation of a quantity the Week 6 regressor already
+predicts to within &#8377;42. It earns its place because the interface needs the label, not because
+it demonstrates difficult learning. <strong>The traffic classifier is the one that shows real
+modelling.</strong> Volunteering this distinction is stronger than being caught by it.</p>
+</div>
+
+<h2>9.3 How the classifier earns its place in the product</h2>
+<p>A classifier that outputs one word is decoration. This one drives a feature: after an estimate,
+the site charts expected cost across <strong>all 24 departure hours</strong>.</p>
+<p>The bars are the classifier's <strong>probabilities weighted against the cost at each traffic
+level</strong> &mdash; <em>not</em> the cost at the single most likely level. Taking the argmax
+would collapse 24 hours onto 3 values and discard everything the model knows about its own
+confidence: an hour that is 55% High reads very differently from one that is 95% High.</p>
+<div class="formula">
+E[cost | hour] = &sum;<sub>levels</sub> P(level | hour) &times; cost(level)
+</div>
+<p>The chart also takes a <strong>departure window</strong> &mdash; the hours you could realistically
+leave in, wrapping past midnight for overnight drives. Hours outside it dim but stay visible as
+context, and the recommendation is the best hour <em>you can actually use</em>: &ldquo;leave at
+1am&rdquo; is not advice most people can act on. On Jaipur &rarr; Agra the full day spreads
+<strong>&#8377;177</strong>; restricted to a 6&ndash;11am departure it is still
+<strong>&#8377;152</strong>.</p>
+
+<!-- ============================== PART 10 ============================== -->
+<h1 class="part"><span class="num">Part 10 &middot; Week 8</span>Why gradient descent stopped converging</h1>
+
+<h2>10.1 The symptom</h2>
+<p>The Week 3 from-scratch gradient descent was re-run on the 25,000-row dataset with the Week 6
+feature set. It behaved differently:</p>
+<table>
+  <tr><th style="width:56mm">Measure</th><th class="n">Value</th></tr>
+  <tr><td>R&sup2;, sklearn vs gradient descent</td><td class="n">0.999707 vs 0.999701</td></tr>
+  <tr><td>Largest gap between the two models' <strong>predictions</strong></td><td class="n">&#8377;82.81</td></tr>
+  <tr class="hl"><td>Largest gap between the two models' <strong>weights</strong></td><td class="n">682.72</td></tr>
+  <tr><td>Epochs</td><td class="n">60,000 &mdash; did <strong>not</strong> early-stop</td></tr>
+</table>
+<p><strong>Predictions agree; weights do not converge.</strong> On the original 1,129 rows the
+largest weight gap was 0.042. Here it is 682.</p>
+
+<h2>10.2 The cause, measured</h2>
+<p>The Week 6 interaction term is <span class="mono">fuel_bill = fuel_consumption_litres &times;
+fuel_price</span>. That makes <span class="mono">fuel_bill</span> almost a deterministic function
+of <span class="mono">fuel_consumption_litres</span>:</p>
+<table>
+  <tr><th style="width:56mm">Measure</th><th class="n">Value</th></tr>
+  <tr><td>corr(litres, fuel_bill)</td><td class="n"><strong>0.989</strong></td></tr>
+  <tr><td>Condition number of the Hessian, &kappa;(H)</td><td class="n"><strong>&asymp; 16,000</strong></td></tr>
+</table>
+<p>Two near-collinear columns make the loss surface a <strong>long, narrow valley</strong> rather
+than a round bowl. Many different weight combinations fit almost equally well. Gradient descent
+descends into the valley quickly and then crawls along its nearly-flat floor; sklearn's normal
+equations jump straight to one specific point. <strong>Both are correct &mdash; they simply pick
+different points in the same valley</strong>, which is why the predictions match while the weights
+do not.</p>
+
+<h2>10.3 Ridge fixes the conditioning, and costs too much</h2>
+<p>Ridge regression adds an L2 penalty, which lifts the flat direction of the valley:</p>
+<div class="formula">
+minimise &nbsp; ||Xw &minus; y||&sup2; + &alpha;||w||&sup2;
+&nbsp;&nbsp;&nbsp;&nbsp;&rarr;&nbsp;&nbsp;&nbsp;&nbsp;
+w = (X<sup>T</sup>X + &alpha;I)<sup>&minus;1</sup>X<sup>T</sup>y
+</div>
+<table>
+  <tr><th class="n">&alpha;</th><th class="n">cond(H)</th><th class="n">GD weight gap @ 20k epochs</th><th class="n">Test MAE</th></tr>
+  <tr class="hl"><td class="n">0 (OLS)</td><td class="n">16,155</td><td class="n">4090.89</td><td class="n"><strong>&#8377;39.66</strong></td></tr>
+  <tr><td class="n">10</td><td class="n">2,284</td><td class="n">0.14</td><td class="n">&#8377;109.41</td></tr>
+  <tr><td class="n">100</td><td class="n">263</td><td class="n">0.00</td><td class="n">&#8377;255.42</td></tr>
+</table>
+<p>Ridge does exactly what the theory promises &mdash; &kappa; falls ~50&times; and gradient descent
+converges essentially exactly &mdash; and it costs <strong>six times the error</strong> to do it.</p>
+
+<table>
+  <tr><th>Question</th><th style="width:26mm">Answer</th></tr>
+  <tr><td>Does regularisation fix the conditioning?</td><td><strong>Yes</strong> &mdash; &kappa; falls ~50&times;</td></tr>
+  <tr><td>Does it make gradient descent converge?</td><td><strong>Yes</strong> &mdash; gap 4113 &rarr; 0.00</td></tr>
+  <tr class="hl"><td>Should we use it for this model?</td><td><strong>No</strong></td></tr>
+</table>
+
+<div class="box key">
+<h4>The conclusion &mdash; a strong viva answer</h4>
+<p>We do not actually <em>need</em> gradient descent. The normal equations solve this model
+exactly, in one step, and are <strong>indifferent to the condition number</strong>. Gradient
+descent was an <em>exercise</em> in understanding what <span class="mono">fit()</span> does &mdash;
+and the exercise taught something more useful than &ldquo;the two methods agree&rdquo;:</p>
+<p><strong>An ill-conditioned problem is not a broken model. It is a problem where iterative solvers
+struggle and direct solvers do not.</strong> Reaching for Ridge here would trade real accuracy to
+fix a difficulty that only exists because of the solver we chose.</p>
+<p>So the model that ships is ordinary least squares with the Week 6 interaction term, solved in
+closed form. Week 9 then confirms this mechanically: a <span class="mono">GridSearchCV</span> over
+&alpha; drives it to the bottom of the grid without being told any of the above.</p>
+</div>
+
+<p class="small">Also measured: the divergence threshold for the learning rate on this data is
+<strong>lr &asymp; 0.45</strong> (0.5 blows up to <span class="mono">inf</span>), closely matching
+the &asymp; 0.44 ceiling found on the original CSV. Training uses 0.4. All of this is surfaced in
+the application through the <span class="mono">/api/loss-curve</span> endpoint rather than
+hidden.</p>

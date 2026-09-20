@@ -1,0 +1,267 @@
+<!-- ============================== PART 5 ============================== -->
+<h1 class="part"><span class="num">Part 5 &middot; Week 3</span>Linear regression: <span class="mono" style="font-size:15pt">fit()</span> and gradient descent from scratch</h1>
+
+<p>Week 3 has two halves that must arrive at the same answer.</p>
+<table>
+  <tr><th style="width:18mm">Part</th><th>What it does</th><th style="width:56mm">Tool</th></tr>
+  <tr><td><strong>A</strong></td><td>Fit a linear model the fast, production way</td><td><span class="mono">sklearn.linear_model.LinearRegression().fit()</span></td></tr>
+  <tr><td><strong>B</strong></td><td>Find the <em>same</em> parameters by hand, to see what <span class="mono">fit()</span> does underneath</td><td>NumPy only &mdash; own loss, gradients, update rule</td></tr>
+</table>
+
+<h2>5.1 The model</h2>
+<p>Because several columns are useful, this is <strong>multiple</strong> linear regression:</p>
+<div class="formula">&#374; = w<sub>1</sub>X<sub>1</sub> + w<sub>2</sub>X<sub>2</sub> + &hellip; + w<sub>k</sub>X<sub>k</sub> + c</div>
+
+<h2>5.2 Feature selection &mdash; and the one decision that needs defending</h2>
+<p>Six numeric features were kept:</p>
+<table>
+  <tr><th style="width:52mm">Feature</th><th>Why it is in</th></tr>
+  <tr><td><span class="mono">distance_km</span></td><td>Longer trip &rarr; more fuel burnt (r = +0.83)</td></tr>
+  <tr><td><span class="mono">mileage</span></td><td>A more efficient vehicle burns less (r = &minus;0.38, the only strong negative)</td></tr>
+  <tr><td><span class="mono">fuel_price</span></td><td>Price per litre on the day of travel</td></tr>
+  <tr><td><span class="mono">toll_cost</span></td><td>A direct additive component (r = +0.67)</td></tr>
+  <tr><td><span class="mono">parking_cost</span></td><td>Another direct additive component</td></tr>
+  <tr><td><span class="mono">fuel_consumption_litres</span></td><td>Litres actually burnt &mdash; the strongest driver (r = +0.96)</td></tr>
+</table>
+
+<p>Three groups were deliberately left out, each for a different reason:</p>
+<table>
+  <tr><th style="width:52mm">Dropped</th><th>Reason</th></tr>
+  <tr><td><span class="mono">passengers</span>, <span class="mono">departure_hour</span></td><td>Correlation with the target is &asymp; 0 (&minus;0.05 and &minus;0.03). They add noise, not signal.</td></tr>
+  <tr><td><span class="mono">estimated_time_minutes</span></td><td>Almost a copy of <span class="mono">distance_km</span> &mdash; it contributes multicollinearity and no new information.</td></tr>
+  <tr><td>All one-hot columns</td><td><strong>Rank deficiency</strong> &mdash; see the box below.</td></tr>
+</table>
+
+<div class="box key">
+<h4>Why dropping the one-hot columns was necessary, not lazy</h4>
+<p>In this dataset every route is a <em>fixed pair</em>. Delhi only ever goes to Jaipur, so the
+column <span class="mono">start_city_Delhi</span> and the column
+<span class="mono">destination_city_Jaipur</span> contain <strong>identical values in every
+row</strong>.</p>
+<p>That makes the design matrix <strong>rank-deficient</strong>: infinitely many different weight
+combinations produce the exact same predictions. sklearn silently picks one of them using the
+pseudo-inverse; gradient descent, starting from zeros and walking downhill, would converge on a
+<em>different</em> one. Both would be equally correct and the two weight vectors would look
+completely different.</p>
+<p>Since the entire point of Week 3 is to compare the two sets of parameters, keeping those columns
+would have made a correct result <em>look</em> broken. Dropping them keeps the comparison
+meaningful. This is the single most likely thing to be probed in a viva, and the answer is
+&ldquo;identical columns &rarr; infinitely many solutions &rarr; the comparison becomes
+meaningless&rdquo;.</p>
+</div>
+
+<p>Final matrices: <span class="mono">X</span> shape (1129, 6), values 0.000&ndash;1.000;
+<span class="mono">y</span> shape (1129,), &#8377;688.79&ndash;&#8377;4,271.82.</p>
+
+<h2>5.3 Part A &mdash; sklearn</h2>
+<p>sklearn solves the <strong>normal equations</strong> internally, in one algebraic step:</p>
+<div class="formula">w = (X<sup>T</sup>X)<sup>&minus;1</sup> X<sup>T</sup>y</div>
+
+<table>
+  <tr><th style="width:52mm">Feature</th><th class="n">Learned weight (&#8377;)</th><th>Reading</th></tr>
+  <tr><td><span class="mono">distance_km</span></td><td class="n">+225.04</td><td>Cost rises with distance</td></tr>
+  <tr><td><span class="mono">mileage</span></td><td class="n">&minus;79.41</td><td><strong>Negative</strong> &mdash; efficiency saves money</td></tr>
+  <tr><td><span class="mono">fuel_price</span></td><td class="n">+636.32</td><td>Dearer fuel, dearer trip</td></tr>
+  <tr><td><span class="mono">toll_cost</span></td><td class="n">+547.35</td><td>Additive component</td></tr>
+  <tr><td><span class="mono">parking_cost</span></td><td class="n">+165.49</td><td>Additive component</td></tr>
+  <tr class="hl"><td><span class="mono">fuel_consumption_litres</span></td><td class="n">+2938.49</td><td><strong>Dominant</strong> &mdash; burning fuel is the main cost</td></tr>
+  <tr><td><em>intercept (c)</em></td><td class="n">+301.32</td><td>Baseline cost</td></tr>
+</table>
+
+<p>The learned equation:</p>
+<pre>total_trip_cost = (225.04 x distance_km) + (-79.41 x mileage) + (636.32 x fuel_price)
+                + (547.35 x toll_cost) + (165.49 x parking_cost)
+                + (2938.49 x fuel_consumption_litres) + 301.32</pre>
+
+<p><strong>Because every feature was scaled to 0&ndash;1, a weight is directly comparable to every
+other weight</strong> &mdash; it is the rupee change as that feature moves from its minimum to its
+maximum. That is why <span class="mono">fuel_consumption_litres</span> at +2938 is instantly
+identifiable as the dominant driver.</p>
+
+<h4>Part A accuracy (on the training data)</h4>
+<table>
+  <tr><th class="n">R&sup2;</th><th class="n">MSE</th><th class="n">RMSE</th><th class="n">MAE</th></tr>
+  <tr><td class="n">0.992841</td><td class="n">4284.6703</td><td class="n">&#8377;65.4574</td><td class="n">&#8377;48.2964</td></tr>
+</table>
+
+<h2>5.4 Part B (warm-up) &mdash; one feature, by hand</h2>
+<p>Before doing six features at once, the classic <span class="mono">y = mx + c</span> case, using
+<span class="mono">distance_km</span> alone. The three steps of gradient descent:</p>
+
+<p><strong>1. Loss function</strong> &mdash; Mean Squared Error, i.e. how wrong the current line
+is:</p>
+<div class="formula">L(m, c) = (1/n) &sum; ( Y<sub>i</sub> &minus; (mX<sub>i</sub> + c) )&sup2;</div>
+
+<p><strong>2. Gradients</strong> &mdash; the direction that <em>increases</em> the loss:</p>
+<div class="formula">
+&part;L/&part;m = (2/n) &sum; X<sub>i</sub> &middot; error<sub>i</sub>
+&nbsp;&nbsp;&nbsp;&nbsp;
+&part;L/&part;c = (2/n) &sum; error<sub>i</sub>
+&nbsp;&nbsp;&nbsp;&nbsp; where error = &#374; &minus; Y
+</div>
+
+<p><strong>3. Update rule</strong> &mdash; step in the <em>opposite</em> direction; that is the
+&ldquo;descent&rdquo;:</p>
+<div class="formula">
+m &larr; m &minus; lr &middot; &part;L/&part;m
+&nbsp;&nbsp;&nbsp;&nbsp;
+c &larr; c &minus; lr &middot; &part;L/&part;c
+</div>
+
+<h4>Result of the warm-up</h4>
+<table>
+  <tr><th>Parameter</th><th class="n">sklearn</th><th class="n">Gradient descent</th><th class="n">Abs. difference</th><th class="n">% difference</th></tr>
+  <tr><td>m (slope)</td><td class="n">2695.202781</td><td class="n">2695.199903</td><td class="n">0.002878</td><td class="n">0.000107%</td></tr>
+  <tr><td>c (intercept)</td><td class="n">1109.318269</td><td class="n">1109.319377</td><td class="n">0.001108</td><td class="n">0.000100%</td></tr>
+</table>
+<p>Learning rate 0.1, budget 20,000 epochs, <strong>converged at epoch 1,339</strong> once the loss
+changed by less than 1e&minus;8. R&sup2; using distance alone: 0.6914 &mdash; which is exactly why
+the multi-feature model is needed.</p>
+
+<h2>5.5 Part B &mdash; all six features</h2>
+<p>Extending <span class="mono">m, c</span> to <span class="mono">w, b</span>: one weight per
+feature plus a single bias.</p>
+<div class="formula">
+&#374; = Xw + b &nbsp;&nbsp;&nbsp;&nbsp; L(w, b) = (1/n) &sum; (&#374;<sub>i</sub> &minus; Y<sub>i</sub>)&sup2;
+</div>
+<div class="formula">
+&part;L/&part;w<sub>j</sub> = (2/n) &sum;<sub>i</sub> X<sub>ij</sub> &middot; error<sub>i</sub>
+&nbsp;&nbsp;&nbsp;&nbsp;
+&part;L/&part;b = (2/n) &sum;<sub>i</sub> error<sub>i</sub>
+</div>
+
+<p>All six gradients are computed in a <strong>single matrix operation</strong>,
+<span class="mono">X.T @ error</span>, rather than one Python variable per feature. This is the
+vectorised form &mdash; it is both far faster and closer to the mathematics.</p>
+
+<pre>def gradient_descent(X, Y, lr=0.2, epochs=50000, tol=1e-8):
+    n, k = X.shape
+    w = np.zeros(k)          # initial guess: all weights zero
+    b = 0.0
+    loss_history = []
+    for i in range(epochs):
+        Y_pred = X.dot(w) + b                    # current prediction
+        error  = Y_pred - Y                      # predicted - actual
+        loss   = (1 / n) * np.sum(error ** 2)    # MSE
+        loss_history.append(loss)
+
+        dw = (2 / n) * X.T.dot(error)            # gradient for every weight at once
+        db = (2 / n) * np.sum(error)             # gradient for the bias
+
+        w = w - lr * dw                          # update
+        b = b - lr * db
+
+        if i &gt; 0 and abs(loss_history[-2] - loss_history[-1]) &lt; tol:
+            break                                # loss has gone flat: converged
+    return w, b, loss_history, i + 1</pre>
+
+<h4>The run</h4>
+<p>Learning rate <strong>0.2</strong>, budget 50,000 epochs,
+<strong>converged at epoch 14,317</strong>.</p>
+<table>
+  <tr><th class="n">Epoch</th><th class="n">MSE loss</th></tr>
+  <tr><td class="n">0</td><td class="n">4,989,244.12</td></tr>
+  <tr><td class="n">10</td><td class="n">180,559.59</td></tr>
+  <tr><td class="n">100</td><td class="n">11,087.46</td></tr>
+  <tr><td class="n">500</td><td class="n">7,131.79</td></tr>
+  <tr><td class="n">1,000</td><td class="n">5,670.92</td></tr>
+  <tr><td class="n">5,000</td><td class="n">4,289.12</td></tr>
+  <tr><td class="n">10,000</td><td class="n">4,284.67</td></tr>
+  <tr class="hl"><td class="n">14,316</td><td class="n">4,284.6703 &nbsp; &larr; final</td></tr>
+</table>
+<p>The shape of that curve is the whole story: a near-vertical drop in the first ~100 epochs, then
+14,000 epochs spent squeezing out the last few decimal places. Three views of it were plotted
+&mdash; the raw curve, a zoom on the first 500 epochs, and a log-scale version showing the long
+flat tail.</p>
+
+<h2>5.6 The comparison &mdash; do they match?</h2>
+<table>
+  <tr><th style="width:48mm">Parameter</th><th class="n">sklearn</th><th class="n">Gradient descent</th><th class="n">Abs. diff</th></tr>
+  <tr><td><span class="mono">distance_km</span></td><td class="n">225.038176</td><td class="n">225.073171</td><td class="n">0.034995</td></tr>
+  <tr><td><span class="mono">mileage</span></td><td class="n">&minus;79.410245</td><td class="n">&minus;79.434153</td><td class="n">0.023908</td></tr>
+  <tr><td><span class="mono">fuel_price</span></td><td class="n">636.323238</td><td class="n">636.32</td><td class="n">&lt; 0.01</td></tr>
+  <tr><td><span class="mono">toll_cost</span></td><td class="n">547.348156</td><td class="n">547.35</td><td class="n">&lt; 0.01</td></tr>
+  <tr><td><span class="mono">parking_cost</span></td><td class="n">165.487549</td><td class="n">165.49</td><td class="n">&lt; 0.01</td></tr>
+  <tr><td><span class="mono">fuel_consumption_litres</span></td><td class="n">2938.494104</td><td class="n">2938.45</td><td class="n">0.042477</td></tr>
+  <tr><td><em>intercept</em></td><td class="n">301.323450</td><td class="n">301.339700</td><td class="n">0.016250</td></tr>
+  <tr class="hl"><td colspan="3"><strong>Largest absolute difference on any parameter</strong></td><td class="n"><strong>0.042477</strong></td></tr>
+  <tr class="hl"><td colspan="3"><strong>Largest percentage difference</strong></td><td class="n"><strong>0.030107%</strong></td></tr>
+</table>
+
+<h4>And the predictions?</h4>
+<table>
+  <tr><th>Metric</th><th class="n">sklearn</th><th class="n">Gradient descent</th></tr>
+  <tr><td>R&sup2;</td><td class="n">0.992841</td><td class="n">0.992841</td></tr>
+  <tr><td>RMSE</td><td class="n">65.4574</td><td class="n">65.4574</td></tr>
+  <tr><td>MAE</td><td class="n">48.2964</td><td class="n">48.2965</td></tr>
+  <tr class="hl"><td colspan="3">Largest gap between the two models' predictions across all 1,129 trips: <strong>&#8377;0.011354</strong></td></tr>
+</table>
+
+<div class="box good">
+<h4>Why they must match &mdash; the answer to expect to give</h4>
+<p>The MSE loss for linear regression is a <strong>convex</strong> function &mdash; a bowl with
+exactly one minimum and no local minima to get stuck in. sklearn jumps straight to the bottom by
+solving the normal equations algebraically. Gradient descent walks down to the same bottom one step
+at a time. Given a sensible learning rate and enough epochs, <strong>both must land in the same
+place, because there is nowhere else to land.</strong></p>
+<p>The largest disagreement on any parameter is <strong>4 paise</strong>, against coefficients in
+the hundreds and thousands.</p>
+</div>
+
+<h2>5.7 Where a difference <em>would</em> come from</h2>
+<p>That the two agree is not automatic. Two experiments were run to show what goes wrong otherwise.</p>
+
+<h4>Experiment 1 &mdash; learning rate, fixed budget of 3,000 epochs</h4>
+<table>
+  <tr><th class="n">Learning rate</th><th class="n">Max weight error vs sklearn</th><th>Diagnosis</th></tr>
+  <tr><td class="n">0.001</td><td class="n">&asymp; 2025</td><td>Far too small &mdash; loss still falling steeply when the loop ended</td></tr>
+  <tr><td class="n">0.01</td><td class="n">&asymp; 1168</td><td>Still undertrained</td></tr>
+  <tr><td class="n">0.05</td><td class="n">&asymp; 719</td><td>Closer</td></tr>
+  <tr><td class="n">0.20</td><td class="n">&asymp; 143</td><td>Good &mdash; the value used</td></tr>
+  <tr class="hl"><td class="n">&gt; &asymp; 0.44</td><td class="n">diverges</td><td>Updates overshoot the minimum; loss oscillates then goes to <span class="mono">inf</span>/<span class="mono">NaN</span></td></tr>
+</table>
+
+<h4>Experiment 2 &mdash; epoch budget, learning rate fixed at 0.2</h4>
+<table>
+  <tr><th class="n">Epochs</th><th class="n">100</th><th class="n">1,000</th><th class="n">10,000</th><th class="n">50,000</th></tr>
+  <tr><td>Max weight error</td><td class="n">&asymp; 1260</td><td class="n">&asymp; 600</td><td class="n">0.94</td><td class="n">&asymp; 0</td></tr>
+</table>
+
+<h4>The four failure modes, and how each shows up</h4>
+<table>
+  <tr><th style="width:40mm">Cause</th><th>Symptom</th><th style="width:40mm">Fix used here</th></tr>
+  <tr><td>Learning rate too small</td><td>Loss still falling when the loop ends; weights stuck near their starting values</td><td><span class="mono">lr = 0.2</span></td></tr>
+  <tr><td>Too few epochs</td><td>Same undertrained result even at a good learning rate</td><td>Budget 50,000, early-stopped at 14,317</td></tr>
+  <tr><td>Learning rate too large</td><td>Updates overshoot; loss oscillates and blows up to <span class="mono">inf</span>/<span class="mono">NaN</span></td><td>Kept below the measured &asymp; 0.44 ceiling</td></tr>
+  <tr><td>Unscaled features</td><td>Features on very different ranges make the loss surface a narrow valley; one learning rate cannot suit all weights</td><td>MinMax scaling in Week 2, Step 7</td></tr>
+</table>
+
+<h2>5.8 Using the model on a new trip</h2>
+<p>A new trip must pass through the <em>same</em> Week 2 scaler before either model can see it
+&mdash; a point worth stressing, because fitting a fresh scaler on one row would be meaningless.</p>
+<table>
+  <tr><th style="width:56mm">Input (raw units)</th><th class="n">Value</th></tr>
+  <tr><td>distance_km</td><td class="n">250.0</td></tr>
+  <tr><td>mileage</td><td class="n">16.0</td></tr>
+  <tr><td>fuel_price</td><td class="n">95.0</td></tr>
+  <tr><td>toll_cost</td><td class="n">260.0</td></tr>
+  <tr><td>parking_cost</td><td class="n">80.0</td></tr>
+  <tr><td>fuel_consumption_litres</td><td class="n">15.6</td></tr>
+</table>
+<table>
+  <tr><th>Model</th><th class="n">Prediction</th></tr>
+  <tr><td>sklearn</td><td class="n">&#8377;1,990.78</td></tr>
+  <tr><td>Gradient descent from scratch</td><td class="n">&#8377;1,990.78</td></tr>
+  <tr class="hl"><td>Difference</td><td class="n">&#8377;0.002191</td></tr>
+</table>
+
+<h2>5.9 Week 3 conclusion</h2>
+<div class="box key">
+<p><strong>Do the sklearn parameters and the gradient-descent parameters match? Yes &mdash; to
+within 0.03%</strong>, for both the single-feature warm-up and the six-feature model. Predictions
+never differ by more than <strong>&#8377;0.011</strong> across all 1,129 trips, R&sup2; is identical
+to six decimal places, and RMSE and MAE agree to three.</p>
+<p>Week 3 ended with R&sup2; = 0.992841 and a note that the remaining 0.7% looked
+&ldquo;structural&rdquo;. That number was suspiciously high &mdash; which is what sent Week 4
+looking for the reason.</p>
+</div>

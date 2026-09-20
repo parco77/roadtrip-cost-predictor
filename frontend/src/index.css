@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+/* Tailwind v4 is CSS-first: this @theme block IS the config. Every token below
+   generates its own utilities (bg-paper, text-ink, font-display, ...).
+   Source of truth: design-system/roadtrip-cost-predictor/MASTER.md */
+@theme {
+  --color-page: #ffffff;
+  --color-paper: #fff7ed;
+  --color-ink: #0f172a;
+  --color-muted: #525252;
+  --color-hairline: #e5e5e5;
+
+  /* Rationed accents. --color-accent appears in exactly three places on the whole
+     page: the primary CTA, the predicted cost figure, and one chart series.
+
+     orange-700, not the orange-600 (#EA580C) the palette originally specified. #EA580C
+     measures 3.56:1 on white — fine for the huge cost figure (large text only needs 3:1)
+     but a FAIL for the 11px white label on the primary CTA and for the 14px accent text in
+     the ablation table. orange-700 is 5.18:1 in both directions, passes everywhere, and
+     reads as a deeper burnt orange that suits the desaturated photography better anyway. */
+  --color-accent: #c2410c;
+  --color-series: #0891b2;
+
+  /* Cost-band badges - the one licensed exception to the monochrome rule, because
+     the label is meaningless without colour. Always render the word too. */
+  --color-band-excellent: #15803d;
+  --color-band-good: #0f172a;
+  --color-band-average: #b45309;
+  --color-band-poor: #b91c1c;
+
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-body: "Source Serif 4", Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-page);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-size: 19px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Zero radius everywhere; the two pill buttons opt back in with rounded-full. */
+  *,
+  *::before,
+  *::after {
+    border-radius: 0;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+    line-height: 0.95;
+  }
+
+  /* Never remove the focus ring without replacing it. */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Mono label used for every number, unit and field name. This is the choice that
+     makes an editorial layout read as technical rather than decorative. */
+  .label-mono {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--color-muted);
+  }
+
+  /* Paper grain, opacity 0.03, on the alternating warm bands. */
+  .paper-noise {
+    position: relative;
+    background-color: var(--color-paper);
+  }
+  .paper-noise::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* 4px full-bleed rule that separates major sections. */
+  .rule-heavy {
+    border-top: 4px solid var(--color-ink);
+  }
+
+  /* Segmented-control option.
+     The radio inside is sr-only, so keyboard focus lands on a 1px invisible input and nothing
+     on screen changes. This moves the ring onto the visible label.
+     Written as explicit CSS rather than has-[:focus-visible]:outline-2 because Tailwind v4
+     routes outline-style through --tw-outline-style, and that variable did not resolve here —
+     the rule generated but computed to outline-style: none. */
+  .segmented-option:has(:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: -3px;
+  }
+}

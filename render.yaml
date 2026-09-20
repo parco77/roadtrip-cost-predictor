@@ -1,0 +1,17 @@
+# Render blueprint. Push this repo to GitHub, then on render.com:
+#   New → Blueprint → pick the repo. Render reads this file and does the rest.
+#
+# Uses the Dockerfile so the Node build step and the Python runtime are described in one place
+# and behave identically locally and in the cloud.
+services:
+  - type: web
+    name: roadtrip-cost-predictor
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: singapore          # closest region to Indian users and to the OSRM demo server
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"

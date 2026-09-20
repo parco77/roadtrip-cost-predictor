@@ -1,0 +1,841 @@
+start_city,start_state,start_lat,start_lon,dest_city,dest_state,dest_lat,dest_lon,haversine_km,road_km,factor,source
+Asansol,West Bengal,23.68333,86.98333,Bhubaneswar,Odisha,20.27241,85.83385,397.359,508.826,1.28052,osrm
+Gadag,Karnataka,15.42977,75.62971,Gundupalaiyam,Puducherry,11.94096,79.80294,594.726,699.282,1.17580,osrm
+Nellore,Andhra Pradesh,14.44992,79.98697,Pimpri-Chinchwad,Maharashtra,18.61867,73.80375,805.622,983.798,1.22116,osrm
+Sujangarh,Rajasthan,27.70000,74.46667,Banda,Uttar Pradesh,25.47758,80.33491,633.576,828.517,1.30768,osrm
+Haridwar,Uttarakhand,29.94791,78.16025,Firozabad,Uttar Pradesh,27.15092,78.39781,311.876,398.218,1.27685,osrm
+Delhi Cantonment,Delhi,28.60000,77.13333,Palwal,Haryana,28.14469,77.32546,54.005,66.622,1.23362,osrm
+Sitapur,Uttar Pradesh,27.56192,80.68265,Amaravati,Andhra Pradesh,16.51400,80.51600,1228.594,1594.668,1.29796,osrm
+Jetpur,Gujarat,21.75482,70.62347,Batala,Punjab,31.80921,75.20294,1206.488,1348.450,1.11767,osrm
+Kulti,West Bengal,23.73166,86.84372,Basirhat City,West Bengal,22.66142,88.85477,237.501,272.861,1.14888,osrm
+Ajmer,Rajasthan,26.45210,74.63867,Unnao,Uttar Pradesh,26.54706,80.48781,582.109,673.673,1.15730,osrm
+Buxar,Bihar,25.57548,83.98043,Bagaha,Bihar,27.09918,84.09003,169.780,262.742,1.54755,osrm
+Ambala Sadar,Haryana,30.33544,76.86265,Thanesar,Haryana,29.97323,76.83214,40.383,48.321,1.19657,osrm
+Hapur,Uttar Pradesh,28.72985,77.78068,Bhalswa Jahangirpur,Delhi,28.73558,77.16682,59.857,66.882,1.11736,osrm
+Nalgonda,Telangana,17.05439,79.26707,Hosapete,Karnataka,15.26954,76.38710,366.039,444.817,1.21522,osrm
+Narela,Delhi,28.85267,77.09288,Mohali,Punjab,30.67995,76.72211,206.312,220.657,1.06953,osrm
+Purnia,Bihar,25.77895,87.47422,Bihar Sharif,Bihar,25.20084,85.52389,206.039,259.558,1.25975,osrm
+Guna,Madhya Pradesh,24.64691,77.31130,Dohad,Gujarat,22.83283,74.25986,370.327,478.606,1.29239,osrm
+Nowrangapur,Odisha,19.23114,82.54826,Adoni,Andhra Pradesh,15.62788,77.27495,688.009,915.356,1.33044,osrm
+Aurangabad,Bihar,24.75204,84.37420,Chapra,Bihar,25.78031,84.74709,120.330,147.204,1.22334,osrm
+Visakhapatnam,Andhra Pradesh,17.68009,83.20161,Howrah,West Bengal,22.57688,88.31857,762.636,876.744,1.14962,osrm
+Panipat,Haryana,29.38747,76.96825,Bhavnagar,Gujarat,21.76287,72.15331,975.407,1211.701,1.24225,osrm
+Sambalpur,Odisha,21.46527,83.97573,Ghazipur,Uttar Pradesh,25.58333,83.58526,459.634,696.999,1.51642,osrm
+Medinipur,West Bengal,22.42114,87.32257,Bhadrak,Odisha,21.05447,86.51560,173.323,206.153,1.18942,osrm
+Bhadreswar,West Bengal,22.82449,88.33841,Rajpur Sonarpur,West Bengal,22.43820,88.43205,44.016,58.801,1.33591,osrm
+Quthbullapur,Telangana,17.50107,78.45818,Nalgonda,Telangana,17.05439,79.26707,99.213,139.918,1.41027,osrm
+Shantipur,West Bengal,23.24723,88.43302,Chapra,Bihar,25.78031,84.74709,467.285,611.451,1.30852,osrm
+Gandhidham,Gujarat,23.08333,70.13333,Chanduasi,Uttar Pradesh,28.45178,78.78277,1051.352,1215.122,1.15577,osrm
+Hajipur,Bihar,25.68544,85.20981,Gwalior,Madhya Pradesh,26.22983,78.17337,705.996,851.028,1.20543,osrm
+Firozpur,Punjab,30.92574,74.61311,Jamnagar,Gujarat,22.47292,70.06673,1042.465,1151.018,1.10413,osrm
+Bhiwani,Haryana,28.79304,76.13968,Yavatmal,Maharashtra,20.39324,78.13201,955.430,1218.864,1.27572,osrm
+Siliguri,West Bengal,26.71004,88.42851,Delhi,Delhi,28.65195,77.23149,1123.033,1355.952,1.20740,osrm
+Hosur,Tamil Nadu,12.73647,77.83264,Vasco da Gama,Goa,15.39585,73.81568,524.524,642.934,1.22575,osrm
+Hajipur,Bihar,25.68544,85.20981,Ajmer,Rajasthan,26.45210,74.63867,1059.009,1209.399,1.14201,osrm
+Raj-Nandgaon,Chhattisgarh,21.09687,81.02890,Machilipatnam,Andhra Pradesh,16.18747,81.13888,546.024,790.354,1.44747,osrm
+Malegaon,Maharashtra,20.54966,74.53462,Betul,Madhya Pradesh,21.90056,77.90229,379.998,496.337,1.30616,osrm
+Navadwip,West Bengal,23.40670,88.36861,Chandannagar,West Bengal,22.86225,88.36796,60.540,72.066,1.19037,osrm
+Mau,Uttar Pradesh,25.94167,83.56111,Gorakhpur,Uttar Pradesh,26.76628,83.36889,93.671,105.928,1.13084,osrm
+Eluru,Andhra Pradesh,16.71311,81.10437,Vidisha,Madhya Pradesh,23.52604,77.81092,831.835,1114.405,1.33969,osrm
+Singrauli,Madhya Pradesh,24.19973,82.67535,Chhatarpur,Madhya Pradesh,24.91770,79.58871,322.207,369.872,1.14793,osrm
+Lal Bahadur Nagar,Telangana,17.34769,78.55757,Guntur,Andhra Pradesh,16.29974,80.45729,233.369,260.772,1.11743,osrm
+Bareilly,Uttar Pradesh,28.36678,79.43167,Budaun,Uttar Pradesh,28.03811,79.12668,47.211,50.662,1.07309,osrm
+Hoshiarpur,Punjab,31.53723,75.91269,Khanna,Punjab,30.70547,76.22196,97.060,105.130,1.08315,osrm
+Bhilai,Chhattisgarh,21.20919,81.42850,Gadag-Betageri,Karnataka,15.41670,75.61670,889.270,1193.894,1.34255,osrm
+Ahilyanagar,Maharashtra,19.09457,74.73843,Mahesana,Gujarat,23.59864,72.38472,556.962,688.396,1.23598,osrm
+Rohini,Delhi,28.74322,77.06778,Karimnagar,Telangana,18.43915,79.12856,1164.767,1418.424,1.21778,osrm
+Darjiling,West Bengal,27.03333,88.26667,Haldia,West Bengal,22.06046,88.10975,553.186,732.983,1.32502,osrm
+Aligarh,Uttar Pradesh,27.88145,78.07464,Shahjanpur,Uttar Pradesh,27.88165,79.90918,180.310,237.231,1.31568,osrm
+Nashik,Maharashtra,19.99727,73.79096,Gangavati,Karnataka,15.43130,76.52933,584.676,652.544,1.11608,osrm
+Budaun,Uttar Pradesh,28.03811,79.12668,Amroha,Uttar Pradesh,28.90314,78.46984,115.646,135.244,1.16946,osrm
+Bhayandar,Maharashtra,19.30157,72.85107,Bulandshahr,Uttar Pradesh,28.40392,77.85773,1132.597,1353.641,1.19517,osrm
+Chennai,Tamil Nadu,13.08784,80.27847,Gajuwaka,Andhra Pradesh,17.70000,83.21667,601.803,796.813,1.32404,osrm
+Arrah,Bihar,25.55629,84.66335,Dhanbad,Jharkhand,23.79759,86.42992,264.762,368.974,1.39360,osrm
+Dohad,Gujarat,22.83283,74.25986,Valsad,Gujarat,20.61013,72.93428,282.545,369.519,1.30782,osrm
+Kolar,Karnataka,13.13768,78.12999,Gangavati,Karnataka,15.43130,76.52933,307.881,379.405,1.23231,osrm
+Guna,Madhya Pradesh,24.64691,77.31130,Raj-Nandgaon,Chhattisgarh,21.09687,81.02890,548.465,737.794,1.34520,osrm
+Kurichchi,Tamil Nadu,10.96085,76.97379,Guntakal,Andhra Pradesh,15.17112,77.36244,470.049,610.967,1.29979,osrm
+Bhiwani,Haryana,28.79304,76.13968,Raigarh,Chhattisgarh,21.89764,83.39660,1057.591,1375.459,1.30056,osrm
+Puri,Odisha,19.79825,85.82494,Panihati,West Bengal,22.69089,88.37404,416.206,501.798,1.20565,osrm
+Pune,Maharashtra,18.51957,73.85535,Mysuru,Karnataka,12.29791,76.63925,753.368,895.459,1.18861,osrm
+Patna,Bihar,25.59408,85.13563,Buxar,Bihar,25.57548,83.98043,115.876,125.228,1.08071,osrm
+Nandyal,Andhra Pradesh,15.47799,78.48360,Mysuru,Karnataka,12.29791,76.63925,405.787,493.283,1.21562,osrm
+Bihar Sharif,Bihar,25.20084,85.52389,Chandigarh,Chandigarh,30.73629,76.78840,1055.212,1303.630,1.23542,osrm
+Chikmagalur,Karnataka,13.32231,75.77400,Narasaraopet,Andhra Pradesh,16.23488,80.04927,562.242,709.298,1.26155,osrm
+Davangere,Karnataka,14.46693,75.92694,Raichur,Karnataka,16.20546,77.35567,246.662,349.376,1.41642,osrm
+Meerut,Uttar Pradesh,28.98002,77.70636,Etah,Uttar Pradesh,27.55879,78.65692,183.411,212.621,1.15926,osrm
+Hindupur,Andhra Pradesh,13.82807,77.49143,Nandurbar,Maharashtra,21.36671,74.24051,906.191,1084.215,1.19645,osrm
+Kalol,Gujarat,23.24656,72.49508,Budaun,Uttar Pradesh,28.03811,79.12668,851.629,1013.488,1.19006,osrm
+Kanpur Cantonment,Uttar Pradesh,26.45942,80.37514,Siliguri,West Bengal,26.71004,88.42851,801.169,959.223,1.19728,osrm
+Bilaspur,Chhattisgarh,22.08005,82.15543,Sambalpur,Odisha,21.46527,83.97573,200.012,248.898,1.24442,osrm
+Siwan,Bihar,26.22096,84.35609,Gorakhpur,Uttar Pradesh,26.76628,83.36889,115.449,131.931,1.14276,osrm
+Erode,Tamil Nadu,11.34280,77.72741,Kurichchi,Tamil Nadu,10.96085,76.97379,92.538,106.348,1.14924,osrm
+Sambhal,Uttar Pradesh,28.58498,78.56959,Rudrapur,Uttarakhand,28.98000,79.40000,92.081,106.090,1.15214,osrm
+Narela,Delhi,28.85267,77.09288,Etawah,Uttar Pradesh,26.77615,79.02133,298.792,352.098,1.17840,osrm
+Modinagar,Uttar Pradesh,28.83059,77.57295,Mau,Uttar Pradesh,25.94167,83.56111,672.713,771.672,1.14710,osrm
+Ghazipur,Uttar Pradesh,25.58333,83.58526,Madhurampur Dehri,Bihar,24.96899,84.19640,91.883,145.611,1.58475,osrm
+Palwal,Haryana,28.14469,77.32546,Mandoli,Delhi,28.70275,77.30995,62.072,71.372,1.14983,osrm
+Uppal Kalan,Telangana,17.40577,78.55911,Durg,Chhattisgarh,21.19147,81.27619,508.397,688.076,1.35342,osrm
+Hazaribagh,Jharkhand,23.99241,85.36162,Dhanbad,Jharkhand,23.79759,86.42992,110.747,127.161,1.14821,osrm
+Yelahanka,Karnataka,13.10073,77.59632,Vijayawada,Andhra Pradesh,16.50745,80.64660,500.986,620.374,1.23831,osrm
+Munger,Bihar,25.37459,86.47455,Dam Dam,West Bengal,22.63341,88.42286,363.402,456.592,1.25644,osrm
+Medinipur,West Bengal,22.42114,87.32257,Habra,West Bengal,22.84202,88.65606,144.640,174.454,1.20613,osrm
+Begusarai,Bihar,25.41853,86.13389,Prayagraj,Uttar Pradesh,25.44478,81.84322,430.861,482.461,1.11976,osrm
+Ludhiana,Punjab,30.91204,75.85379,Mirzapur,Uttar Pradesh,25.14490,82.56534,918.921,1014.537,1.10405,osrm
+Madhavaram,Tamil Nadu,13.14819,80.23140,Sangli,Maharashtra,16.85438,74.56417,734.958,884.448,1.20340,osrm
+Khurja,Uttar Pradesh,28.25382,77.85535,Jajmau,Uttar Pradesh,26.43040,80.40950,323.640,367.393,1.13519,osrm
+Raichur,Karnataka,16.20546,77.35567,Pimpri,Maharashtra,18.62292,73.80696,462.590,564.604,1.22053,osrm
+Chirmiri,Chhattisgarh,23.19073,82.35314,Sultanpur,Uttar Pradesh,26.25788,82.07269,342.226,531.711,1.55368,osrm
+Shivpuri,Madhya Pradesh,25.42378,77.66223,Narasaraopet,Andhra Pradesh,16.23488,80.04927,1051.355,1375.965,1.30875,osrm
+Chapra,Bihar,25.78031,84.74709,Korba,Chhattisgarh,22.34580,82.69633,434.950,582.819,1.33997,osrm
+Rishra,West Bengal,22.72394,88.34563,Basti,Uttar Pradesh,26.78817,82.71617,726.011,870.459,1.19896,osrm
+Machilipatnam,Andhra Pradesh,16.18747,81.13888,Rajamahendravaram,Andhra Pradesh,17.00517,81.77784,113.593,161.376,1.42066,osrm
+Deoria,Uttar Pradesh,26.50167,83.77936,Bareilly,Uttar Pradesh,28.36678,79.43167,476.516,568.665,1.19338,osrm
+Vizianagaram,Andhra Pradesh,18.11692,83.41148,Korba,Chhattisgarh,22.34580,82.69633,476.110,607.482,1.27593,osrm
+Hubballi,Karnataka,15.34776,75.13378,Mysuru,Karnataka,12.29791,76.63925,376.064,464.585,1.23539,osrm
+Gaya,Bihar,24.79686,85.00385,Deoria,Uttar Pradesh,26.50167,83.77936,225.829,305.277,1.35181,osrm
+Tiruvannamalai,Tamil Nadu,12.22662,79.07461,Erode,Tamil Nadu,11.34280,77.72741,176.529,208.278,1.17985,osrm
+Gaya,Bihar,24.79686,85.00385,Vijayawada,Andhra Pradesh,16.50745,80.64660,1026.951,1346.707,1.31136,osrm
+Varanasi,Uttar Pradesh,25.31668,83.01041,Dhanbad,Jharkhand,23.79759,86.42992,384.863,407.962,1.06002,osrm
+Basirhat City,West Bengal,22.66142,88.85477,Puri,Odisha,19.79825,85.82494,447.154,554.732,1.24058,osrm
+Katihar,Bihar,25.53852,87.57044,Panihati,West Bengal,22.69089,88.37404,326.974,403.435,1.23385,osrm
+Bahadurgarh,Haryana,28.69287,76.93555,Bharatpur,Rajasthan,27.21731,77.49009,172.878,207.492,1.20022,osrm
+Jagadhri,Haryana,30.16719,77.30367,Sitapur,Uttar Pradesh,27.56192,80.68265,438.350,542.538,1.23768,osrm
+Madanapalle,Andhra Pradesh,13.55030,78.50288,Narmadapuram,Madhya Pradesh,22.74747,77.72736,1025.948,1298.271,1.26544,osrm
+Kirari Sulemannagar,Delhi,28.69736,77.06480,Modinagar,Uttar Pradesh,28.83059,77.57295,51.700,63.850,1.23501,osrm
+Ghazipur,Uttar Pradesh,25.58333,83.58526,Deoria,Uttar Pradesh,26.50167,83.77936,103.940,135.661,1.30519,osrm
+Serilingampalle,Telangana,17.49313,78.30196,Dhanbad,Jharkhand,23.79759,86.42992,1097.974,1461.447,1.33104,osrm
+Shrirampur,West Bengal,22.75278,88.34222,Haldwani,Uttarakhand,29.22254,79.52860,1136.613,1341.103,1.17991,osrm
+Khurja,Uttar Pradesh,28.25382,77.85535,Begusarai,Bihar,25.41853,86.13389,879.544,1013.918,1.15278,osrm
+Sambalpur,Odisha,21.46527,83.97573,Hazaribagh,Jharkhand,23.99241,85.36162,314.900,433.403,1.37632,osrm
+Bilaspur,Chhattisgarh,22.08005,82.15543,Machilipatnam,Andhra Pradesh,16.18747,81.13888,663.861,898.771,1.35385,osrm
+Parbhani,Maharashtra,19.26855,76.77081,Suriapet,Telangana,17.14054,79.62045,382.858,469.208,1.22554,osrm
+Gorakhpur,Uttar Pradesh,26.76628,83.36889,Mothihari,Bihar,26.64862,84.91656,154.288,207.597,1.34552,osrm
+Baran,Rajasthan,25.10000,76.51667,Ramgundam,Telangana,18.80084,79.45206,762.969,964.489,1.26413,osrm
+Khammam,Telangana,17.24767,80.14368,Mothihari,Bihar,26.64862,84.91656,1155.085,1533.072,1.32724,osrm
+Srikakulam,Andhra Pradesh,18.29890,83.89751,Munger,Bihar,25.37459,86.47455,830.448,1081.923,1.30282,osrm
+Katihar,Bihar,25.53852,87.57044,New Delhi,Delhi,28.62137,77.21480,1080.565,1291.775,1.19546,osrm
+Vijayawada,Andhra Pradesh,16.50745,80.64660,Hardoi,Uttar Pradesh,27.39491,80.13165,1211.791,1574.492,1.29931,osrm
+Lucknow,Uttar Pradesh,26.83928,80.92313,Prayagraj,Uttar Pradesh,25.44478,81.84322,180.218,207.507,1.15142,osrm
+Mahesana,Gujarat,23.59864,72.38472,Budaun,Uttar Pradesh,28.03811,79.12668,835.828,983.210,1.17633,osrm
+Vellore,Tamil Nadu,12.91840,79.13255,Tirupati,Andhra Pradesh,13.63551,79.41989,85.588,109.190,1.27576,osrm
+Balasore,Odisha,21.49266,86.93348,Dinapur Nizamat,Bihar,25.63847,85.05118,499.294,646.481,1.29479,osrm
+Kolhapur,Maharashtra,16.69563,74.23167,Botad,Gujarat,22.16917,71.66671,665.354,954.650,1.43480,osrm
+Pali,Rajasthan,25.77276,73.32335,Panipat,Haryana,29.38747,76.96825,538.999,641.807,1.19074,osrm
+Bhilai,Chhattisgarh,21.20919,81.42850,Rohini,Delhi,28.74322,77.06778,945.803,1173.853,1.24112,osrm
+Thenali,Andhra Pradesh,16.24253,80.63982,Dindigul,Tamil Nadu,10.36896,77.98036,713.644,845.302,1.18449,osrm
+Yamuna Nagar,Haryana,30.12796,77.28371,Patiala,Punjab,30.33625,76.39220,88.725,113.936,1.28415,osrm
+Suriapet,Telangana,17.14054,79.62045,Buxar,Bihar,25.57548,83.98043,1040.680,1424.500,1.36882,osrm
+Mustafabad,Delhi,28.71974,77.26781,Hoshiarpur,Punjab,31.53723,75.91269,339.307,388.565,1.14517,osrm
+Deoli,Delhi,28.50254,77.23117,Agra,Uttar Pradesh,27.18333,78.01667,165.777,192.439,1.16083,osrm
+Wardha,Maharashtra,20.73933,78.59784,Ujjain,Madhya Pradesh,23.18239,75.77643,398.039,532.141,1.33691,osrm
+Hanumangarh,Rajasthan,29.58182,74.32938,Pimpri-Chinchwad,Maharashtra,18.61867,73.80375,1220.210,1477.443,1.21081,osrm
+Jhunjhunun,Rajasthan,28.12559,75.39797,Meerut,Uttar Pradesh,28.98002,77.70636,244.657,288.945,1.18102,osrm
+Narasaraopet,Andhra Pradesh,16.23488,80.04927,Tadepalligudem,Andhra Pradesh,16.81467,81.52717,170.227,194.763,1.14414,osrm
+Chilakalurupet,Andhra Pradesh,16.08987,80.16705,Barasat,West Bengal,22.72154,88.48198,1141.462,1306.868,1.14491,osrm
+Tiruppur,Tamil Nadu,11.11541,77.35456,Vapi,Gujarat,20.37175,72.90493,1133.815,1399.003,1.23389,osrm
+Madhurampur Dehri,Bihar,24.96899,84.19640,Deoghar,Jharkhand,24.48983,86.69902,258.309,329.970,1.27742,osrm
+Tadpatri,Andhra Pradesh,14.90832,78.01031,Satara,Maharashtra,17.68589,73.99333,528.337,633.848,1.19970,osrm
+Kanhangad,Kerala,12.30814,75.10632,Kozhikode,Kerala,11.24802,75.78040,138.851,155.524,1.12008,osrm
+Burari,Delhi,28.75570,77.19941,Deesa,Gujarat,24.25612,72.17928,706.834,815.637,1.15393,osrm
+Lucknow,Uttar Pradesh,26.83928,80.92313,Sultanpur,Uttar Pradesh,26.25788,82.07269,131.356,142.238,1.08285,osrm
+Neyveli,Tamil Nadu,11.60877,79.49940,Alappuzha,Kerala,9.49004,76.32640,419.283,528.816,1.26124,osrm
+Adoni,Andhra Pradesh,15.62788,77.27495,Hosapete,Karnataka,15.26954,76.38710,103.163,145.570,1.41107,osrm
+Deoli,Delhi,28.50254,77.23117,Nagaur,Rajasthan,27.20201,73.73394,372.977,436.781,1.17107,osrm
+Nandurbar,Maharashtra,21.36671,74.24051,Bhuj,Gujarat,23.25397,69.66928,514.903,665.107,1.29171,osrm
+Chittorgarh,Rajasthan,24.88963,74.62403,Bhavnagar,Gujarat,21.76287,72.15331,429.533,532.786,1.24038,osrm
+Mangalagiri,Andhra Pradesh,16.43083,80.56815,Tadepalligudem,Andhra Pradesh,16.81467,81.52717,110.737,126.811,1.14515,osrm
+Mandoli,Delhi,28.70275,77.30995,Ambala,Haryana,30.36099,76.79782,190.928,210.879,1.10449,osrm
+Rasapudipalem,Andhra Pradesh,17.73308,83.31622,Guntakal,Andhra Pradesh,15.17112,77.36244,695.824,819.937,1.17837,osrm
+Ahilyanagar,Maharashtra,19.09457,74.73843,Banda,Uttar Pradesh,25.47758,80.33491,913.657,1138.997,1.24664,osrm
+Bihar Sharif,Bihar,25.20084,85.52389,Thenali,Andhra Pradesh,16.24253,80.63982,1117.810,1471.236,1.31618,osrm
+Kirari Sulemannagar,Delhi,28.69736,77.06480,Meerut,Uttar Pradesh,28.98002,77.70636,69.950,95.772,1.36915,osrm
+Moga,Punjab,30.81383,75.16878,Shimla,Himachal Pradesh,31.10442,77.16662,193.219,280.608,1.45228,osrm
+Jodhpur,Rajasthan,26.26841,73.00594,Rewa,Madhya Pradesh,24.53256,81.29234,854.241,1023.503,1.19814,osrm
+Patiala,Punjab,30.33625,76.39220,Dhanbad,Jharkhand,23.79759,86.42992,1230.457,1392.139,1.13140,osrm
+Bhind,Madhya Pradesh,26.56671,78.78728,Tadepalligudem,Andhra Pradesh,16.81467,81.52717,1120.593,1504.732,1.34280,osrm
+Deoria,Uttar Pradesh,26.50167,83.77936,Jaunpur,Uttar Pradesh,25.75356,82.68689,137.166,164.771,1.20125,osrm
+Mothihari,Bihar,26.64862,84.91656,Mathura,Uttar Pradesh,27.50350,77.67215,723.419,849.223,1.17390,osrm
+Dohad,Gujarat,22.83283,74.25986,Narela,Delhi,28.85267,77.09288,726.854,819.024,1.12681,osrm
+Rajkot,Gujarat,22.29161,70.79322,Jetpur,Gujarat,21.75482,70.62347,62.200,70.947,1.14062,osrm
+Dehradun,Uttarakhand,30.32443,78.03392,Gurugram,Haryana,28.46010,77.02635,229.133,255.829,1.11651,osrm
+Kishangarh,Rajasthan,26.59006,74.85397,Ambarnath,Maharashtra,19.20000,73.16667,839.680,985.158,1.17325,osrm
+Chapra,Bihar,25.78031,84.74709,Bhiwani,Haryana,28.79304,76.13968,913.870,1067.097,1.16767,osrm
+Nadiad,Gujarat,22.69385,72.86157,Raigarh,Chhattisgarh,21.89764,83.39660,1087.241,1312.230,1.20694,osrm
+Haldia,West Bengal,22.06046,88.10975,Madhyamgram,West Bengal,22.68944,88.44594,78.016,134.328,1.72180,osrm
+Chapra,Bihar,25.78031,84.74709,Chandannagar,West Bengal,22.86225,88.36796,489.732,611.013,1.24765,osrm
+Vellore,Tamil Nadu,12.91840,79.13255,Malkajgiri,Telangana,17.44781,78.52633,507.830,624.631,1.23000,osrm
+Khandwa,Madhya Pradesh,21.82427,76.35086,Khargone,Madhya Pradesh,21.82292,75.61394,76.069,86.372,1.13544,osrm
+Ajmer,Rajasthan,26.45210,74.63867,Panipat,Haryana,29.38747,76.96825,398.626,478.080,1.19932,osrm
+Satna,Madhya Pradesh,24.57726,80.82719,Sultanpur,Uttar Pradesh,26.25788,82.07269,224.873,281.603,1.25228,osrm
+Rewari,Haryana,28.19900,76.61830,Delhi,Delhi,28.65195,77.23149,78.309,92.007,1.17493,osrm
+Hazaribagh,Jharkhand,23.99241,85.36162,Bokaro,Jharkhand,23.66934,86.15161,88.018,128.762,1.46290,osrm
+Ghazipur,Uttar Pradesh,25.58333,83.58526,Bhiwani,Haryana,28.79304,76.13968,818.111,963.409,1.17760,osrm
+Saugor,Madhya Pradesh,23.83877,78.73874,Gandhidham,Gujarat,23.08333,70.13333,881.645,1116.164,1.26600,osrm
+Nashik,Maharashtra,19.99727,73.79096,Sholapur,Maharashtra,17.67152,75.91044,341.503,385.611,1.12916,osrm
+Fyzabad,Uttar Pradesh,26.77549,82.15018,Baranagar,West Bengal,22.64132,88.37727,778.878,871.150,1.11847,osrm
+Patna,Bihar,25.59408,85.13563,Satna,Madhya Pradesh,24.57726,80.82719,448.351,514.057,1.14655,osrm
+Bhilwara,Rajasthan,25.34707,74.64081,Kishangarh,Rajasthan,26.59006,74.85397,139.847,152.528,1.09068,osrm
+Thiruvananthapuram,Kerala,8.48550,76.94924,Ballari,Karnataka,15.14205,76.92398,740.181,903.456,1.22059,osrm
+Tadepalligudem,Andhra Pradesh,16.81467,81.52717,Tadpatri,Andhra Pradesh,14.90832,78.01031,431.760,525.187,1.21639,osrm
+Sujangarh,Rajasthan,27.70000,74.46667,Udaipur,Rajasthan,24.58584,73.71346,354.344,439.273,1.23968,osrm
+Patan,Gujarat,23.85070,72.12963,Junagadh,Gujarat,21.51966,70.45981,310.686,367.351,1.18238,osrm
+Azamgarh,Uttar Pradesh,26.06832,83.18358,Bundi,Rajasthan,25.43855,75.63735,758.885,924.535,1.21828,osrm
+Baidyabati,West Bengal,22.78498,88.32586,Raj-Nandgaon,Chhattisgarh,21.09687,81.02890,775.564,913.706,1.17812,osrm
+Palwal,Haryana,28.14469,77.32546,Loni,Uttar Pradesh,28.75143,77.29023,67.554,76.867,1.13785,osrm
+Ambarnath,Maharashtra,19.20000,73.16667,Bhilai,Chhattisgarh,21.20919,81.42850,890.475,1014.861,1.13969,osrm
+Nandyal,Andhra Pradesh,15.47799,78.48360,Proddatur,Andhra Pradesh,14.75020,78.54813,81.223,94.439,1.16272,osrm
+Bhayandar,Maharashtra,19.30157,72.85107,Vapi,Gujarat,20.37175,72.90493,119.132,142.329,1.19471,osrm
+Durgapur,West Bengal,23.51583,87.30801,Saharsa,Bihar,25.87498,86.59611,272.004,418.857,1.53989,osrm
+Virar,Maharashtra,19.45591,72.81136,Ambarnath,Maharashtra,19.20000,73.16667,46.901,61.261,1.30619,osrm
+Kanpur,Uttar Pradesh,26.46523,80.34975,Raebareli,Uttar Pradesh,26.23090,81.23315,91.800,121.633,1.32497,osrm
+Udupi,Karnataka,13.33467,74.74617,Dharmavaram,Andhra Pradesh,14.41435,77.72035,342.770,421.484,1.22964,osrm
+Malappuram,Kerala,11.04199,76.08154,Cuddalore,Tamil Nadu,11.75617,79.76693,409.482,492.796,1.20346,osrm
+Dohad,Gujarat,22.83283,74.25986,Godhra,Gujarat,22.77547,73.61488,66.420,74.803,1.12622,osrm
+Tadepalligudem,Andhra Pradesh,16.81467,81.52717,Nalgonda,Telangana,17.05439,79.26707,241.886,280.850,1.16108,osrm
+Dinapur Nizamat,Bihar,25.63847,85.05118,Pali,Rajasthan,25.77276,73.32335,1174.726,1365.160,1.16211,osrm
+Munger,Bihar,25.37459,86.47455,Najafgarh,Delhi,28.60922,76.97982,1006.760,1183.065,1.17512,osrm
+Chapra,Bihar,25.78031,84.74709,Munger,Bihar,25.37459,86.47455,179.037,217.441,1.21451,osrm
+Dhule,Maharashtra,20.90130,74.77737,Jaipur,Rajasthan,26.91962,75.78781,677.033,796.527,1.17650,osrm
+Kolhapur,Maharashtra,16.69563,74.23167,Pimpri,Maharashtra,18.62292,73.80696,218.978,243.238,1.11078,osrm
+Azamgarh,Uttar Pradesh,26.06832,83.18358,Ghazipur,Uttar Pradesh,25.58333,83.58526,67.265,73.024,1.08562,osrm
+Betul,Madhya Pradesh,21.90056,77.90229,Mulugu,Telangana,18.19100,79.94300,464.287,619.867,1.33510,osrm
+Korba,Chhattisgarh,22.34580,82.69633,Machilipatnam,Andhra Pradesh,16.18747,81.13888,703.995,982.299,1.39532,osrm
+Kaithal,Haryana,29.80153,76.39959,Sawai Madhopur,Rajasthan,26.02301,76.34408,420.188,501.826,1.19429,osrm
+Panvel,Maharashtra,18.98878,73.11013,Vizianagaram,Andhra Pradesh,18.11692,83.41148,1090.088,1299.581,1.19218,osrm
+Chas,Jharkhand,23.63556,86.16712,Sawai Madhopur,Rajasthan,26.02301,76.34408,1025.917,1233.187,1.20203,osrm
+Sultanpur,Uttar Pradesh,26.25788,82.07269,Chhindwara,Madhya Pradesh,22.05697,78.93958,564.951,675.727,1.19608,osrm
+Singrauli,Madhya Pradesh,24.19973,82.67535,Giridih,Jharkhand,24.18622,86.30875,368.524,491.393,1.33341,osrm
+Ambarnath,Maharashtra,19.20000,73.16667,Gandhinagar,Gujarat,23.21667,72.68333,449.434,520.015,1.15704,osrm
+Ramagundam,Telangana,18.75500,79.47400,Sangli,Maharashtra,16.85438,74.56417,561.078,715.658,1.27551,osrm
+Yamuna Nagar,Haryana,30.12796,77.28371,Sawai Madhopur,Rajasthan,26.02301,76.34408,465.659,532.966,1.14454,osrm
+Surat,Gujarat,21.19594,72.83023,Khurja,Uttar Pradesh,28.25382,77.85535,934.319,1085.899,1.16224,osrm
+Srikakulam,Andhra Pradesh,18.29890,83.89751,Firozabad,Uttar Pradesh,27.15092,78.39781,1134.026,1516.715,1.33746,osrm
+Moradabad,Uttar Pradesh,28.83893,78.77684,Kota,Rajasthan,25.18254,75.83907,499.947,619.264,1.23866,osrm
+Kaithal,Haryana,29.80153,76.39959,Sikar,Rajasthan,27.61206,75.13996,272.691,338.900,1.24280,osrm
+Deoghar,Jharkhand,24.48983,86.69902,Pilibhit,Uttar Pradesh,28.63124,79.80436,825.732,996.341,1.20662,osrm
+Deoria,Uttar Pradesh,26.50167,83.77936,Suriapet,Telangana,17.14054,79.62045,1125.695,1463.522,1.30010,osrm
+Muzaffarnagar,Uttar Pradesh,29.47091,77.70332,Gonda City,Uttar Pradesh,27.13181,81.95332,490.630,616.981,1.25753,osrm
+Hazaribagh,Jharkhand,23.99241,85.36162,Basirhat City,West Bengal,22.66142,88.85477,386.139,440.068,1.13966,osrm
+Chanduasi,Uttar Pradesh,28.45178,78.78277,Chandigarh,Chandigarh,30.73629,76.78840,318.910,411.154,1.28925,osrm
+Navi Mumbai,Maharashtra,19.03681,73.01582,Pune,Maharashtra,18.51957,73.85535,105.448,127.849,1.21243,osrm
+Nangloi Jat,Delhi,28.67957,77.06799,Yamuna Nagar,Haryana,30.12796,77.28371,162.404,206.372,1.27074,osrm
+Barshi,Maharashtra,18.23454,75.69275,Coimbatore,Tamil Nadu,11.00555,76.96612,815.402,941.202,1.15428,osrm
+Panipat,Haryana,29.38747,76.96825,Gonda City,Uttar Pradesh,27.13181,81.95332,548.820,672.359,1.22510,osrm
+Nandurbar,Maharashtra,21.36671,74.24051,Kadapa,Andhra Pradesh,14.47995,78.82346,906.159,1101.269,1.21532,osrm
+Hashtsal,Delhi,28.63406,77.05771,Abohar,Punjab,30.14453,74.19552,324.182,368.565,1.13691,osrm
+Balasore,Odisha,21.49266,86.93348,Bankura,West Bengal,23.23241,87.07160,193.972,243.033,1.25293,osrm
+Sasaram,Bihar,24.94942,84.01645,Kishanganj,Bihar,26.10224,87.95534,415.478,508.990,1.22507,osrm
+Barasat,West Bengal,22.72154,88.48198,Raebareli,Uttar Pradesh,26.23090,81.23315,830.689,943.953,1.13635,osrm
+Aurangabad,Maharashtra,19.87757,75.34226,Mumbai,Maharashtra,19.07283,72.88261,272.933,334.097,1.22410,osrm
+Bidar,Karnataka,17.90802,77.51524,Tiruchirappalli,Tamil Nadu,10.81550,78.69651,798.837,954.924,1.19539,osrm
+Neyveli,Tamil Nadu,11.60877,79.49940,Udupi,Karnataka,13.33467,74.74617,550.565,696.177,1.26448,osrm
+Purnia,Bihar,25.77895,87.47422,Bhind,Madhya Pradesh,26.56671,78.78728,871.146,1063.345,1.22063,osrm
+Palwal,Haryana,28.14469,77.32546,New Delhi,Delhi,28.62137,77.21480,54.099,57.455,1.06204,osrm
+Bhilai,Chhattisgarh,21.20919,81.42850,Raiganj,West Bengal,25.61281,88.12449,840.345,1111.270,1.32240,osrm
+Ambikapur,Chhattisgarh,23.11892,83.19537,Kulti,West Bengal,23.73166,86.84372,378.414,536.972,1.41901,osrm
+Rasapudipalem,Andhra Pradesh,17.73308,83.31622,Jagdalpur,Chhattisgarh,19.08136,82.02131,202.832,303.558,1.49660,osrm
+Karol Bagh,Delhi,28.65136,77.19072,Kukatpally,Telangana,17.48486,78.41376,1247.917,1525.921,1.22277,osrm
+Nangloi Jat,Delhi,28.67957,77.06799,Muzaffarnagar,Uttar Pradesh,29.47091,77.70332,107.494,145.067,1.34954,osrm
+Fyzabad,Uttar Pradesh,26.77549,82.15018,Patna,Bihar,25.59408,85.13563,325.564,386.346,1.18670,osrm
+Morena,Madhya Pradesh,26.49892,77.99534,Deoghar,Jharkhand,24.48983,86.69902,901.458,1076.618,1.19431,osrm
+Mau,Uttar Pradesh,25.94167,83.56111,Gaya,Bihar,24.79686,85.00385,192.912,240.280,1.24554,osrm
+Muzaffarnagar,Uttar Pradesh,29.47091,77.70332,Saharanpur,Uttar Pradesh,29.96790,77.54522,57.333,61.193,1.06733,osrm
+Uluberiya,West Bengal,22.47560,88.09898,Halisahar,West Bengal,22.93218,88.41859,60.435,81.538,1.34919,osrm
+Ludhiana,Punjab,30.91204,75.85379,Bhind,Madhya Pradesh,26.56671,78.78728,561.413,670.096,1.19359,osrm
+Jamalpur,Bihar,25.31258,86.48888,Churu,Rajasthan,28.30415,74.96718,1190.263,1463.425,1.22950,osrm
+Barshi,Maharashtra,18.23454,75.69275,Alandur,Tamil Nadu,13.00250,80.20611,756.218,943.763,1.24800,osrm
+Ratlam,Madhya Pradesh,23.33033,75.04032,Valsad,Gujarat,20.61013,72.93428,372.345,485.502,1.30390,osrm
+Bulandshahr,Uttar Pradesh,28.40392,77.85773,Chanduasi,Uttar Pradesh,28.45178,78.78277,90.613,124.103,1.36959,osrm
+Chanduasi,Uttar Pradesh,28.45178,78.78277,Roorkee,Uttarakhand,29.86632,77.89118,179.541,209.614,1.16751,osrm
+Orai,Uttar Pradesh,25.99023,79.45334,Barshi,Maharashtra,18.23454,75.69275,945.227,1207.674,1.27765,osrm
+Khanna,Punjab,30.70547,76.22196,Jind,Haryana,29.31577,76.31502,154.787,200.809,1.29732,osrm
+Gajuwaka,Andhra Pradesh,17.70000,83.21667,Akola,Maharashtra,20.70957,76.99810,733.629,1021.548,1.39246,osrm
+Sangli,Maharashtra,16.85438,74.56417,Tumkur,Karnataka,13.34136,77.10220,476.241,561.654,1.17935,osrm
+Pandit Deen Dayal Upadhyaya Nagar,Uttar Pradesh,25.28307,83.11968,Ghazipur,Uttar Pradesh,25.58333,83.58526,57.450,81.650,1.42122,osrm
+Vidisha,Madhya Pradesh,23.52604,77.81092,Adilabad,Telangana,19.67203,78.53590,435.049,595.937,1.36982,osrm
+Burhanpur,Madhya Pradesh,21.30868,76.23026,Sawai Madhopur,Rajasthan,26.02301,76.34408,524.338,585.323,1.11631,osrm
+Amaravati,Andhra Pradesh,16.51400,80.51600,Karur,Tamil Nadu,10.95771,78.08095,671.441,795.947,1.18543,osrm
+Mandya,Karnataka,12.52230,76.89746,Adoni,Andhra Pradesh,15.62788,77.27495,347.716,425.144,1.22267,osrm
+Bansbaria,West Bengal,22.95387,88.40098,Gorakhpur,Uttar Pradesh,26.76628,83.36889,661.270,804.756,1.21699,osrm
+Guna,Madhya Pradesh,24.64691,77.31130,Hindaun,Rajasthan,26.73411,77.03519,233.729,359.829,1.53951,osrm
+Brahmapur,Odisha,19.31151,84.79290,Bokaro,Jharkhand,23.66934,86.15161,504.535,658.357,1.30488,osrm
+Kanpur Cantonment,Uttar Pradesh,26.45942,80.37514,Bilimora,Gujarat,20.76957,72.96134,984.870,1205.396,1.22391,osrm
+Akola,Maharashtra,20.70957,76.99810,Bhadrak,Odisha,21.05447,86.51560,989.383,1174.469,1.18707,osrm
+Baripada,Odisha,21.93458,86.72852,Kulti,West Bengal,23.73166,86.84372,200.175,271.682,1.35722,osrm
+Itarsi,Madhya Pradesh,22.61477,77.76222,Yamuna Nagar,Haryana,30.12796,77.28371,836.785,1051.119,1.25614,osrm
+Amravati,Maharashtra,20.93333,77.75000,Malda,West Bengal,25.00447,88.14573,1156.057,1476.774,1.27742,osrm
+Rourkela,Odisha,22.22496,84.86414,Dharmavaram,Andhra Pradesh,14.41435,77.72035,1149.656,1536.073,1.33612,osrm
+Machilipatnam,Andhra Pradesh,16.18747,81.13888,Robertsonpet,Karnataka,12.95629,78.27539,473.311,608.131,1.28484,osrm
+Amritsar,Punjab,31.62234,74.87534,Ratlam,Madhya Pradesh,23.33033,75.04032,922.174,1108.553,1.20211,osrm
+Srikakulam,Andhra Pradesh,18.29890,83.89751,Jaunpur,Uttar Pradesh,25.75356,82.68689,838.243,1270.979,1.51624,osrm
+Sambhal,Uttar Pradesh,28.58498,78.56959,Delhi,Delhi,28.65195,77.23149,130.824,156.144,1.19354,osrm
+Dinapur Nizamat,Bihar,25.63847,85.05118,Korba,Chhattisgarh,22.34580,82.69633,437.324,571.032,1.30574,osrm
+Basirhat City,West Bengal,22.66142,88.85477,Krishnanagar,West Bengal,23.40576,88.49073,90.764,118.553,1.30617,osrm
+Bathinda,Punjab,30.20747,74.93893,Bahadurgarh,Haryana,28.69287,76.93555,256.386,316.986,1.23636,osrm
+Bhuj,Gujarat,23.25397,69.66928,Bharuch,Gujarat,21.69482,72.98050,381.833,545.971,1.42987,osrm
+Moradabad,Uttar Pradesh,28.83893,78.77684,Thanesar,Haryana,29.97323,76.83214,226.700,266.970,1.17764,osrm
+Surat,Gujarat,21.19594,72.83023,Vapi,Gujarat,20.37175,72.90493,91.974,117.034,1.27246,osrm
+Agartala,Tripura,23.83605,91.27939,Haldia,West Bengal,22.06046,88.10975,379.868,535.971,1.41094,osrm
+Alappuzha,Kerala,9.49004,76.32640,Tiruvottiyur,Tamil Nadu,13.15823,80.30181,595.118,740.993,1.24512,osrm
+Dehradun,Uttarakhand,30.32443,78.03392,Chirmiri,Chhattisgarh,23.19073,82.35314,901.494,1177.662,1.30635,osrm
+Moradabad,Uttar Pradesh,28.83893,78.77684,Chanduasi,Uttar Pradesh,28.45178,78.78277,43.053,44.934,1.04370,osrm
+Etawah,Uttar Pradesh,26.77615,79.02133,Bangaon,West Bengal,23.04553,88.83084,1072.277,1169.477,1.09065,osrm
+Gadag,Karnataka,15.42977,75.62971,Adoni,Andhra Pradesh,15.62788,77.27495,177.635,236.148,1.32940,osrm
+Itarsi,Madhya Pradesh,22.61477,77.76222,Etah,Uttar Pradesh,27.55879,78.65692,557.078,743.311,1.33430,osrm
+Amaravati,Andhra Pradesh,16.51400,80.51600,Achalpur,Maharashtra,21.25665,77.51006,614.853,809.907,1.31724,osrm
+Seoni,Madhya Pradesh,22.08503,79.55037,Noida,Uttar Pradesh,28.58000,77.33000,755.839,905.299,1.19774,osrm
+Valsad,Gujarat,20.61013,72.93428,Bhavnagar,Gujarat,21.76287,72.15331,151.610,406.740,2.68279,osrm
+Rohtak,Haryana,28.89447,76.58917,Mandoli,Delhi,28.70275,77.30995,73.398,94.156,1.28281,osrm
+Darbhanga,Bihar,26.15216,85.89707,Agartala,Tripura,23.83605,91.27939,600.386,761.823,1.26889,osrm
+Gudivada,Andhra Pradesh,16.43547,80.99555,Dharavi,Maharashtra,19.05000,72.86667,908.504,1029.989,1.13372,osrm
+Haldia,West Bengal,22.06046,88.10975,Bhetia,Jharkhand,22.79321,86.14098,218.144,281.782,1.29172,osrm
+Raj-Nandgaon,Chhattisgarh,21.09687,81.02890,Seoni,Madhya Pradesh,22.08503,79.55037,188.259,259.785,1.37993,osrm
+Gundupalaiyam,Puducherry,11.94096,79.80294,Kollam,Kerala,8.88113,76.58469,489.495,590.583,1.20651,osrm
+Phagwara,Punjab,31.22452,75.77387,Sonipat,Haryana,28.99478,77.01937,275.358,300.956,1.09296,osrm
+Barddhaman,West Bengal,23.25572,87.85691,Muzaffarpur,Bihar,26.12259,85.39055,404.584,507.014,1.25317,osrm
+Pilibhit,Uttar Pradesh,28.63124,79.80436,Mustafabad,Delhi,28.71974,77.26781,247.650,323.560,1.30653,osrm
+Anantapur,Andhra Pradesh,14.67784,77.60813,Adilabad,Telangana,19.67203,78.53590,564.001,676.553,1.19956,osrm
+Indore,Madhya Pradesh,22.71792,75.83330,Bilimora,Gujarat,20.76957,72.96134,367.298,457.413,1.24535,osrm
+Karnal,Haryana,29.69197,76.98448,Guna,Madhya Pradesh,24.64691,77.31130,561.916,740.514,1.31784,osrm
+Saugor,Madhya Pradesh,23.83877,78.73874,Bhayandar,Maharashtra,19.30157,72.85107,790.495,994.438,1.25800,osrm
+Palanpur,Gujarat,24.17128,72.43827,Indore,Madhya Pradesh,22.71792,75.83330,382.173,501.729,1.31283,osrm
+Balasore,Odisha,21.49266,86.93348,Dam Dam,West Bengal,22.63341,88.42286,199.113,255.442,1.28290,osrm
+Dhanbad,Jharkhand,23.79759,86.42992,Punasa,Madhya Pradesh,22.23507,76.39335,1041.519,1309.459,1.25726,osrm
+Budaun,Uttar Pradesh,28.03811,79.12668,Kulti,West Bengal,23.73166,86.84372,908.100,1008.489,1.11055,osrm
+Muzaffarnagar,Uttar Pradesh,29.47091,77.70332,Sultan Pur Majra,Delhi,28.68966,77.07648,106.100,143.855,1.35585,osrm
+Puducherry,Puducherry,11.93381,79.82979,Navsari,Gujarat,20.94237,72.92467,1242.693,1470.087,1.18298,osrm
+Surat,Gujarat,21.19594,72.83023,Bhavnagar,Gujarat,21.76287,72.15331,94.233,339.380,3.60149,osrm
+Siwan,Bihar,26.22096,84.35609,Anand,Gujarat,22.55251,72.95520,1223.945,1505.201,1.22979,osrm
+Karaikkudi,Tamil Nadu,10.06615,78.76784,Thoothukudi,Tamil Nadu,8.76735,78.13425,160.273,218.141,1.36105,osrm
+Khammam,Telangana,17.24767,80.14368,Tumkur,Karnataka,13.34136,77.10220,543.174,691.420,1.27293,osrm
+Bettiah,Bihar,26.80229,84.50311,Hazaribagh,Jharkhand,23.99241,85.36162,324.123,403.743,1.24565,osrm
+Thane,Maharashtra,19.19704,72.96355,Rajapalayam,Tamil Nadu,9.45296,77.55335,1190.702,1496.730,1.25702,osrm
+Proddatur,Andhra Pradesh,14.75020,78.54813,Botad,Gujarat,22.16917,71.66671,1098.317,1480.488,1.34796,osrm
+Etah,Uttar Pradesh,27.55879,78.65692,Churu,Rajasthan,28.30415,74.96718,371.823,433.927,1.16703,osrm
+Ranipet,Tamil Nadu,12.92471,79.33331,Bilaspur,Chhattisgarh,22.08005,82.15543,1060.990,1342.660,1.26548,osrm
+Bhadravati,Karnataka,13.84846,75.70502,Tumkur,Karnataka,13.34136,77.10220,161.190,193.460,1.20020,osrm
+Bilimora,Gujarat,20.76957,72.96134,Delhi,Delhi,28.65195,77.23149,976.616,1115.213,1.14192,osrm
+Najafgarh,Delhi,28.60922,76.97982,Rewari,Haryana,28.19900,76.61830,57.715,72.667,1.25908,osrm
+Mangalagiri,Andhra Pradesh,16.43083,80.56815,Chapra,Bihar,25.78031,84.74709,1126.106,1486.198,1.31977,osrm
+Navi Mumbai,Maharashtra,19.03681,73.01582,Kozhikode,Kerala,11.24802,75.78040,915.407,1229.178,1.34277,osrm
+Ludhiana,Punjab,30.91204,75.85379,Mathura,Uttar Pradesh,27.50350,77.67215,418.066,455.547,1.08965,osrm
+Bangaon,West Bengal,23.04553,88.83084,Rajpur Sonarpur,West Bengal,22.43820,88.43205,78.950,90.994,1.15256,osrm
+Gyanpur,Uttar Pradesh,25.33268,82.46637,Banda,Uttar Pradesh,25.47758,80.33491,214.692,258.156,1.20245,osrm
+Morvi,Gujarat,22.81731,70.83770,Damoh,Madhya Pradesh,23.83312,79.44190,885.637,1128.703,1.27445,osrm
+Munger,Bihar,25.37459,86.47455,Arrah,Bihar,25.55629,84.66335,182.947,216.893,1.18555,osrm
+Buxar,Bihar,25.57548,83.98043,Bareilly,Uttar Pradesh,28.36678,79.43167,547.220,627.609,1.14690,osrm
+Kota,Rajasthan,25.18254,75.83907,Rewari,Haryana,28.19900,76.61830,344.230,424.102,1.23203,osrm
+Srikakulam,Andhra Pradesh,18.29890,83.89751,Shivamogga,Karnataka,13.93157,75.56791,1013.418,1191.595,1.17582,osrm
+Kushinagar,Uttar Pradesh,26.74134,83.88689,Siwan,Bihar,26.22096,84.35609,74.357,104.335,1.40316,osrm
+Alwar,Rajasthan,27.56246,76.62500,Banda,Uttar Pradesh,25.47758,80.33491,435.840,557.686,1.27957,osrm
+Bahraigh,Uttar Pradesh,27.57429,81.59474,Rohtak,Haryana,28.89447,76.58917,511.819,587.129,1.14714,osrm
+Asansol,West Bengal,23.68333,86.98333,Deoghar,Jharkhand,24.48983,86.69902,94.209,125.275,1.32977,osrm
+Thenali,Andhra Pradesh,16.24253,80.63982,Junagadh,Gujarat,21.51966,70.45981,1220.687,1728.175,1.41574,osrm
+Nimach,Rajasthan,24.45949,74.86625,Bundi,Rajasthan,25.43855,75.63735,133.774,173.805,1.29924,osrm
+Vellore,Tamil Nadu,12.91840,79.13255,Kanhangad,Kerala,12.30814,75.10632,442.124,555.198,1.25575,osrm
+Kanpur Cantonment,Uttar Pradesh,26.45942,80.37514,Dinapur Nizamat,Bihar,25.63847,85.05118,475.940,567.287,1.19193,osrm
+Phusro,Jharkhand,23.75644,86.00510,Chandannagar,West Bengal,22.86225,88.36796,260.971,306.362,1.17393,osrm
+Yavatmal,Maharashtra,20.39324,78.13201,Ramgundam,Telangana,18.80084,79.45206,224.661,296.257,1.31869,osrm
+Dehradun,Uttarakhand,30.32443,78.03392,Patiala,Punjab,30.33625,76.39220,157.569,209.407,1.32899,osrm
+Hassan,Karnataka,13.00715,76.09620,Erode,Tamil Nadu,11.34280,77.72741,256.288,352.375,1.37492,osrm
+Godhra,Gujarat,22.77547,73.61488,Datia,Madhya Pradesh,25.67312,78.45908,587.373,704.975,1.20022,osrm
+Faridabad,Haryana,28.41124,77.31316,Ambala Sadar,Haryana,30.33544,76.86265,218.369,241.631,1.10653,osrm
+Panchkula,Haryana,30.69461,76.85040,Ludhiana,Punjab,30.91204,75.85379,98.207,107.466,1.09428,osrm
+Itarsi,Madhya Pradesh,22.61477,77.76222,Morena,Madhya Pradesh,26.49892,77.99534,432.541,562.158,1.29966,osrm
+Bettiah,Bihar,26.80229,84.50311,Orai,Uttar Pradesh,25.99023,79.45334,510.969,616.733,1.20699,osrm
+Roorkee,Uttarakhand,29.86632,77.89118,Bahadurgarh,Haryana,28.69287,76.93555,160.049,216.835,1.35481,osrm
+Jagdalpur,Chhattisgarh,19.08136,82.02131,Kolkata,West Bengal,22.56263,88.36304,764.219,977.032,1.27847,osrm
+Chikmagalur,Karnataka,13.32231,75.77400,Nowrangapur,Odisha,19.23114,82.54826,976.676,1280.983,1.31157,osrm
+Hindupur,Andhra Pradesh,13.82807,77.49143,Latur,Maharashtra,18.39721,76.56784,517.551,636.822,1.23045,osrm
+Bhopal,Madhya Pradesh,23.25469,77.40289,Tumkur,Karnataka,13.34136,77.10220,1102.769,1369.481,1.24186,osrm
+Banda,Uttar Pradesh,25.47758,80.33491,Khargone,Madhya Pradesh,21.82292,75.61394,629.464,784.275,1.24594,osrm
+Kolar,Karnataka,13.13768,78.12999,Mumbai,Maharashtra,19.07283,72.88261,865.697,1053.976,1.21749,osrm
+Bilaspur,Chhattisgarh,22.08005,82.15543,Bahadurgarh,Haryana,28.69287,76.93555,902.834,1122.636,1.24346,osrm
+Khargone,Madhya Pradesh,21.82292,75.61394,Najafgarh,Delhi,28.60922,76.97982,766.987,840.950,1.09643,osrm
+Korba,Chhattisgarh,22.34580,82.69633,Nandyal,Andhra Pradesh,15.47799,78.48360,882.745,1221.785,1.38407,osrm
+Visakhapatnam,Andhra Pradesh,17.68009,83.20161,Chilakalurupet,Andhra Pradesh,16.08987,80.16705,368.115,420.576,1.14251,osrm
+Karol Bagh,Delhi,28.65136,77.19072,Rampur,Uttar Pradesh,28.81014,79.02699,179.913,198.897,1.10552,osrm
+Buxar,Bihar,25.57548,83.98043,Sultanpur,Uttar Pradesh,26.25788,82.07269,205.329,257.348,1.25335,osrm
+Raniganj,Telangana,17.42841,78.49361,Raj-Nandgaon,Chhattisgarh,21.09687,81.02890,487.016,681.611,1.39956,osrm
+Raurkela Industrial Township,Odisha,22.19994,84.86176,Rajamahendravaram,Andhra Pradesh,17.00517,81.77784,661.751,914.370,1.38174,osrm
+Gadag,Karnataka,15.42977,75.62971,Malkajgiri,Telangana,17.44781,78.52633,381.803,448.856,1.17562,osrm
+Brahmapur,Odisha,19.31151,84.79290,Ramgundam,Telangana,18.80084,79.45206,564.171,762.949,1.35234,osrm
+Miryalaguda,Telangana,16.87220,79.56247,Narasaraopet,Andhra Pradesh,16.23488,80.04927,87.831,96.693,1.10090,osrm
+Baharampur,West Bengal,24.10473,88.25155,Delhi,Delhi,28.65195,77.23149,1207.877,1432.879,1.18628,osrm
+Patna,Bihar,25.59408,85.13563,Gonda City,Uttar Pradesh,27.13181,81.95332,360.202,437.035,1.21330,osrm
+Bokaro,Jharkhand,23.66934,86.15161,Deoria,Uttar Pradesh,26.50167,83.77936,395.274,517.307,1.30873,osrm
+Narmadapuram,Madhya Pradesh,22.74747,77.72736,Jamshedpur,Jharkhand,22.80278,86.18545,867.072,1146.380,1.32213,osrm
+Kaithal,Haryana,29.80153,76.39959,Sonipat,Haryana,28.99478,77.01937,107.945,135.476,1.25504,osrm
+Kishanganj,Bihar,26.10224,87.95534,Silchar,Assam,24.82733,92.79787,506.359,805.396,1.59056,osrm
+Chapra,Bihar,25.78031,84.74709,Ghazipur,Uttar Pradesh,25.58333,83.58526,118.470,151.121,1.27561,osrm
+Mango,Jharkhand,22.82750,86.21639,Kanpur,Uttar Pradesh,26.46523,80.34975,717.577,873.550,1.21736,osrm
+Thanjavur,Tamil Nadu,10.78523,79.13909,Hubballi,Karnataka,15.34776,75.13378,667.444,785.496,1.17687,osrm
+Mustafabad,Delhi,28.71974,77.26781,Moradabad,Uttar Pradesh,28.83893,78.77684,147.665,162.637,1.10139,osrm
+Hindaun,Rajasthan,26.73411,77.03519,Malkajgiri,Telangana,17.44781,78.52633,1043.921,1383.259,1.32506,osrm
+Gangapur,Rajasthan,26.47249,76.71744,Morvi,Gujarat,22.81731,70.83770,719.769,951.196,1.32153,osrm
+Hosapete,Karnataka,15.26954,76.38710,Narmadapuram,Madhya Pradesh,22.74747,77.72736,843.340,1048.342,1.24308,osrm
+Begusarai,Bihar,25.41853,86.13389,Jamshedpur,Jharkhand,22.80278,86.18545,290.906,409.454,1.40751,osrm
+Kumarapalayam,Tamil Nadu,11.44495,77.71102,Avadi,Tamil Nadu,13.11470,80.10981,319.992,386.094,1.20657,osrm
+Arrah,Bihar,25.55629,84.66335,Gwalior,Madhya Pradesh,26.22983,78.17337,653.441,794.235,1.21547,osrm
+Kochi,Kerala,9.93988,76.26022,Gundupalaiyam,Puducherry,11.94096,79.80294,446.190,563.399,1.26269,osrm
+Kurichchi,Tamil Nadu,10.96085,76.97379,Bhadravati,Karnataka,13.84846,75.70502,349.397,461.206,1.32001,osrm
+Madhurampur Dehri,Bihar,24.96899,84.19640,Giridih,Jharkhand,24.18622,86.30875,230.651,272.853,1.18297,osrm
+Patna,Bihar,25.59408,85.13563,Madhurampur Dehri,Bihar,24.96899,84.19640,117.256,132.349,1.12871,osrm
+Nowrangapur,Odisha,19.23114,82.54826,Basirhat City,West Bengal,22.66142,88.85477,757.732,951.516,1.25574,osrm
+Mandoli,Delhi,28.70275,77.30995,Firozabad,Uttar Pradesh,27.15092,78.39781,202.971,242.918,1.19681,osrm
+Bareilly,Uttar Pradesh,28.36678,79.43167,Palwal,Haryana,28.14469,77.32546,207.764,261.583,1.25904,osrm
+Gwalior,Madhya Pradesh,26.22983,78.17337,Ghazipur,Uttar Pradesh,25.58333,83.58526,546.011,663.406,1.21500,osrm
+Dinapur Nizamat,Bihar,25.63847,85.05118,Nanded,Maharashtra,19.16023,77.31497,1072.513,1371.265,1.27855,osrm
+Chhindwara,Madhya Pradesh,22.05697,78.93958,Belagavi,Karnataka,15.85212,74.50447,832.634,1037.918,1.24655,osrm
+Kaithal,Haryana,29.80153,76.39959,Dalupura,Delhi,28.60570,77.31901,160.138,201.788,1.26008,osrm
+Madanapalle,Andhra Pradesh,13.55030,78.50288,Avadi,Tamil Nadu,13.11470,80.10981,180.487,236.185,1.30860,osrm
+Bhimavaram,Andhra Pradesh,16.54078,81.52322,Sambalpur,Odisha,21.46527,83.97573,605.203,806.040,1.33185,osrm
+Nellore,Andhra Pradesh,14.44992,79.98697,Nandyal,Andhra Pradesh,15.47799,78.48360,197.861,249.109,1.25901,osrm
+Dewas,Madhya Pradesh,22.96585,76.05526,Sehore,Madhya Pradesh,23.20000,77.08333,108.339,115.382,1.06501,osrm
+Kolhapur,Maharashtra,16.69563,74.23167,Nimach,Rajasthan,24.45949,74.86625,865.821,1054.557,1.21798,osrm
+Firozabad,Uttar Pradesh,27.15092,78.39781,Mothihari,Bihar,26.64862,84.91656,648.757,764.233,1.17800,osrm
+Mathura,Uttar Pradesh,27.50350,77.67215,Pilibhit,Uttar Pradesh,28.63124,79.80436,243.904,269.799,1.10617,osrm
+Nimach,Rajasthan,24.45949,74.86625,Hathras,Uttar Pradesh,27.59551,78.05201,472.096,594.514,1.25931,osrm
+Tiruvottiyur,Tamil Nadu,13.15823,80.30181,Kadapa,Andhra Pradesh,14.47995,78.82346,216.977,257.279,1.18574,osrm
+Balasore,Odisha,21.49266,86.93348,Shantipur,West Bengal,23.24723,88.43302,248.669,332.721,1.33800,osrm
+Machilipatnam,Andhra Pradesh,16.18747,81.13888,Narasaraopet,Andhra Pradesh,16.23488,80.04927,116.461,148.362,1.27392,osrm
+Bikaner,Rajasthan,28.01762,73.31495,Chittorgarh,Rajasthan,24.88963,74.62403,371.420,442.704,1.19192,osrm
+Vellore,Tamil Nadu,12.91840,79.13255,Erode,Tamil Nadu,11.34280,77.72741,232.438,271.034,1.16605,osrm
+Rohtak,Haryana,28.89447,76.58917,Rewari,Haryana,28.19900,76.61830,77.385,84.719,1.09477,osrm
+Dohad,Gujarat,22.83283,74.25986,Sirsa,Haryana,29.53489,75.02898,749.170,981.092,1.30957,osrm
+Shahuwadi,Maharashtra,16.90993,73.94654,Ichalkaranji,Maharashtra,16.69117,74.46054,59.878,77.143,1.28832,osrm
+Meerut,Uttar Pradesh,28.98002,77.70636,Gurugram,Haryana,28.46010,77.02635,87.974,108.009,1.22773,osrm
+Barddhaman,West Bengal,23.25572,87.85691,Hinganghat,Maharashtra,20.54875,78.83978,977.524,1197.133,1.22466,osrm
+Bali,West Bengal,22.64859,88.34115,Gudivada,Andhra Pradesh,16.43547,80.99555,1033.883,1190.805,1.15178,osrm
+Moradabad,Uttar Pradesh,28.83893,78.77684,Habra,West Bengal,22.84202,88.65606,1191.707,1325.367,1.11216,osrm
+Gandhidham,Gujarat,23.08333,70.13333,Jhansi,Uttar Pradesh,25.45887,78.57994,895.805,1110.521,1.23969,osrm
+Raigarh,Chhattisgarh,21.89764,83.39660,Madhavaram,Tamil Nadu,13.14819,80.23140,1029.020,1326.793,1.28938,osrm
+Rampur,Uttar Pradesh,28.81014,79.02699,Dhaulpur,Rajasthan,26.69286,77.87968,261.097,330.458,1.26565,osrm
+Phusro,Jharkhand,23.75644,86.00510,Shrirampur,West Bengal,22.75278,88.34222,263.552,306.000,1.16106,osrm
+Ballari,Karnataka,15.14205,76.92398,Tadpatri,Andhra Pradesh,14.90832,78.01031,119.524,131.621,1.10121,osrm
+Varanasi,Uttar Pradesh,25.31668,83.01041,Ramgundam,Telangana,18.80084,79.45206,811.908,1054.714,1.29906,osrm
+Vejalpur,Gujarat,22.69021,73.56299,Chhatarpur,Madhya Pradesh,24.91770,79.58871,661.079,846.689,1.28077,osrm
+Meerut,Uttar Pradesh,28.98002,77.70636,Firozabad,Uttar Pradesh,27.15092,78.39781,214.402,248.533,1.15919,osrm
+Robertsonpet,Karnataka,12.95629,78.27539,Belagavi,Karnataka,15.85212,74.50447,518.246,596.364,1.15074,osrm
+Alwar,Rajasthan,27.56246,76.62500,Sikar,Rajasthan,27.61206,75.13996,146.458,192.730,1.31594,osrm
+Narmadapuram,Madhya Pradesh,22.74747,77.72736,Bagalkot,Karnataka,16.18673,75.69614,759.922,937.618,1.23383,osrm
+Vadodara,Gujarat,22.29941,73.20812,Ahmedabad,Gujarat,23.02579,72.58727,102.869,110.938,1.07844,osrm
+Thiruvananthapuram,Kerala,8.48550,76.94924,Mulugu,Telangana,18.19100,79.94300,1126.634,1401.464,1.24394,osrm
+Guna,Madhya Pradesh,24.64691,77.31130,Karol Bagh,Delhi,28.65136,77.19072,445.436,600.169,1.34737,osrm
+Dhaulpur,Rajasthan,26.69286,77.87968,Bahraigh,Uttar Pradesh,27.57429,81.59474,380.455,475.229,1.24911,osrm
+Ranchi,Jharkhand,23.34316,85.30940,Hazaribagh,Jharkhand,23.99241,85.36162,72.389,95.843,1.32400,osrm
+Neyveli,Tamil Nadu,11.60877,79.49940,Hosur,Tamil Nadu,12.73647,77.83264,220.328,306.654,1.39181,osrm
+Raigarh,Chhattisgarh,21.89764,83.39660,Kulti,West Bengal,23.73166,86.84372,407.920,564.209,1.38314,osrm
+Saugor,Madhya Pradesh,23.83877,78.73874,Nagda,Madhya Pradesh,23.45834,75.41759,340.909,440.029,1.29075,osrm
+Thiruvananthapuram,Kerala,8.48550,76.94924,Kumarapalayam,Tamil Nadu,11.44495,77.71102,339.485,456.704,1.34529,osrm
+Delhi Cantonment,Delhi,28.60000,77.13333,Mahesana,Gujarat,23.59864,72.38472,730.653,865.659,1.18477,osrm
+Satna,Madhya Pradesh,24.57726,80.82719,Bhagalpur,Bihar,25.24446,86.97183,624.054,736.912,1.18085,osrm
+Jamshedpur,Jharkhand,22.80278,86.18545,Cuttack,Odisha,20.46497,85.87927,261.872,333.699,1.27428,osrm
+Raebareli,Uttar Pradesh,26.23090,81.23315,Gonda City,Uttar Pradesh,27.13181,81.95332,123.105,172.560,1.40172,osrm
+Saugor,Madhya Pradesh,23.83877,78.73874,Unnao,Uttar Pradesh,26.54706,80.48781,348.787,381.795,1.09464,osrm
+Shantipur,West Bengal,23.24723,88.43302,Rajpur Sonarpur,West Bengal,22.43820,88.43205,89.960,110.925,1.23305,osrm
+Etah,Uttar Pradesh,27.55879,78.65692,Bhind,Madhya Pradesh,26.56671,78.78728,111.067,144.135,1.29773,osrm
+Tiruvannamalai,Tamil Nadu,12.22662,79.07461,Kanchipuram,Tamil Nadu,12.83515,79.70006,95.852,114.315,1.19262,osrm
+Mormugao,Goa,15.38914,73.81491,Adilabad,Telangana,19.67203,78.53590,690.802,889.460,1.28758,osrm
+Panchkula,Haryana,30.69461,76.85040,Karawalnagar,Delhi,28.72712,77.27047,222.504,245.750,1.10447,osrm
+Munger,Bihar,25.37459,86.47455,Basti,Uttar Pradesh,26.78817,82.71617,406.912,476.383,1.17073,osrm
+Shantipur,West Bengal,23.24723,88.43302,Raiganj,West Bengal,25.61281,88.12449,264.889,306.626,1.15757,osrm
+Kochi,Kerala,9.93988,76.26022,Malkajgiri,Telangana,17.44781,78.52633,869.943,1064.277,1.22339,osrm
+Brahmapur,Odisha,19.31151,84.79290,Nizamabad,Telangana,18.67154,78.09880,707.375,924.639,1.30714,osrm
+Giridih,Jharkhand,24.18622,86.30875,Deoghar,Jharkhand,24.48983,86.69902,51.991,68.107,1.30997,osrm
+Airoli,Maharashtra,19.15096,72.99625,Kalol,Gujarat,23.24656,72.49508,458.363,528.315,1.15261,osrm
+Madhurampur Dehri,Bihar,24.96899,84.19640,Bettiah,Bihar,26.80229,84.50311,206.150,277.713,1.34714,osrm
+Satara,Maharashtra,17.68589,73.99333,Sangli,Maharashtra,16.85438,74.56417,110.556,122.754,1.11033,osrm
+Najafgarh,Delhi,28.60922,76.97982,Rohtak,Haryana,28.89447,76.58917,49.562,59.565,1.20183,osrm
+Kishanganj,Bihar,26.10224,87.95534,Halisahar,West Bengal,22.93218,88.41859,355.596,436.433,1.22733,osrm
+Hosapete,Karnataka,15.26954,76.38710,Yelahanka,Karnataka,13.10073,77.59632,274.135,328.441,1.19810,osrm
+Gudivada,Andhra Pradesh,16.43547,80.99555,Karimnagar,Telangana,18.43915,79.12856,298.097,352.609,1.18287,osrm
+Bulandshahr,Uttar Pradesh,28.40392,77.85773,Mustafabad,Delhi,28.71974,77.26781,67.472,75.565,1.11994,osrm
+Bangaon,West Bengal,23.04553,88.83084,Deoghar,Jharkhand,24.48983,86.69902,269.910,358.374,1.32775,osrm
+Rewa,Madhya Pradesh,24.53256,81.29234,Jamuria,West Bengal,23.70468,87.07872,594.370,692.111,1.16445,osrm
+Singrauli,Madhya Pradesh,24.19973,82.67535,Nalgonda,Telangana,17.05439,79.26707,869.965,1261.283,1.44981,osrm
+Munger,Bihar,25.37459,86.47455,Maheshtala,West Bengal,22.50862,88.25322,366.363,471.738,1.28762,osrm
+Raipur,Chhattisgarh,21.23333,81.63333,Davangere,Karnataka,14.46693,75.92694,964.518,1238.854,1.28443,osrm
+Halisahar,West Bengal,22.93218,88.41859,Bangaon,West Bengal,23.04553,88.83084,44.042,61.095,1.38721,osrm
+Dombivali,Maharashtra,19.21667,73.08333,Achalpur,Maharashtra,21.25665,77.51006,514.502,615.511,1.19632,osrm
+Pudukkottai,Tamil Nadu,10.38128,78.82141,Madurai,Tamil Nadu,9.91900,78.11953,92.435,106.673,1.15403,osrm
+Alandur,Tamil Nadu,13.00250,80.20611,Kochi,Kerala,9.93988,76.26022,548.471,692.207,1.26207,osrm
+Prayagraj,Uttar Pradesh,25.44478,81.84322,Murwara,Madhya Pradesh,23.83776,80.39405,231.043,272.313,1.17862,osrm
+Suriapet,Telangana,17.14054,79.62045,Warangal,Telangana,18.00000,79.58333,95.649,121.441,1.26966,osrm
+Dinapore,Bihar,25.63705,85.04794,Jalpaiguri,West Bengal,26.51667,88.73333,380.838,480.373,1.26136,osrm
+Jamuria,West Bengal,23.70468,87.07872,Dibrugarh,Assam,27.47989,94.90837,890.060,1200.893,1.34923,osrm
+Patan,Gujarat,23.85070,72.12963,Kalol,Gujarat,23.24656,72.49508,76.815,96.335,1.25412,osrm
+Kadapa,Andhra Pradesh,14.47995,78.82346,Kumarapalayam,Tamil Nadu,11.44495,77.71102,358.355,424.724,1.18521,osrm
+Mahbubnagar,Telangana,16.74385,77.98597,Lal Bahadur Nagar,Telangana,17.34769,78.55757,90.559,103.133,1.13885,osrm
+Morvi,Gujarat,22.81731,70.83770,Valsad,Gujarat,20.61013,72.93428,327.316,506.948,1.54881,osrm
+Satna,Madhya Pradesh,24.57726,80.82719,Murwara,Madhya Pradesh,23.83776,80.39405,93.227,107.056,1.14835,osrm
+Mandoli,Delhi,28.70275,77.30995,Ajmer,Rajasthan,26.45210,74.63867,363.224,442.523,1.21832,osrm
+Raebareli,Uttar Pradesh,26.23090,81.23315,Pali,Rajasthan,25.77276,73.32335,792.020,926.409,1.16968,osrm
+Gadag-Betageri,Karnataka,15.41670,75.61670,Kumarapalayam,Tamil Nadu,11.44495,77.71102,496.313,646.421,1.30244,osrm
+Saharanpur,Uttar Pradesh,29.96790,77.54522,Najafgarh,Delhi,28.60922,76.97982,160.721,187.013,1.16359,osrm
+Shivamogga,Karnataka,13.93157,75.56791,Brahmapur,Odisha,19.31151,84.79290,1150.180,1346.253,1.17047,osrm
+Sambalpur,Odisha,21.46527,83.97573,Basirhat City,West Bengal,22.66142,88.85477,520.057,619.916,1.19202,osrm
+Bankura,West Bengal,23.23241,87.07160,Kulti,West Bengal,23.73166,86.84372,60.183,83.894,1.39398,osrm
+Churu,Rajasthan,28.30415,74.96718,Sawai Madhopur,Rajasthan,26.02301,76.34408,287.906,369.988,1.28510,osrm
+Chittoor,Andhra Pradesh,13.21055,79.09560,Mandya,Karnataka,12.52230,76.89746,250.271,291.203,1.16355,osrm
+Ghazipur,Uttar Pradesh,25.58333,83.58526,Muzaffarnagar,Uttar Pradesh,29.47091,77.70332,723.166,853.125,1.17971,osrm
+Rajkot,Gujarat,22.29161,70.79322,Belagavi,Karnataka,15.85212,74.50447,815.234,1175.816,1.44231,osrm
+Bihar Sharif,Bihar,25.20084,85.52389,Mirzapur,Uttar Pradesh,25.14490,82.56534,297.792,351.392,1.17999,osrm
+Bangaon,West Bengal,23.04553,88.83084,Barddhaman,West Bengal,23.25572,87.85691,102.281,132.856,1.29892,osrm
+Medinipur,West Bengal,22.42114,87.32257,Bansbaria,West Bengal,22.95387,88.40098,125.495,159.694,1.27251,osrm
+Sikar,Rajasthan,27.61206,75.13996,Aligarh,Uttar Pradesh,27.88145,78.07464,290.342,359.285,1.23746,osrm
+Karawalnagar,Delhi,28.72712,77.27047,Jabalpur,Madhya Pradesh,23.16697,79.95006,673.744,792.374,1.17608,osrm
+Guntur,Andhra Pradesh,16.29974,80.45729,Khammam,Telangana,17.24767,80.14368,110.567,153.669,1.38983,osrm
+Jodhpur,Rajasthan,26.26841,73.00594,Jhansi,Uttar Pradesh,25.45887,78.57994,564.887,695.116,1.23054,osrm
+Roorkee,Uttarakhand,29.86632,77.89118,Farrukhabad,Uttar Pradesh,27.39134,79.57930,320.743,421.313,1.31355,osrm
+Raigarh,Chhattisgarh,21.89764,83.39660,Bhiwandi,Maharashtra,19.30023,73.05881,1113.804,1258.888,1.13026,osrm
+Machilipatnam,Andhra Pradesh,16.18747,81.13888,Mangalagiri,Andhra Pradesh,16.43083,80.56815,66.649,83.945,1.25951,osrm
+Srinagar,Jammu and Kashmir,34.08565,74.80555,Kirari Sulemannagar,Delhi,28.69736,77.06480,636.314,890.110,1.39885,osrm
+Kanchipuram,Tamil Nadu,12.83515,79.70006,Thiruvananthapuram,Kerala,8.48550,76.94924,569.419,709.836,1.24660,osrm
+Giridih,Jharkhand,24.18622,86.30875,Dhule,Maharashtra,20.90130,74.77737,1238.788,1553.091,1.25372,osrm
+Ambala Sadar,Haryana,30.33544,76.86265,Yamuna Nagar,Haryana,30.12796,77.28371,46.569,51.412,1.10400,osrm
+Davangere,Karnataka,14.46693,75.92694,Malegaon,Maharashtra,20.54966,74.53462,692.278,787.458,1.13749,osrm
+Dohad,Gujarat,22.83283,74.25986,Kalyan,Maharashtra,19.24370,73.13554,415.794,545.945,1.31302,osrm
+Sultanpur,Uttar Pradesh,26.25788,82.07269,Lakhimpur,Uttar Pradesh,27.94822,80.77935,227.409,279.354,1.22842,osrm
+Suriapet,Telangana,17.14054,79.62045,Serilingampalle,Telangana,17.49313,78.30196,145.351,185.072,1.27327,osrm
+Suriapet,Telangana,17.14054,79.62045,Tadepalligudem,Andhra Pradesh,16.81467,81.52717,205.989,236.280,1.14705,osrm
+Jaunpur,Uttar Pradesh,25.75356,82.68689,Titagarh,West Bengal,22.74252,88.37326,666.556,738.004,1.10719,osrm
+Medinipur,West Bengal,22.42114,87.32257,Baidyabati,West Bengal,22.78498,88.32586,110.653,137.035,1.23843,osrm
+Narasaraopet,Andhra Pradesh,16.23488,80.04927,Yelahanka,Karnataka,13.10073,77.59632,437.102,540.185,1.23583,osrm
+Jagtial,Telangana,18.79473,78.91661,Burari,Delhi,28.75570,77.19941,1121.255,1389.808,1.23951,osrm
+Rewari,Haryana,28.19900,76.61830,Jhunjhunun,Rajasthan,28.12559,75.39797,119.908,144.938,1.20874,osrm
+Bhilwara,Rajasthan,25.34707,74.64081,Ambikapur,Chhattisgarh,23.11892,83.19537,901.882,1159.799,1.28598,osrm
+Rohini,Delhi,28.74322,77.06778,Palwal,Haryana,28.14469,77.32546,71.162,80.874,1.13647,osrm
+Vadodara,Gujarat,22.29941,73.20812,Godhra,Gujarat,22.77547,73.61488,67.434,93.488,1.38636,osrm
+Gorakhpur,Uttar Pradesh,26.76628,83.36889,Begusarai,Bihar,25.41853,86.13389,314.154,360.896,1.14879,osrm
+Tonk,Rajasthan,26.16638,75.78824,Gangapur,Rajasthan,26.47249,76.71744,98.668,131.882,1.33662,osrm
+Sonipat,Haryana,28.99478,77.01937,Amritsar,Punjab,31.62234,74.87534,357.365,413.898,1.15819,osrm
+Giridih,Jharkhand,24.18622,86.30875,Mohali,Punjab,30.67995,76.72211,1189.262,1402.954,1.17968,osrm
+Hashtsal,Delhi,28.63406,77.05771,Sitapur,Uttar Pradesh,27.56192,80.68265,375.002,439.714,1.17256,osrm
+Achalpur,Maharashtra,21.25665,77.51006,Ranebennur,Karnataka,14.62239,75.62951,764.013,944.638,1.23642,osrm
+Sangli,Maharashtra,16.85438,74.56417,Hubballi,Karnataka,15.34776,75.13378,178.238,223.408,1.25343,osrm
+Raurkela Industrial Township,Odisha,22.19994,84.86176,Malda,West Bengal,25.00447,88.14573,457.359,615.256,1.34524,osrm
+Durg,Chhattisgarh,21.19147,81.27619,Serilingampalle,Telangana,17.49313,78.30196,516.182,726.479,1.40741,osrm
+Madanapalle,Andhra Pradesh,13.55030,78.50288,Dharmavaram,Andhra Pradesh,14.41435,77.72035,127.907,166.239,1.29969,osrm
+Barasat,West Bengal,22.72154,88.48198,Phusro,Jharkhand,23.75644,86.00510,277.999,354.762,1.27613,osrm
+Ambikapur,Chhattisgarh,23.11892,83.19537,Banda,Uttar Pradesh,25.47758,80.33491,390.899,610.149,1.56089,osrm
+Sirsa,Haryana,29.53489,75.02898,Dinapur Nizamat,Bihar,25.63847,85.05118,1078.004,1251.961,1.16137,osrm
+Chhindwara,Madhya Pradesh,22.05697,78.93958,Rewa,Madhya Pradesh,24.53256,81.29234,365.375,442.567,1.21127,osrm
+Kumarapalayam,Tamil Nadu,11.44495,77.71102,Pudukkottai,Tamil Nadu,10.38128,78.82141,169.372,203.297,1.20030,osrm
+Ambikapur,Chhattisgarh,23.11892,83.19537,Begusarai,Bihar,25.41853,86.13389,392.545,506.260,1.28969,osrm
+Nangloi Jat,Delhi,28.67957,77.06799,Rohtak,Haryana,28.89447,76.58917,52.425,61.225,1.16786,osrm
+Hazaribagh,Jharkhand,23.99241,85.36162,Morena,Madhya Pradesh,26.49892,77.99534,791.373,917.715,1.15965,osrm
+Ambattur,Tamil Nadu,13.09818,80.16152,Ooty,Tamil Nadu,11.41340,76.69521,420.654,624.271,1.48405,osrm
+Bathinda,Punjab,30.20747,74.93893,Phagwara,Punjab,31.22452,75.77387,138.419,183.837,1.32812,osrm
+Munger,Bihar,25.37459,86.47455,Raigarh,Chhattisgarh,21.89764,83.39660,497.727,691.765,1.38985,osrm
+Rampur,Uttar Pradesh,28.81014,79.02699,Saharanpur,Uttar Pradesh,29.96790,77.54522,192.825,277.625,1.43977,osrm
+Gonda City,Uttar Pradesh,27.13181,81.95332,Mau,Uttar Pradesh,25.94167,83.56111,207.589,236.898,1.14119,osrm
+Moradabad,Uttar Pradesh,28.83893,78.77684,Howrah,West Bengal,22.57688,88.31857,1181.858,1315.683,1.11323,osrm
+Thane,Maharashtra,19.19704,72.96355,Ahilyanagar,Maharashtra,19.09457,74.73843,186.788,231.362,1.23863,osrm
+Brahmapur,Odisha,19.31151,84.79290,Katihar,Bihar,25.53852,87.57044,748.878,938.795,1.25360,osrm
+Udgir,Maharashtra,18.39258,77.11756,Chanda,Maharashtra,19.95076,79.29523,286.925,388.704,1.35473,osrm
+Nalgonda,Telangana,17.05439,79.26707,Robertsonpet,Karnataka,12.95629,78.27539,467.964,579.472,1.23828,osrm
+Malegaon,Maharashtra,20.54966,74.53462,Aurangabad,Bihar,24.75204,84.37420,1112.126,1398.227,1.25726,osrm
+Guntur,Andhra Pradesh,16.29974,80.45729,Bhavnagar,Gujarat,21.76287,72.15331,1063.032,1506.398,1.41708,osrm
+Anantapur,Andhra Pradesh,14.67784,77.60813,Chhindwara,Madhya Pradesh,22.05697,78.93958,832.445,994.863,1.19511,osrm
+Mysuru,Karnataka,12.29791,76.63925,Ooty,Tamil Nadu,11.41340,76.69521,98.542,155.519,1.57821,osrm
+Chitradurga,Karnataka,14.22262,76.40038,Kumbakonam,Tamil Nadu,10.96209,79.39124,486.577,595.530,1.22392,osrm
+Belagavi,Karnataka,15.85212,74.50447,Mumbai,Maharashtra,19.07283,72.88261,397.290,514.816,1.29582,osrm
+Bagalkot,Karnataka,16.18673,75.69614,Secunderabad,Telangana,17.50427,78.54263,336.490,468.603,1.39262,osrm
+Thenali,Andhra Pradesh,16.24253,80.63982,Salem,Tamil Nadu,11.65376,78.15538,576.361,678.511,1.17723,osrm
+Dhule,Maharashtra,20.90130,74.77737,Eluru,Andhra Pradesh,16.71311,81.10437,812.455,991.765,1.22070,osrm
+Adoni,Andhra Pradesh,15.62788,77.27495,Hosur,Tamil Nadu,12.73647,77.83264,327.082,433.165,1.32433,osrm
+Mandsaur,Madhya Pradesh,24.07184,75.06986,Rewa,Madhya Pradesh,24.53256,81.29234,632.620,811.749,1.28315,osrm
+Avadi,Tamil Nadu,13.11470,80.10981,Ranipet,Tamil Nadu,12.92471,79.33331,86.735,101.362,1.16864,osrm
+Rajamahendravaram,Andhra Pradesh,17.00517,81.77784,Srikakulam,Andhra Pradesh,18.29890,83.89751,266.714,301.261,1.12953,osrm
+Virar,Maharashtra,19.45591,72.81136,Deesa,Gujarat,24.25612,72.17928,537.728,634.789,1.18050,osrm
+Gwalior,Madhya Pradesh,26.22983,78.17337,Varanasi,Uttar Pradesh,25.31668,83.01041,494.844,587.091,1.18642,osrm
+Sikar,Rajasthan,27.61206,75.13996,Sultanpur,Uttar Pradesh,26.25788,82.07269,703.451,829.216,1.17878,osrm
+Nalgonda,Telangana,17.05439,79.26707,Vizianagaram,Andhra Pradesh,18.11692,83.41148,454.895,532.828,1.17132,osrm
+Mysuru,Karnataka,12.29791,76.63925,Hassan,Karnataka,13.00715,76.09620,98.442,119.159,1.21045,osrm
+Puducherry,Puducherry,11.93381,79.82979,Chikmagalur,Karnataka,13.32231,75.77400,466.357,587.291,1.25932,osrm
+Purnia,Bihar,25.77895,87.47422,Navadwip,West Bengal,23.40670,88.36861,278.849,346.826,1.24377,osrm
+Delhi Cantonment,Delhi,28.60000,77.13333,Ambarnath,Maharashtra,19.20000,73.16667,1120.060,1308.856,1.16856,osrm
+Dhaulpur,Rajasthan,26.69286,77.87968,Hisar,Haryana,29.15394,75.72294,346.088,425.835,1.23043,osrm
+Lal Bahadur Nagar,Telangana,17.34769,78.55757,Hubballi,Karnataka,15.34776,75.13378,427.657,508.743,1.18961,osrm
+Raniganj,West Bengal,23.61640,87.13061,Munger,Bihar,25.37459,86.47455,206.464,286.523,1.38776,osrm
+Orai,Uttar Pradesh,25.99023,79.45334,Hardoi,Uttar Pradesh,27.39491,80.13165,170.109,234.618,1.37922,osrm
+Chas,Jharkhand,23.63556,86.16712,Deoghar,Jharkhand,24.48983,86.69902,109.269,175.897,1.60977,osrm
+Latur,Maharashtra,18.39721,76.56784,Jalgaon,Maharashtra,21.00292,75.56602,308.135,402.495,1.30623,osrm
+Rajkot,Gujarat,22.29161,70.79322,Tadpatri,Andhra Pradesh,14.90832,78.01031,1118.643,1477.044,1.32039,osrm
+Hazaribagh,Jharkhand,23.99241,85.36162,Rourkela,Odisha,22.22496,84.86414,203.010,328.239,1.61686,osrm
+Malappuram,Kerala,11.04199,76.08154,Kozhikode,Kerala,11.24802,75.78040,40.053,52.920,1.32127,osrm
+Begusarai,Bihar,25.41853,86.13389,Malda,West Bengal,25.00447,88.14573,207.565,283.645,1.36654,osrm
+Kaithal,Haryana,29.80153,76.39959,Karnal,Haryana,29.69197,76.98448,57.766,66.521,1.15156,osrm
+Jodhpur,Rajasthan,26.26841,73.00594,Gorakhpur,Uttar Pradesh,26.76628,83.36889,1032.284,1173.018,1.13633,osrm
+Udgir,Maharashtra,18.39258,77.11756,Malegaon,Maharashtra,20.54966,74.53462,361.721,447.581,1.23737,osrm
+Batala,Punjab,31.80921,75.20294,Betul,Madhya Pradesh,21.90056,77.90229,1133.727,1373.458,1.21145,osrm
+Thanjavur,Tamil Nadu,10.78523,79.13909,Robertsonpet,Karnataka,12.95629,78.27539,259.059,353.111,1.36306,osrm
+Ichalkaranji,Maharashtra,16.69117,74.46054,Pallavaram,Tamil Nadu,12.96796,80.15025,738.422,916.721,1.24146,osrm
+Gangtok,Sikkim,27.32574,88.61216,Gurugram,Haryana,28.46010,77.02635,1145.125,1452.543,1.26846,osrm
+Jaipur,Rajasthan,26.91962,75.78781,Kishangarh,Rajasthan,26.59006,74.85397,99.700,105.334,1.05651,osrm
+Bagalkot,Karnataka,16.18673,75.69614,Tirunelveli,Tamil Nadu,8.72742,77.68380,857.011,1030.799,1.20278,osrm
+Narela,Delhi,28.85267,77.09288,Shimla,Himachal Pradesh,31.10442,77.16662,250.484,330.258,1.31848,osrm
+Tonk,Rajasthan,26.16638,75.78824,Panipat,Haryana,29.38747,76.96825,376.505,459.128,1.21945,osrm
+Raipur,Chhattisgarh,21.23333,81.63333,Dinapore,Bihar,25.63705,85.04794,600.866,735.191,1.22355,osrm
+Hardoi,Uttar Pradesh,27.39491,80.13165,Shahjanpur,Uttar Pradesh,27.88165,79.90918,58.391,63.295,1.08398,osrm
+Bhilai,Chhattisgarh,21.20919,81.42850,Tumkur,Karnataka,13.34136,77.10220,987.909,1260.328,1.27575,osrm
+Khandwa,Madhya Pradesh,21.82427,76.35086,Bhilai,Chhattisgarh,21.20919,81.42850,529.669,628.383,1.18637,osrm
+Vejalpur,Gujarat,22.69021,73.56299,Jamnagar,Gujarat,22.47292,70.06673,359.765,422.356,1.17398,osrm
+Mango,Jharkhand,22.82750,86.21639,Bokaro,Jharkhand,23.66934,86.15161,93.842,138.813,1.47922,osrm
+Gorakhpur,Uttar Pradesh,26.76628,83.36889,Bagaha,Bihar,27.09918,84.09003,80.505,132.592,1.64701,osrm
+Nowrangapur,Odisha,19.23114,82.54826,Guntur,Andhra Pradesh,16.29974,80.45729,394.030,528.259,1.34066,osrm
+Bhilwara,Rajasthan,25.34707,74.64081,Deesa,Gujarat,24.25612,72.17928,276.488,365.082,1.32043,osrm
+Alappuzha,Kerala,9.49004,76.32640,Tiruppur,Tamil Nadu,11.11541,77.35456,212.875,286.349,1.34515,osrm
+Hathras,Uttar Pradesh,27.59551,78.05201,Lalitpur,Uttar Pradesh,24.69007,78.41915,325.142,382.073,1.17510,osrm
+Narela,Delhi,28.85267,77.09288,Phusro,Jharkhand,23.75644,86.00510,1053.149,1195.338,1.13501,osrm
+Kushinagar,Uttar Pradesh,26.74134,83.88689,Dhanbad,Jharkhand,23.79759,86.42992,415.342,544.210,1.31027,osrm
+Morena,Madhya Pradesh,26.49892,77.99534,Indore,Madhya Pradesh,22.71792,75.83330,473.820,589.000,1.24309,osrm
+Najafgarh,Delhi,28.60922,76.97982,Khurja,Uttar Pradesh,28.25382,77.85535,94.293,120.542,1.27838,osrm
+Mandsaur,Madhya Pradesh,24.07184,75.06986,Sikar,Rajasthan,27.61206,75.13996,393.718,553.694,1.40632,osrm
+Amreli,Gujarat,21.59983,71.21169,Kota,Rajasthan,25.18254,75.83907,617.736,781.689,1.26541,osrm
+Pimpri,Maharashtra,18.62292,73.80696,Mandya,Karnataka,12.52230,76.89746,754.735,892.651,1.18273,osrm
+Gyanpur,Uttar Pradesh,25.33268,82.46637,Fatehpur,Uttar Pradesh,25.92774,80.81266,178.505,190.110,1.06501,osrm
+Baran,Rajasthan,25.10000,76.51667,Guna,Madhya Pradesh,24.64691,77.31130,94.680,118.583,1.25247,osrm
+Saharanpur,Uttar Pradesh,29.96790,77.54522,Ranchi,Jharkhand,23.34316,85.30940,1066.127,1285.673,1.20593,osrm
+Valsad,Gujarat,20.61013,72.93428,Khammam,Telangana,17.24767,80.14368,845.284,1026.982,1.21495,osrm
+Chirmiri,Chhattisgarh,23.19073,82.35314,Betul,Madhya Pradesh,21.90056,77.90229,479.043,638.068,1.33196,osrm
+Datia,Madhya Pradesh,25.67312,78.45908,Amravati,Maharashtra,20.93333,77.75000,531.988,673.209,1.26546,osrm
+Badlapur,Maharashtra,19.15516,73.26553,Latur,Maharashtra,18.39721,76.56784,357.721,444.185,1.24171,osrm
+Khargone,Madhya Pradesh,21.82292,75.61394,Udgir,Maharashtra,18.39258,77.11756,412.473,564.860,1.36945,osrm
+Bagaha,Bihar,27.09918,84.09003,Saharanpur,Uttar Pradesh,29.96790,77.54522,714.330,972.486,1.36140,osrm
+Hashtsal,Delhi,28.63406,77.05771,Prayagraj,Uttar Pradesh,25.44478,81.84322,591.838,691.370,1.16817,osrm
+Suriapet,Telangana,17.14054,79.62045,Bhilai,Chhattisgarh,21.20919,81.42850,490.629,686.834,1.39991,osrm
+Vejalpur,Gujarat,22.69021,73.56299,Dharmavaram,Andhra Pradesh,14.41435,77.72035,1019.041,1284.165,1.26017,osrm
+Najafgarh,Delhi,28.60922,76.97982,Churu,Rajasthan,28.30415,74.96718,199.656,255.998,1.28219,osrm
+Uluberiya,West Bengal,22.47560,88.09898,Naihati,West Bengal,22.89396,88.41521,56.715,76.743,1.35313,osrm
+Hassan,Karnataka,13.00715,76.09620,Shivamogga,Karnataka,13.93157,75.56791,117.599,159.921,1.35988,osrm
+Burari,Delhi,28.75570,77.19941,Gaya,Bihar,24.79686,85.00385,890.744,1026.525,1.15244,osrm
+Guwahati,Assam,26.18440,91.74580,Shillong,Meghalaya,25.56892,91.88313,69.804,97.705,1.39971,osrm
+Kishangarh,Rajasthan,26.59006,74.85397,Muzaffarnagar,Uttar Pradesh,29.47091,77.70332,425.201,517.785,1.21774,osrm
+Haldwani,Uttarakhand,29.22254,79.52860,Mustafabad,Delhi,28.71974,77.26781,226.921,267.830,1.18028,osrm
+Krishnanagar,West Bengal,23.40576,88.49073,Bali,West Bengal,22.64859,88.34115,85.574,102.494,1.19773,osrm
+Pithampur,Madhya Pradesh,22.60197,75.69649,Surat,Gujarat,21.19594,72.83023,334.489,415.089,1.24097,osrm
+Deoria,Uttar Pradesh,26.50167,83.77936,Mohali,Punjab,30.67995,76.72211,830.722,1029.929,1.23980,osrm
+Gudivada,Andhra Pradesh,16.43547,80.99555,Proddatur,Andhra Pradesh,14.75020,78.54813,322.210,417.825,1.29675,osrm
+Barshi,Maharashtra,18.23454,75.69275,Bidar,Karnataka,17.90802,77.51524,196.046,231.701,1.18187,osrm
+Ponnani,Kerala,10.76695,75.92523,Kanayannur,Kerala,9.96667,76.26667,96.506,117.547,1.21802,osrm
+Gondia,Maharashtra,21.46026,80.19205,Raj-Nandgaon,Chhattisgarh,21.09687,81.02890,95.662,142.199,1.48647,osrm
+Mandsaur,Madhya Pradesh,24.07184,75.06986,Virar,Maharashtra,19.45591,72.81136,563.736,703.705,1.24829,osrm
+Malegaon,Maharashtra,20.54966,74.53462,Bilimora,Gujarat,20.76957,72.96134,165.507,235.055,1.42022,osrm
+Itarsi,Madhya Pradesh,22.61477,77.76222,Asansol,West Bengal,23.68333,86.98333,950.067,1201.768,1.26493,osrm
+Ambala Sadar,Haryana,30.33544,76.86265,Jamalpur,Bihar,25.31258,86.48888,1098.430,1312.739,1.19510,osrm
+Bundi,Rajasthan,25.43855,75.63735,Dhule,Maharashtra,20.90130,74.77737,512.116,597.478,1.16668,osrm
+Malkajgiri,Telangana,17.44781,78.52633,Kota,Rajasthan,25.18254,75.83907,903.895,1102.362,1.21957,osrm
+Adilabad,Telangana,19.67203,78.53590,Punasa,Madhya Pradesh,22.23507,76.39335,361.540,534.059,1.47718,osrm
+Rajkot,Gujarat,22.29161,70.79322,Jamnagar,Gujarat,22.47292,70.06673,77.369,95.374,1.23271,osrm
+Bhind,Madhya Pradesh,26.56671,78.78728,Ahilyanagar,Maharashtra,19.09457,74.73843,928.508,1139.810,1.22757,osrm
+Madanapalle,Andhra Pradesh,13.55030,78.50288,Bidar,Karnataka,17.90802,77.51524,495.947,612.525,1.23506,osrm
+Anantnag,Jammu and Kashmir,33.73068,75.15418,Moga,Punjab,30.81383,75.16878,324.342,620.480,1.91304,osrm
+Siliguri,West Bengal,26.71004,88.42851,Rishra,West Bengal,22.72394,88.34563,443.314,564.674,1.27376,osrm
+Sawai Madhopur,Rajasthan,26.02301,76.34408,Raniganj,Telangana,17.42841,78.49361,981.062,1207.184,1.23049,osrm
+Baripada,Odisha,21.93458,86.72852,Bhusawal,Maharashtra,21.04365,75.78506,1136.350,1354.229,1.19174,osrm
+Madanapalle,Andhra Pradesh,13.55030,78.50288,Belagavi,Karnataka,15.85212,74.50447,500.417,587.331,1.17368,osrm
+Patan,Gujarat,23.85070,72.12963,Rampur,Uttar Pradesh,28.81014,79.02699,880.899,1071.483,1.21635,osrm
+Chennai,Tamil Nadu,13.08784,80.27847,Mulugu,Telangana,18.19100,79.94300,568.581,677.812,1.19211,osrm
+Gorakhpur,Uttar Pradesh,26.76628,83.36889,Kushinagar,Uttar Pradesh,26.74134,83.88689,51.508,55.193,1.07154,osrm
+Yavatmal,Maharashtra,20.39324,78.13201,Tonk,Rajasthan,26.16638,75.78824,685.075,889.690,1.29868,osrm
+Saharsa,Bihar,25.87498,86.59611,Jamuria,West Bengal,23.70468,87.07872,246.194,359.270,1.45929,osrm
+Kanpur Cantonment,Uttar Pradesh,26.45942,80.37514,Jhansi,Uttar Pradesh,25.45887,78.57994,211.159,233.992,1.10813,osrm
+Bhiwandi,Maharashtra,19.30023,73.05881,Aurangabad,Maharashtra,19.87757,75.34226,247.674,291.342,1.17631,osrm
+Pali,Rajasthan,25.77276,73.32335,Kukatpally,Telangana,17.48486,78.41376,1060.859,1406.154,1.32549,osrm
+Hosapete,Karnataka,15.26954,76.38710,Ranipet,Tamil Nadu,12.92471,79.33331,411.000,475.002,1.15572,osrm
+Lalitpur,Uttar Pradesh,24.69007,78.41915,Ranchi,Jharkhand,23.34316,85.30940,715.586,865.186,1.20906,osrm
+Palwal,Haryana,28.14469,77.32546,Gyanpur,Uttar Pradesh,25.33268,82.46637,598.556,665.138,1.11124,osrm
+Guntakal,Andhra Pradesh,15.17112,77.36244,Satara,Maharashtra,17.68589,73.99333,455.285,555.841,1.22086,osrm
+Medinipur,West Bengal,22.42114,87.32257,Damoh,Madhya Pradesh,23.83312,79.44190,820.894,1107.056,1.34860,osrm
+Veraval,Gujarat,20.90770,70.36786,Jagdalpur,Chhattisgarh,19.08136,82.02131,1234.206,1749.531,1.41754,osrm
+Mathura,Uttar Pradesh,27.50350,77.67215,Haridwar,Uttarakhand,29.94791,78.16025,275.941,353.308,1.28038,osrm
+Sultanpur,Uttar Pradesh,26.25788,82.07269,Bhiwani,Haryana,28.79304,76.13968,649.289,760.603,1.17144,osrm
+Damoh,Madhya Pradesh,23.83312,79.44190,Seoni,Madhya Pradesh,22.08503,79.55037,194.696,242.945,1.24782,osrm
+Hisar,Haryana,29.15394,75.72294,Haldwani,Uttarakhand,29.22254,79.52860,369.500,449.511,1.21654,osrm
+Mahbubnagar,Telangana,16.74385,77.98597,Punasa,Madhya Pradesh,22.23507,76.39335,632.984,801.540,1.26629,osrm
+Khargone,Madhya Pradesh,21.82292,75.61394,Achalpur,Maharashtra,21.25665,77.51006,205.973,265.293,1.28800,osrm
+Dhanbad,Jharkhand,23.79759,86.42992,Jahanabad,Bihar,25.21368,84.98710,214.717,271.965,1.26662,osrm
+Modinagar,Uttar Pradesh,28.83059,77.57295,Muzaffarnagar,Uttar Pradesh,29.47091,77.70332,72.317,78.891,1.09091,osrm
+Bhopal,Madhya Pradesh,23.25469,77.40289,Gorakhpur,Uttar Pradesh,26.76628,83.36889,716.690,841.022,1.17348,osrm
+Delhi Cantonment,Delhi,28.60000,77.13333,Badlapur,Maharashtra,19.15516,73.26553,1121.186,1271.375,1.13396,osrm
+Itarsi,Madhya Pradesh,22.61477,77.76222,Hinganghat,Maharashtra,20.54875,78.83978,255.321,337.747,1.32284,osrm
+Barshi,Maharashtra,18.23454,75.69275,Gangavati,Karnataka,15.43130,76.52933,324.171,372.370,1.14868,osrm
+Raniganj,Telangana,17.42841,78.49361,Kanpur Cantonment,Uttar Pradesh,26.45942,80.37514,1022.726,1211.385,1.18447,osrm
+Hazaribagh,Jharkhand,23.99241,85.36162,Gokalpur,Delhi,28.70290,77.28961,959.399,1091.300,1.13748,osrm
+Prayagraj,Uttar Pradesh,25.44478,81.84322,Kashipur,Uttarakhand,29.21399,78.95693,506.849,579.849,1.14403,osrm
+Malegaon,Maharashtra,20.54966,74.53462,Kochi,Kerala,9.93988,76.26022,1194.142,1382.015,1.15733,osrm
+Sawai Madhopur,Rajasthan,26.02301,76.34408,Chilakalurupet,Andhra Pradesh,16.08987,80.16705,1173.353,1514.127,1.29043,osrm
+Fatehpur,Uttar Pradesh,25.92774,80.81266,Soyibug,Jammu and Kashmir,34.07677,74.70570,1079.656,1314.432,1.21746,osrm
+Panipat,Haryana,29.38747,76.96825,Ambala,Haryana,30.36099,76.79782,109.491,114.854,1.04898,osrm
+Bhiwani,Haryana,28.79304,76.13968,Betul,Madhya Pradesh,21.90056,77.90229,786.571,982.230,1.24875,osrm
+Rajapalayam,Tamil Nadu,9.45296,77.55335,Teni,Tamil Nadu,10.01115,77.47772,62.619,111.119,1.77453,osrm
+Bundi,Rajasthan,25.43855,75.63735,Ahilyanagar,Maharashtra,19.09457,74.73843,711.449,829.063,1.16532,osrm
+Jodhpur,Rajasthan,26.26841,73.00594,Panipat,Haryana,29.38747,76.96825,521.557,591.708,1.13450,osrm
+Barddhaman,West Bengal,23.25572,87.85691,Budaun,Uttar Pradesh,28.03811,79.12668,1023.518,1151.621,1.12516,osrm
+Jajmau,Uttar Pradesh,26.43040,80.40950,Mandoli,Delhi,28.70275,77.30995,396.439,482.021,1.21588,osrm
+Kurichchi,Tamil Nadu,10.96085,76.97379,Teni,Tamil Nadu,10.01115,77.47772,119.112,217.033,1.82210,osrm
+Munger,Bihar,25.37459,86.47455,Puruliya,West Bengal,23.33062,86.36303,227.560,319.623,1.40457,osrm
+Rohini,Delhi,28.74322,77.06778,Gwalior,Madhya Pradesh,26.22983,78.17337,299.996,341.463,1.13823,osrm
+Proddatur,Andhra Pradesh,14.75020,78.54813,Bhadravati,Karnataka,13.84846,75.70502,322.332,440.198,1.36567,osrm
+Nadiad,Gujarat,22.69385,72.86157,Jodhpur,Rajasthan,26.26841,73.00594,397.742,522.738,1.31427,osrm
+Panipat,Haryana,29.38747,76.96825,Muktsar,Punjab,30.47426,74.51660,265.356,326.808,1.23158,osrm
+Shivamogga,Karnataka,13.93157,75.56791,Ambur,Tamil Nadu,12.79163,78.71644,363.436,440.131,1.21103,osrm
+Faridabad,Haryana,28.41124,77.31316,Alwar,Rajasthan,27.56246,76.62500,116.075,144.214,1.24243,osrm
+Rudrapur,Uttarakhand,28.98000,79.40000,Bareilly,Uttar Pradesh,28.36678,79.43167,68.257,76.204,1.11642,osrm
+Dhule,Maharashtra,20.90130,74.77737,Chilakalurupet,Andhra Pradesh,16.08987,80.16705,780.370,962.800,1.23377,osrm
+Bhalswa Jahangirpur,Delhi,28.73558,77.16682,Churu,Rajasthan,28.30415,74.96718,220.194,273.430,1.24177,osrm
+Madhyamgram,West Bengal,22.68944,88.44594,Bokaro,Jharkhand,23.66934,86.15161,258.594,335.422,1.29710,osrm
+Suriapet,Telangana,17.14054,79.62045,Jalna,Maharashtra,19.84102,75.88636,495.161,599.773,1.21127,osrm
+Howrah,West Bengal,22.57688,88.31857,Medinipur,West Bengal,22.42114,87.32257,103.776,120.112,1.15743,osrm
+Kalaburagi,Karnataka,17.33583,76.83757,Nizamabad,Telangana,18.67154,78.09880,199.618,267.105,1.33808,osrm
+Kukatpally,Telangana,17.48486,78.41376,Pimpri-Chinchwad,Maharashtra,18.61867,73.80375,503.398,556.409,1.10531,osrm
+Chennai,Tamil Nadu,13.08784,80.27847,Ahilyanagar,Maharashtra,19.09457,74.73843,892.204,1058.205,1.18606,osrm
+Khandwa,Madhya Pradesh,21.82427,76.35086,Dhule,Maharashtra,20.90130,74.77737,192.567,254.561,1.32193,osrm
+Dinapur Nizamat,Bihar,25.63847,85.05118,Thanesar,Haryana,29.97323,76.83214,940.747,1099.830,1.16910,osrm
+Dinapore,Bihar,25.63705,85.04794,Muzaffarpur,Bihar,26.12259,85.39055,63.951,75.573,1.18174,osrm
+Madhurampur Dehri,Bihar,24.96899,84.19640,Jahanabad,Bihar,25.21368,84.98710,84.145,100.027,1.18874,osrm
+Haldwani,Uttarakhand,29.22254,79.52860,Palanpur,Gujarat,24.17128,72.43827,900.506,1089.296,1.20965,osrm
+Firozpur,Punjab,30.92574,74.61311,Jalandhar,Punjab,31.32556,75.57917,102.139,122.087,1.19530,osrm
+Nandurbar,Maharashtra,21.36671,74.24051,Punasa,Madhya Pradesh,22.23507,76.39335,242.327,299.727,1.23687,osrm
+Kishanganj,Bihar,26.10224,87.95534,Barakpur,West Bengal,22.76602,88.36336,373.263,453.687,1.21546,osrm
+Serilingampalle,Telangana,17.49313,78.30196,Kallakurichi,Tamil Nadu,11.73379,78.95925,644.300,768.818,1.19326,osrm
+Bharatpur,Rajasthan,27.21731,77.49009,Delhi Cantonment,Delhi,28.60000,77.13333,157.694,188.211,1.19352,osrm
+Sonipat,Haryana,28.99478,77.01937,Bhiwani,Haryana,28.79304,76.13968,88.529,108.211,1.22231,osrm
+Belagavi,Karnataka,15.85212,74.50447,Shivamogga,Karnataka,13.93157,75.56791,242.206,291.017,1.20153,osrm
+Varanasi,Uttar Pradesh,25.31668,83.01041,Prayagraj,Uttar Pradesh,25.44478,81.84322,118.120,128.841,1.09076,osrm
+Bagalkot,Karnataka,16.18673,75.69614,Latur,Maharashtra,18.39721,76.56784,262.638,310.078,1.18063,osrm
+Howrah,West Bengal,22.57688,88.31857,Basirhat City,West Bengal,22.66142,88.85477,55.834,67.525,1.20939,osrm
+Sultanpur,Uttar Pradesh,26.25788,82.07269,Kushinagar,Uttar Pradesh,26.74134,83.88689,188.367,238.648,1.26693,osrm
+Meerut,Uttar Pradesh,28.98002,77.70636,Kishangarh,Rajasthan,26.59006,74.85397,386.442,470.466,1.21743,osrm
+Ramagundam,Telangana,18.75500,79.47400,Gadag-Betageri,Karnataka,15.41670,75.61670,553.002,723.000,1.30741,osrm
+Greater Noida,Uttar Pradesh,28.49615,77.53601,Datia,Madhya Pradesh,25.67312,78.45908,326.934,390.866,1.19555,osrm
+Pudukkottai,Tamil Nadu,10.38128,78.82141,Tiruchirappalli,Tamil Nadu,10.81550,78.69651,50.176,54.433,1.08484,osrm
+Shimla,Himachal Pradesh,31.10442,77.16662,Patiala,Punjab,30.33625,76.39220,113.031,163.994,1.45088,osrm
+Alwar,Rajasthan,27.56246,76.62500,Siwan,Bihar,26.22096,84.35609,780.927,881.260,1.12848,osrm
+Shrirampur,West Bengal,22.75278,88.34222,Azamgarh,Uttar Pradesh,26.06832,83.18358,639.220,756.506,1.18348,osrm
+Pudukkottai,Tamil Nadu,10.38128,78.82141,Madhavaram,Tamil Nadu,13.14819,80.23140,343.821,384.058,1.11703,osrm
+Kukatpally,Telangana,17.48486,78.41376,Hindaun,Rajasthan,26.73411,77.03519,1038.199,1316.618,1.26818,osrm
+Hisar,Haryana,29.15394,75.72294,Lakhimpur,Uttar Pradesh,27.94822,80.77935,511.696,619.689,1.21105,osrm
+Narela,Delhi,28.85267,77.09288,Haldwani,Uttarakhand,29.22254,79.52860,240.336,299.725,1.24711,osrm
+Adilabad,Telangana,19.67203,78.53590,Kulti,West Bengal,23.73166,86.84372,969.452,1206.119,1.24412,osrm
+Gangapur,Rajasthan,26.47249,76.71744,Narmadapuram,Madhya Pradesh,22.74747,77.72736,426.594,593.363,1.39093,osrm
+Lal Bahadur Nagar,Telangana,17.34769,78.55757,Mangalagiri,Andhra Pradesh,16.43083,80.56815,236.972,270.542,1.14167,osrm
+Saharsa,Bihar,25.87498,86.59611,Deoghar,Jharkhand,24.48983,86.69902,154.370,237.771,1.54027,osrm
+Burari,Delhi,28.75570,77.19941,Hindaun,Rajasthan,26.73411,77.03519,225.371,267.831,1.18840,osrm
+Mothihari,Bihar,26.64862,84.91656,Hugli,West Bengal,22.90877,88.39674,544.337,647.957,1.19036,osrm
+Jaipur,Rajasthan,26.91962,75.78781,Faridabad,Haryana,28.41124,77.31316,223.771,267.499,1.19541,osrm
+Anantapur,Andhra Pradesh,14.67784,77.60813,Yelahanka,Karnataka,13.10073,77.59632,175.372,194.857,1.11111,osrm
+Amritsar,Punjab,31.62234,74.87534,Khanna,Punjab,30.70547,76.22196,163.738,183.333,1.11967,osrm
+Sitapur,Uttar Pradesh,27.56192,80.68265,Mumbai,Maharashtra,19.07283,72.88261,1234.286,1531.699,1.24096,osrm
+Khurja,Uttar Pradesh,28.25382,77.85535,Patan,Gujarat,23.85070,72.12963,752.694,895.488,1.18971,osrm
+Baran,Rajasthan,25.10000,76.51667,Sitapur,Uttar Pradesh,27.56192,80.68265,497.242,651.087,1.30940,osrm
+Borivli,Maharashtra,19.23496,72.85976,Nandurbar,Maharashtra,21.36671,74.24051,277.343,363.481,1.31058,osrm
+Dohad,Gujarat,22.83283,74.25986,Bhimavaram,Andhra Pradesh,16.54078,81.52322,1032.899,1337.138,1.29455,osrm
+Gurugram,Haryana,28.46010,77.02635,Karnal,Haryana,29.69197,76.98448,137.038,152.526,1.11302,osrm
+Mothihari,Bihar,26.64862,84.91656,Bareilly,Uttar Pradesh,28.36678,79.43167,573.614,724.279,1.26266,osrm
+Asansol,West Bengal,23.68333,86.98333,Bagaha,Bihar,27.09918,84.09003,478.221,575.433,1.20328,osrm
+Bhilai,Chhattisgarh,21.20919,81.42850,Mathura,Uttar Pradesh,27.50350,77.67215,796.493,1008.246,1.26586,osrm
+Akola,Maharashtra,20.70957,76.99810,Kashipur,Uttarakhand,29.21399,78.95693,965.985,1306.488,1.35249,osrm
+Haridwar,Uttarakhand,29.94791,78.16025,Meerut,Uttar Pradesh,28.98002,77.70636,116.249,150.000,1.29033,osrm
+Udgir,Maharashtra,18.39258,77.11756,Ramagundam,Telangana,18.75500,79.47400,251.623,328.894,1.30709,osrm
+Thenali,Andhra Pradesh,16.24253,80.63982,Kozhikode,Kerala,11.24802,75.78040,764.004,954.635,1.24952,osrm
+Azamgarh,Uttar Pradesh,26.06832,83.18358,Brahmapur,Odisha,19.31151,84.79290,769.218,1103.140,1.43411,osrm
+Imphal,Manipur,24.80805,93.94420,Nagaon,Assam,26.35000,92.66667,214.041,355.958,1.66303,osrm
+Jamshedpur,Jharkhand,22.80278,86.18545,Dimapur,Nagaland,25.91174,93.72170,837.808,1169.368,1.39575,osrm
+Balasore,Odisha,21.49266,86.93348,Hazaribagh,Jharkhand,23.99241,85.36162,321.308,403.835,1.25685,osrm
+Bahadurgarh,Haryana,28.69287,76.93555,Jind,Haryana,29.31577,76.31502,91.864,102.167,1.11216,osrm
+Suriapet,Telangana,17.14054,79.62045,Damoh,Madhya Pradesh,23.83312,79.44190,744.414,941.062,1.26416,osrm
+Malappuram,Kerala,11.04199,76.08154,Kurichchi,Tamil Nadu,10.96085,76.97379,97.807,126.367,1.29200,osrm
+Modinagar,Uttar Pradesh,28.83059,77.57295,Bagaha,Bihar,27.09918,84.09003,668.264,854.527,1.27873,osrm
+Badlapur,Maharashtra,19.15516,73.26553,Bhavnagar,Gujarat,21.76287,72.15331,312.254,600.809,1.92410,osrm
+Chas,Jharkhand,23.63556,86.16712,Barakpur,West Bengal,22.76602,88.36336,244.396,312.078,1.27694,osrm
+Thenali,Andhra Pradesh,16.24253,80.63982,Kharagpur,West Bengal,22.33971,87.32501,975.310,1127.409,1.15595,osrm
+Morena,Madhya Pradesh,26.49892,77.99534,Patna,Bihar,25.59408,85.13563,720.288,862.732,1.19776,osrm
+Seoni,Madhya Pradesh,22.08503,79.55037,Virar,Maharashtra,19.45591,72.81136,759.060,901.771,1.18801,osrm
+Nizamabad,Telangana,18.67154,78.09880,Kurichchi,Tamil Nadu,10.96085,76.97379,865.862,1089.505,1.25829,osrm
+Nellore,Andhra Pradesh,14.44992,79.98697,Jhansi,Uttar Pradesh,25.45887,78.57994,1232.905,1510.037,1.22478,osrm
+Rourkela,Odisha,22.22496,84.86414,Katihar,Bihar,25.53852,87.57044,459.821,746.689,1.62387,osrm
+Dharmavaram,Andhra Pradesh,14.41435,77.72035,Lal Bahadur Nagar,Telangana,17.34769,78.55757,338.237,397.753,1.17596,osrm
+Jalandhar,Punjab,31.32556,75.57917,Prayagraj,Uttar Pradesh,25.44478,81.84322,895.773,989.985,1.10517,osrm
+Panihati,West Bengal,22.69089,88.37404,Mango,Jharkhand,22.82750,86.21639,221.758,283.009,1.27621,osrm
+Satna,Madhya Pradesh,24.57726,80.82719,Saharanpur,Uttar Pradesh,29.96790,77.54522,681.444,841.850,1.23539,osrm
+Thoothukudi,Tamil Nadu,8.76735,78.13425,Pudukkottai,Tamil Nadu,10.38128,78.82141,194.635,236.597,1.21560,osrm
+Jamalpur,Bihar,25.31258,86.48888,Yamuna Nagar,Haryana,30.12796,77.28371,1051.875,1285.513,1.22212,osrm
+Alwar,Rajasthan,27.56246,76.62500,Nimach,Rajasthan,24.45949,74.86625,387.203,502.777,1.29849,osrm
+Basirhat City,West Bengal,22.66142,88.85477,Dhaulpur,Rajasthan,26.69286,77.87968,1195.483,1369.970,1.14596,osrm
+Madhurampur Dehri,Bihar,24.96899,84.19640,Ranchi,Jharkhand,23.34316,85.30940,213.150,290.108,1.36105,osrm
+Kozhikode,Kerala,11.24802,75.78040,Bhimavaram,Andhra Pradesh,16.54078,81.52322,854.568,1066.612,1.24813,osrm
+Alandur,Tamil Nadu,13.00250,80.20611,Thiruvananthapuram,Kerala,8.48550,76.94924,615.461,744.125,1.20905,osrm
+Chandannagar,West Bengal,22.86225,88.36796,Bangaon,West Bengal,23.04553,88.83084,51.590,74.688,1.44772,osrm
+Dhaulpur,Rajasthan,26.69286,77.87968,Mohali,Punjab,30.67995,76.72211,457.488,513.210,1.12180,osrm
+Ambikapur,Chhattisgarh,23.11892,83.19537,Ambarnath,Maharashtra,19.20000,73.16667,1127.135,1365.304,1.21131,osrm
+Sholapur,Maharashtra,17.67152,75.91044,Kalyan,Maharashtra,19.24370,73.13554,340.904,398.364,1.16855,osrm
+Navadwip,West Bengal,23.40670,88.36861,Bhetia,Jharkhand,22.79321,86.14098,237.831,334.319,1.40570,osrm
+Deoli,Delhi,28.50254,77.23117,Jind,Haryana,29.31577,76.31502,127.001,149.924,1.18049,osrm
+Serilingampalle,Telangana,17.49313,78.30196,Khammam,Telangana,17.24767,80.14368,197.346,246.912,1.25116,osrm
+Porbandar,Gujarat,21.64219,69.60929,Uppal Kalan,Telangana,17.40577,78.55911,1049.244,1486.245,1.41649,osrm
+Ambala,Haryana,30.36099,76.79782,Sawai Madhopur,Rajasthan,26.02301,76.34408,484.406,560.874,1.15786,osrm
+Anand,Gujarat,22.55251,72.95520,Ghaziabad,Uttar Pradesh,28.66535,77.43915,814.755,955.618,1.17289,osrm
+Yamuna Nagar,Haryana,30.12796,77.28371,Bhavnagar,Gujarat,21.76287,72.15331,1061.840,1300.935,1.22517,osrm
+Chanda,Maharashtra,19.95076,79.29523,Kanchrapara,West Bengal,22.95998,88.42849,1002.401,1223.422,1.22049,osrm
+Bhimavaram,Andhra Pradesh,16.54078,81.52322,Ambur,Tamil Nadu,12.79163,78.71644,514.701,636.907,1.23743,osrm
+Bareilly,Uttar Pradesh,28.36678,79.43167,Khurja,Uttar Pradesh,28.25382,77.85535,154.823,219.965,1.42075,osrm
+Anantapur,Andhra Pradesh,14.67784,77.60813,Rajamahendravaram,Andhra Pradesh,17.00517,81.77784,515.639,627.981,1.21787,osrm
+Hashtsal,Delhi,28.63406,77.05771,Muktsar,Punjab,30.47426,74.51660,319.801,375.974,1.17565,osrm
+Mulugu,Telangana,18.19100,79.94300,Karimnagar,Telangana,18.43915,79.12856,90.293,119.182,1.31995,osrm
+Gaya,Bihar,24.79686,85.00385,Madhurampur Dehri,Bihar,24.96899,84.19640,83.668,99.978,1.19494,osrm
+Kalyan,Maharashtra,19.24370,73.13554,Hashtsal,Delhi,28.63406,77.05771,1117.402,1316.091,1.17781,osrm
+Dhaulpur,Rajasthan,26.69286,77.87968,Pilibhit,Uttar Pradesh,28.63124,79.80436,287.020,324.512,1.13063,osrm
+Mango,Jharkhand,22.82750,86.21639,Ambikapur,Chhattisgarh,23.11892,83.19537,310.967,458.102,1.47316,osrm
+Brahmapur,Odisha,19.31151,84.79290,Suriapet,Telangana,17.14054,79.62045,597.199,693.189,1.16073,osrm
+Prayagraj,Uttar Pradesh,25.44478,81.84322,Kushinagar,Uttar Pradesh,26.74134,83.88689,249.864,299.546,1.19883,osrm
+Punasa,Madhya Pradesh,22.23507,76.39335,Bankura,West Bengal,23.23241,87.07160,1100.467,1433.206,1.30236,osrm
+Ambarnath,Maharashtra,19.20000,73.16667,Parbhani,Maharashtra,19.26855,76.77081,378.462,461.475,1.21934,osrm
+Murwara,Madhya Pradesh,23.83776,80.39405,Raurkela Industrial Township,Odisha,22.19994,84.86176,492.127,637.170,1.29473,osrm
+Howrah,West Bengal,22.57688,88.31857,Ashoknagar Kalyangarh,West Bengal,22.86416,88.63701,45.686,58.854,1.28824,osrm
+Nagpur,Maharashtra,21.14631,79.08491,Airoli,Maharashtra,19.15096,72.99625,673.133,761.385,1.13111,osrm
+Rohtak,Haryana,28.89447,76.58917,Dalupura,Delhi,28.60570,77.31901,78.060,108.492,1.38986,osrm
+Dewas,Madhya Pradesh,22.96585,76.05526,Pithampur,Madhya Pradesh,22.60197,75.69649,54.680,68.945,1.26087,osrm
+Farrukhabad,Uttar Pradesh,27.39134,79.57930,Shivpuri,Madhya Pradesh,25.42378,77.66223,290.365,333.133,1.14729,osrm
+Khargone,Madhya Pradesh,21.82292,75.61394,Balasore,Odisha,21.49266,86.93348,1170.135,1421.233,1.21459,osrm
+Avadi,Tamil Nadu,13.11470,80.10981,Kolhapur,Maharashtra,16.69563,74.23167,746.540,904.028,1.21096,osrm
+Latur,Maharashtra,18.39721,76.56784,Dharashiv,Maharashtra,18.18158,76.03889,60.775,73.546,1.21014,osrm
+Barnala,Punjab,30.37451,75.54870,Hinganghat,Maharashtra,20.54875,78.83978,1141.243,1459.446,1.27882,osrm
+Delhi Cantonment,Delhi,28.60000,77.13333,Mathura,Uttar Pradesh,27.50350,77.67215,132.896,151.781,1.14210,osrm
+Rohtak,Haryana,28.89447,76.58917,Kaithal,Haryana,29.80153,76.39959,102.521,129.084,1.25910,osrm
+Raebareli,Uttar Pradesh,26.23090,81.23315,Sitapur,Uttar Pradesh,27.56192,80.68265,157.749,165.515,1.04923,osrm
+Rourkela,Odisha,22.22496,84.86414,Puruliya,West Bengal,23.33062,86.36303,196.796,262.853,1.33566,osrm
+Hajipur,Bihar,25.68544,85.20981,Bihar Sharif,Bihar,25.20084,85.52389,62.435,78.408,1.25582,osrm
+Firozpur,Punjab,30.92574,74.61311,Deesa,Gujarat,24.25612,72.17928,779.373,846.890,1.08663,osrm
+Barddhaman,West Bengal,23.25572,87.85691,Bhetia,Jharkhand,22.79321,86.14098,182.978,272.311,1.48822,osrm
+Bathinda,Punjab,30.20747,74.93893,Aurangabad,Maharashtra,19.87757,75.34226,1149.349,1413.698,1.23000,osrm
+Vadodara,Gujarat,22.29941,73.20812,Mumbai,Maharashtra,19.07283,72.88261,360.374,405.938,1.12644,osrm
+Muktsar,Punjab,30.47426,74.51660,Bahraigh,Uttar Pradesh,27.57429,81.59474,759.790,889.697,1.17098,osrm
+Sitapur,Uttar Pradesh,27.56192,80.68265,Pilibhit,Uttar Pradesh,28.63124,79.80436,146.833,179.074,1.21958,osrm
+Prayagraj,Uttar Pradesh,25.44478,81.84322,Navi Mumbai,Maharashtra,19.03681,73.01582,1153.957,1413.838,1.22521,osrm
+Hosapete,Karnataka,15.26954,76.38710,Dharmavaram,Andhra Pradesh,14.41435,77.72035,171.984,203.013,1.18042,osrm
+Gokalpur,Delhi,28.70290,77.28961,Batala,Punjab,31.80921,75.20294,399.316,454.792,1.13893,osrm
+Karimnagar,Telangana,18.43915,79.12856,Jaipur,Rajasthan,26.91962,75.78781,1003.180,1304.486,1.30035,osrm
+Nangloi Jat,Delhi,28.67957,77.06799,Amritsar,Punjab,31.62234,74.87534,389.230,442.360,1.13650,osrm
+Ashoknagar Kalyangarh,West Bengal,22.86416,88.63701,Bhopal,Madhya Pradesh,23.25469,77.40289,1149.902,1444.479,1.25618,osrm
+Gangapur,Rajasthan,26.47249,76.71744,Kishangarh,Rajasthan,26.59006,74.85397,185.846,214.425,1.15377,osrm
+Bhubaneswar,Odisha,20.27241,85.83385,Tumkur,Karnataka,13.34136,77.10220,1206.797,1401.447,1.16129,osrm
+Farrukhabad,Uttar Pradesh,27.39134,79.57930,Bihar Sharif,Bihar,25.20084,85.52389,640.604,777.815,1.21419,osrm
+Rajamahendravaram,Andhra Pradesh,17.00517,81.77784,Betul,Madhya Pradesh,21.90056,77.90229,679.175,927.819,1.36610,osrm
+Robertsonpet,Karnataka,12.95629,78.27539,Suriapet,Telangana,17.14054,79.62045,487.160,626.668,1.28637,osrm
+Rewari,Haryana,28.19900,76.61830,Hathras,Uttar Pradesh,27.59551,78.05201,156.057,207.054,1.32678,osrm
+Bhiwandi,Maharashtra,19.30023,73.05881,Nagda,Madhya Pradesh,23.45834,75.41759,522.867,629.971,1.20484,osrm
+Gaya,Bihar,24.79686,85.00385,Varanasi,Uttar Pradesh,25.31668,83.01041,208.951,238.035,1.13919,osrm
+Botad,Gujarat,22.16917,71.66671,Badlapur,Maharashtra,19.15516,73.26553,374.142,602.279,1.60976,osrm
+Nanded,Maharashtra,19.16023,77.31497,Greater Noida,Uttar Pradesh,28.49615,77.53601,1038.351,1279.973,1.23270,osrm
+Gandhinagar,Gujarat,23.21667,72.68333,Madanapalle,Andhra Pradesh,13.55030,78.50288,1237.409,1473.114,1.19048,osrm
+Rourkela,Odisha,22.22496,84.86414,Kirari Sulemannagar,Delhi,28.69736,77.06480,1062.927,1382.119,1.30030,osrm
+Ambarnath,Maharashtra,19.20000,73.16667,Ranebennur,Karnataka,14.62239,75.62951,572.444,711.587,1.24307,osrm
+Narasaraopet,Andhra Pradesh,16.23488,80.04927,Bankura,West Bengal,23.23241,87.07160,1069.873,1290.957,1.20665,osrm
+Panchkula,Haryana,30.69461,76.85040,Yamuna Nagar,Haryana,30.12796,77.28371,75.476,96.723,1.28150,osrm
+Kanpur,Uttar Pradesh,26.46523,80.34975,Hardoi,Uttar Pradesh,27.39491,80.13165,105.613,131.843,1.24837,osrm
+Jamuria,West Bengal,23.70468,87.07872,Kanchrapara,West Bengal,22.95998,88.42849,160.777,178.453,1.10994,osrm
+Chhatarpur,Madhya Pradesh,24.91770,79.58871,Ashoknagar Kalyangarh,West Bengal,22.86416,88.63701,947.607,1091.147,1.15148,osrm

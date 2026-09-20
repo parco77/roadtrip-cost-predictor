@@ -1,0 +1,256 @@
+<!-- ============================== PART 2 ============================== -->
+<h1 class="part"><span class="num">Part 2</span>The dataset in detail</h1>
+
+<h2>2.1 Every column of the original dataset</h2>
+<p><span class="mono">road_trip_data.csv</span> &mdash; 1,140 rows &times; 16 columns, 181 KB in
+memory. Eight <span class="mono">float64</span>, two <span class="mono">int64</span>, six text
+columns.</p>
+
+<table class="wide">
+  <tr><th style="width:44mm">Column</th><th style="width:15mm">Type</th><th>Meaning</th><th style="width:26mm" class="n">Corr. with target</th></tr>
+  <tr><td><span class="mono">start_city</span></td><td>str</td><td>Origin city. Only 9 fixed pairs exist in this file.</td><td class="n">&mdash;</td></tr>
+  <tr><td><span class="mono">destination_city</span></td><td>str</td><td>Destination city.</td><td class="n">&mdash;</td></tr>
+  <tr><td><span class="mono">distance_km</span></td><td>float</td><td>Road distance of the trip.</td><td class="n">+0.8315</td></tr>
+  <tr><td><span class="mono">vehicle_type</span></td><td>str</td><td>Hatchback, Sedan or SUV.</td><td class="n">&mdash;</td></tr>
+  <tr><td><span class="mono">fuel_type</span></td><td>str</td><td>Petrol, Diesel or CNG.</td><td class="n">&mdash;</td></tr>
+  <tr><td><span class="mono">mileage</span></td><td>float</td><td>Vehicle fuel efficiency, km per litre.</td><td class="n">&minus;0.3802</td></tr>
+  <tr><td><span class="mono">fuel_price</span></td><td>float</td><td>Price per litre on the day of travel.</td><td class="n">+0.1450</td></tr>
+  <tr><td><span class="mono">passengers</span></td><td>int</td><td>Number of people on the trip, 1&ndash;5.</td><td class="n">&minus;0.0468</td></tr>
+  <tr><td><span class="mono">departure_hour</span></td><td>int</td><td>Hour of departure, 0&ndash;23.</td><td class="n">&minus;0.0261</td></tr>
+  <tr><td><span class="mono">traffic_level</span></td><td>str</td><td>Low, Medium or High.</td><td class="n">&mdash;</td></tr>
+  <tr><td><span class="mono">weather_condition</span></td><td>str</td><td>Clear, Cloudy, Fog or Rain.</td><td class="n">&mdash;</td></tr>
+  <tr><td><span class="mono">toll_cost</span></td><td>float</td><td>Tolls paid. A direct additive component of the bill.</td><td class="n">+0.6701</td></tr>
+  <tr><td><span class="mono">parking_cost</span></td><td>float</td><td>Parking paid. Another direct additive component.</td><td class="n">+0.0970</td></tr>
+  <tr><td><span class="mono">estimated_time_minutes</span></td><td>float</td><td>Journey duration.</td><td class="n">+0.7282</td></tr>
+  <tr><td><span class="mono">fuel_consumption_litres</span></td><td>float</td><td>Litres actually burnt. <strong>The single strongest driver.</strong></td><td class="n"><strong>+0.9606</strong></td></tr>
+  <tr class="hl"><td><span class="mono">total_trip_cost</span></td><td>float</td><td><strong>TARGET</strong> &mdash; the total bill in rupees.</td><td class="n">1.0000</td></tr>
+</table>
+
+<h2>2.2 Descriptive statistics</h2>
+<table class="wide">
+  <tr><th>Column</th><th class="n">mean</th><th class="n">std</th><th class="n">min</th><th class="n">25%</th><th class="n">50%</th><th class="n">75%</th><th class="n">max</th></tr>
+  <tr><td><span class="mono">distance_km</span></td><td class="n">239.77</td><td class="n">85.06</td><td class="n">110.13</td><td class="n">158.46</td><td class="n">263.48</td><td class="n">286.07</td><td class="n">459.64</td></tr>
+  <tr><td><span class="mono">mileage</span></td><td class="n">15.45</td><td class="n">3.27</td><td class="n">8.18</td><td class="n">12.98</td><td class="n">15.47</td><td class="n">17.91</td><td class="n">23.12</td></tr>
+  <tr><td><span class="mono">fuel_price</span></td><td class="n">93.04</td><td class="n">8.96</td><td class="n">72.13</td><td class="n">88.09</td><td class="n">94.79</td><td class="n">98.92</td><td class="n">107.99</td></tr>
+  <tr><td><span class="mono">passengers</span></td><td class="n">3.07</td><td class="n">1.41</td><td class="n">1</td><td class="n">2</td><td class="n">3</td><td class="n">4</td><td class="n">5</td></tr>
+  <tr><td><span class="mono">departure_hour</span></td><td class="n">11.58</td><td class="n">6.87</td><td class="n">0</td><td class="n">6</td><td class="n">12</td><td class="n">18</td><td class="n">23</td></tr>
+  <tr><td><span class="mono">toll_cost</span></td><td class="n">303.64</td><td class="n">116.54</td><td class="n">99.47</td><td class="n">215.75</td><td class="n">289.57</td><td class="n">381.89</td><td class="n">665.22</td></tr>
+  <tr><td><span class="mono">parking_cost</span></td><td class="n">68.86</td><td class="n">45.32</td><td class="n">0.00</td><td class="n">40.00</td><td class="n">60.00</td><td class="n">120.00</td><td class="n">150.00</td></tr>
+  <tr><td><span class="mono">estimated_time_minutes</span></td><td class="n">246.83</td><td class="n">67.95</td><td class="n">95.63</td><td class="n">204.00</td><td class="n">254.25</td><td class="n">291.66</td><td class="n">&mdash;</td></tr>
+</table>
+<p class="small">Target range across the cleaned 1,129 rows: <strong>&#8377;688.79 to
+&#8377;4,271.82</strong>.</p>
+
+<h2>2.3 Categorical values, and the 9 fixed routes</h2>
+<table>
+  <tr><th style="width:40mm">Column</th><th>Distinct values</th></tr>
+  <tr><td><span class="mono">vehicle_type</span></td><td>Sedan, Hatchback, SUV &mdash; 3 values</td></tr>
+  <tr><td><span class="mono">fuel_type</span></td><td>Petrol, Diesel, CNG &mdash; 3 values</td></tr>
+  <tr><td><span class="mono">traffic_level</span></td><td>Low, Medium, High &mdash; 3 values</td></tr>
+  <tr><td><span class="mono">weather_condition</span></td><td>Clear, Cloudy, Fog, Rain &mdash; 4 values</td></tr>
+</table>
+
+<p>The nine routes, with their straight-line distance and the actual road distance &mdash; this
+table becomes important in Weeks 5 and 10:</p>
+<table>
+  <tr><th>Route</th><th class="n">Straight line (km)</th><th class="n">Road (km)</th><th class="n">Winding factor</th></tr>
+  <tr><td>Ahmedabad &rarr; Surat</td><td class="n">205.0</td><td class="n">274.6</td><td class="n">1.340</td></tr>
+  <tr><td>Ahmedabad &rarr; Udaipur</td><td class="n">207.9</td><td class="n">271.3</td><td class="n">1.305</td></tr>
+  <tr><td>Ahmedabad &rarr; Vadodara</td><td class="n">102.9</td><td class="n">116.9</td><td class="n">1.136</td></tr>
+  <tr><td>Bengaluru &rarr; Mysuru</td><td class="n">127.8</td><td class="n">150.9</td><td class="n">1.180</td></tr>
+  <tr><td>Delhi &rarr; Jaipur</td><td class="n">239.3</td><td class="n">288.9</td><td class="n">1.207</td></tr>
+  <tr><td>Pune &rarr; Mumbai</td><td class="n">119.5</td><td class="n">161.2</td><td class="n">1.349</td></tr>
+  <tr><td>Rajkot &rarr; Ahmedabad</td><td class="n">201.4</td><td class="n">223.7</td><td class="n">1.111</td></tr>
+  <tr><td>Surat &rarr; Mumbai</td><td class="n">236.1</td><td class="n">302.4</td><td class="n">1.280</td></tr>
+  <tr><td>Vadodara &rarr; Mumbai</td><td class="n">360.4</td><td class="n">436.1</td><td class="n">1.210</td></tr>
+  <tr class="hl"><td colspan="3"><strong>Winding factor across these 9 routes</strong></td><td class="n"><strong>mean 1.2355, sd 0.0820</strong></td></tr>
+</table>
+
+<h2>2.4 The three datasets, and which one is real</h2>
+<table>
+  <tr><th style="width:40mm">Dataset</th><th class="n" style="width:18mm">Rows</th><th>What it is</th><th style="width:24mm">Real or generated?</th></tr>
+  <tr><td><span class="mono">road_trip_data.csv</span></td><td class="n">1,140</td><td>The dataset handed out with the assignment. 9 city pairs, 110&ndash;460 km.</td><td><strong>Synthetic</strong> (proved in Week 4)</td></tr>
+  <tr><td><span class="mono">road_trip_wide.csv</span></td><td class="n">25,000</td><td>The same cost physics regenerated over real Indian geography, 534 cities, 50&ndash;1,500 km.</td><td><strong>Generated</strong> (Week 5), on real coordinates</td></tr>
+  <tr class="hl"><td><span class="mono">real_distances.csv</span></td><td class="n">840</td><td>Actual driving distances from the OSRM routing engine for a stratified sample of city pairs.</td><td><strong>Observed</strong> &mdash; the only real data</td></tr>
+</table>
+
+<div class="box warn">
+<h4>Be ready for this question</h4>
+<p><em>&ldquo;If your data is synthetic, what have you actually learned?&rdquo;</em></p>
+<p>Three answers, all defensible. First, the synthetic nature was <strong>discovered, not
+assumed</strong> &mdash; Week 4 recovered the generating formula from the data with R&sup2;
+0.999162, which is itself a result. Second, the geography is <strong>real</strong>: cities,
+coordinates and 840 road distances come from GeoNames and OSRM, so the distance sub-model is
+trained on observed data. Third, the project states explicitly which numbers are measurements of
+real skill and which are measurements of formula recovery &mdash; that distinction is Part 12 of
+this report and the reason two accuracy figures are quoted rather than one.</p>
+</div>
+
+<!-- ============================== PART 3 ============================== -->
+<h1 class="part"><span class="num">Part 3 &middot; Week 1</span>Problem definition and dataset exploration</h1>
+
+<h2>3.1 What Week 1 did</h2>
+<ol>
+  <li>Loaded <span class="mono">road_trip_data.csv</span> and inspected the first rows.</li>
+  <li>Stated the problem and identified the target as continuous &rarr; a regression problem.</li>
+  <li>Produced <span class="mono">df.shape</span>, <span class="mono">df.info()</span> and
+      <span class="mono">df.describe()</span>.</li>
+  <li>Checked for missing values, duplicates, and listed the distinct value of every categorical
+      column.</li>
+</ol>
+
+<h2>3.2 Findings</h2>
+<table>
+  <tr><th style="width:52mm">Check</th><th>Result</th></tr>
+  <tr><td>Shape</td><td>1,140 rows &times; 16 columns</td></tr>
+  <tr><td>Missing values</td><td><strong>Zero</strong> in every one of the 16 columns (0.0%)</td></tr>
+  <tr><td>Duplicate rows</td><td><strong>Zero</strong></td></tr>
+  <tr><td>Data types</td><td>8 float64, 2 int64, 6 text &mdash; all already correct</td></tr>
+  <tr><td>Target</td><td><span class="mono">total_trip_cost</span>, continuous &rarr; regression</td></tr>
+</table>
+
+<div class="box">
+<h4>Why &ldquo;no missing values&rdquo; was itself a clue</h4>
+<p>A real-world dataset of 1,140 road trips with <em>zero</em> missing values, zero duplicates and
+perfectly consistent dtypes is unusual. At the time this was recorded as a convenience. In Week 4
+it became evidence: datasets this clean are usually generated. Noticing it early and testing it
+later is the honest version of the story.</p>
+</div>
+
+<h2>3.3 The correlation analysis that drove feature selection</h2>
+<p>Every numeric column was correlated against the target. This single table decided which
+features Week 3 would use.</p>
+<table>
+  <tr><th>Feature</th><th class="n" style="width:26mm">Pearson r</th><th>Interpretation</th></tr>
+  <tr class="hl"><td><span class="mono">fuel_consumption_litres</span></td><td class="n">+0.9606</td><td>Dominant. Burning fuel is the main cost.</td></tr>
+  <tr><td><span class="mono">distance_km</span></td><td class="n">+0.8315</td><td>Strong. Longer trip &rarr; more fuel.</td></tr>
+  <tr><td><span class="mono">estimated_time_minutes</span></td><td class="n">+0.7282</td><td>Strong, but nearly a copy of distance.</td></tr>
+  <tr><td><span class="mono">toll_cost</span></td><td class="n">+0.6701</td><td>A direct additive component of the bill.</td></tr>
+  <tr><td><span class="mono">fuel_price</span></td><td class="n">+0.1450</td><td>Weak alone &mdash; it only matters <em>multiplied</em> by litres. Week 6 exploits this.</td></tr>
+  <tr><td><span class="mono">parking_cost</span></td><td class="n">+0.0970</td><td>Additive but small and random.</td></tr>
+  <tr><td><span class="mono">departure_hour</span></td><td class="n">&minus;0.0261</td><td>Effectively zero.</td></tr>
+  <tr><td><span class="mono">passengers</span></td><td class="n">&minus;0.0468</td><td>Effectively zero.</td></tr>
+  <tr><td><span class="mono">mileage</span></td><td class="n">&minus;0.3802</td><td>The only meaningful negative &mdash; an efficient car costs less to run.</td></tr>
+</table>
+
+<div class="box key">
+<h4>The insight hiding in this table</h4>
+<p><span class="mono">fuel_price</span> correlates only <strong>+0.145</strong> with cost, which
+looks unimportant. But fuel is the largest single cost, and the real fuel bill is
+<span class="mono">litres &times; price</span>. Price appears weak on its own because it only
+matters <em>as a product</em> with litres &mdash; and a linear model can only add its features,
+never multiply them. Week 6 turns this observation into the project's biggest single accuracy
+gain.</p>
+</div>
+
+<!-- ============================== PART 4 ============================== -->
+<h1 class="part"><span class="num">Part 4 &middot; Week 2</span>Data preprocessing &mdash; all eight steps</h1>
+
+<p>Week 2 followed the standard 8-step preprocessing checklist. Each step is given below with what
+was done, why, and what changed.</p>
+
+<h2>Step 1 &mdash; Understand the data</h2>
+<p>Re-ran <span class="mono">shape</span>, <span class="mono">head()</span> and
+<span class="mono">info()</span> to confirm the starting point: 1,140&times;16, no nulls.</p>
+
+<h2>Step 2 &mdash; Handle missing values</h2>
+<p>Counted nulls per column both as a count and as a percentage.
+<strong>Result: zero missing in all 16 columns.</strong> No imputation was needed, so none was
+invented.</p>
+<div class="box">
+<p class="small"><strong>What would have been done otherwise:</strong> numeric columns &rarr; median
+(robust to outliers, unlike the mean); categorical columns &rarr; mode; a column missing more than
+about half its values &rarr; drop it rather than fabricate it. Being able to state the policy you
+<em>would</em> have used matters more in a viva than the fact that this dataset needed none.</p>
+</div>
+
+<h2>Step 3 &mdash; Remove duplicate rows</h2>
+<p><span class="mono">df.duplicated().sum()</span> = 0 before and after
+<span class="mono">drop_duplicates()</span>. Shape unchanged at 1,140&times;16.</p>
+
+<h2>Step 4 &mdash; Fix data types</h2>
+<p>Printed <span class="mono">df.dtypes</span> and explicitly searched for columns stored as text
+that ought to be numeric or dates. <strong>Result: none.</strong> The six text columns are
+genuinely categorical.</p>
+
+<h2>Step 5 &mdash; Handle outliers</h2>
+<p>Boxplots were drawn for all ten numeric columns, then the <strong>IQR rule</strong> was applied
+to each in turn:</p>
+<div class="formula">
+  IQR = Q3 &minus; Q1 &nbsp;&nbsp;&middot;&nbsp;&nbsp;
+  keep rows where &nbsp; Q1 &minus; 1.5&times;IQR &nbsp;&le;&nbsp; x &nbsp;&le;&nbsp; Q3 + 1.5&times;IQR
+</div>
+<table>
+  <tr><th style="width:52mm">Measure</th><th class="n">Value</th></tr>
+  <tr><td>Rows before outlier removal</td><td class="n">1,140</td></tr>
+  <tr class="hl"><td>Rows after outlier removal</td><td class="n">1,129</td></tr>
+  <tr><td>Rows dropped</td><td class="n">11 (0.96%)</td></tr>
+</table>
+<p>Boxplots were redrawn afterwards to confirm the extreme values were gone. Losing 11 rows out of
+1,140 is a cheap price for removing points that would otherwise drag a least-squares fit.</p>
+
+<div class="box warn">
+<h4>An honest caveat on this step</h4>
+<p>The filter is applied column by column in a loop, so a row is dropped if it is extreme on
+<em>any</em> single column. That is stricter than a multivariate outlier test and it is applied
+<strong>before</strong> the train/test split, which technically lets information about the test
+rows influence which rows exist. With 11 rows out of 1,140 the effect is negligible, but the
+correct order in a strict pipeline is split first, then fit any data-dependent transformation on
+the training half only. Weeks 9 and 10 do exactly that for scaling &mdash; see Part 14.</p>
+</div>
+
+<h2>Step 6 &mdash; Encode categorical columns</h2>
+<p>A model needs numbers. The six text columns were <strong>one-hot encoded</strong> with
+<span class="mono">pd.get_dummies(..., drop_first=True)</span>.</p>
+<table>
+  <tr><th style="width:52mm">Item</th><th>Value</th></tr>
+  <tr><td>Columns encoded</td><td><span class="mono">start_city</span>, <span class="mono">destination_city</span>, <span class="mono">vehicle_type</span>, <span class="mono">fuel_type</span>, <span class="mono">traffic_level</span>, <span class="mono">weather_condition</span></td></tr>
+  <tr><td>Shape after encoding</td><td>1,129 rows &times; <strong>31</strong> columns (from 16)</td></tr>
+  <tr><td>Method</td><td>One-hot, because none of these categories is <em>ordinal</em></td></tr>
+</table>
+<p><strong>Why one-hot and not label encoding.</strong> Label encoding would map Hatchback&rarr;0,
+Sedan&rarr;1, SUV&rarr;2, which tells the model that an SUV is &ldquo;twice&rdquo; a Sedan and that
+Sedan sits exactly between the other two. None of that is true. One-hot gives each category its own
+independent column and asserts no ordering. <span class="mono">drop_first=True</span> removes one
+column per group to avoid the <em>dummy variable trap</em> &mdash; if you keep all three vehicle
+columns they sum to 1 in every row, which is perfectly collinear with the intercept.</p>
+
+<h2>Step 7 &mdash; Scale numeric columns</h2>
+<p><span class="mono">distance_km</span> runs into the hundreds while
+<span class="mono">passengers</span> is 1&ndash;5. Features on wildly different scales distort
+distance-based and gradient-based methods, so <strong>MinMaxScaler</strong> mapped every numeric
+feature into 0&ndash;1:</p>
+<div class="formula">x' = (x &minus; x<sub>min</sub>) / (x<sub>max</sub> &minus; x<sub>min</sub>)</div>
+<p>Nine columns were scaled: <span class="mono">distance_km, mileage, fuel_price, passengers,
+departure_hour, toll_cost, parking_cost, estimated_time_minutes,
+fuel_consumption_litres</span>.</p>
+<div class="box good">
+<h4>One deliberate decision worth quoting</h4>
+<p>The <strong>target was left unscaled</strong>. That means every learned coefficient reads
+directly as &ldquo;rupees of cost per unit of this feature&rdquo;, and because the features are all
+on 0&ndash;1, a weight is literally &ldquo;how many rupees the cost changes as this feature moves
+from its minimum to its maximum&rdquo;. Scaling the target would have made the model equally
+accurate and completely unreadable.</p>
+</div>
+<p><strong>Why MinMax and not StandardScaler?</strong> Standardisation (subtract mean, divide by
+standard deviation) assumes a roughly Gaussian spread and produces unbounded values. MinMax gives a
+bounded 0&ndash;1 range, which suits gradient descent &mdash; all partial derivatives end up on a
+comparable scale, so a single learning rate works for every weight.</p>
+
+<h2>Step 8 &mdash; Visualise</h2>
+<table>
+  <tr><th style="width:34mm">Chart</th><th>Column</th><th>What it showed</th></tr>
+  <tr><td>Histogram</td><td><span class="mono">total_trip_cost</span></td><td>Distribution of the target &mdash; roughly unimodal, right-leaning</td></tr>
+  <tr><td>Box plot</td><td><span class="mono">distance_km</span></td><td>Median, quartiles and remaining spread after cleaning</td></tr>
+  <tr><td>Scatter plot</td><td>distance vs cost</td><td>The clear positive relationship the model exploits</td></tr>
+  <tr><td>Line plot</td><td>cost over row order</td><td>A proxy for trend over time; no drift visible</td></tr>
+  <tr><td>Bar chart</td><td><span class="mono">vehicle_type</span></td><td>Trip counts per vehicle</td></tr>
+  <tr><td>Pie chart</td><td><span class="mono">fuel_type</span></td><td>Share of each fuel</td></tr>
+  <tr><td>Count plot</td><td><span class="mono">traffic_level</span></td><td>Class balance for the Week 7 classifier</td></tr>
+  <tr><td>Boxplot grid &times;2</td><td>all 10 numeric</td><td>Before and after outlier removal</td></tr>
+</table>
+
+<h2>Week 2 output</h2>
+<p>The chain <strong>cleaned &rarr; de-duplicated &rarr; outlier-trimmed &rarr; one-hot encoded
+&rarr; MinMax-scaled</strong> produced <span class="mono">df_scaled</span>: 1,129 rows &times; 31
+columns, which is where Week 3 begins.</p>
