@@ -71,12 +71,12 @@ export default function Drivers() {
     <section
       id="drivers"
       ref={root}
-      data-section="03"
+      data-section="02"
       data-section-name="Cost Drivers"
       className="paper-noise py-24 md:py-32 px-6 overflow-hidden"
     >
       <div className="driver-inner relative z-10 mx-auto max-w-5xl text-center">
-        <p className="label-mono">Section 03 — Cost Drivers</p>
+        <p className="label-mono">Section 02 — Cost Drivers</p>
         <RevealText
           as="h2"
           text="Three Things Set The Price"

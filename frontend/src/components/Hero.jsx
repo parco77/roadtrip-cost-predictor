@@ -170,7 +170,7 @@ export default function Hero() {
         </h1>
 
         <p className="hero-sub font-mono text-[13px] md:text-sm uppercase tracking-[0.22em] text-white/90 mt-7 drop-shadow-[0_1px_8px_rgba(0,0,0,0.7)]">
-          537 cities · 25,000 trips · R² 0.9997
+          5,538 routes · 25,000 trips · 3 vehicles priced at once
         </p>
 
         <a

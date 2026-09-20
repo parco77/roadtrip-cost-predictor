@@ -40,19 +40,24 @@ export default function ReportCard() {
     return () => controller.abort()
   }, [])
 
+  // The first two tiles read `served`, never `regression`. `regression` is the score the
+  // cost model gets when it is handed the true litres and toll — figures no traveller has
+  // before setting off. Putting that number under a heading like "how well does it do?"
+  // would be advertising a result the product cannot deliver. The fourth tile shows it
+  // anyway, labelled for what it is, because the gap between the two is the finding.
   const stats = metrics
     ? [
-        { label: "R²", value: metrics.regression.r2.toFixed(4), sub: "cost regression" },
-        { label: "MAE", value: `₹${metrics.regression.mae.toFixed(2)}`, sub: "typical error" },
+        { label: "R²", value: metrics.served.r2.toFixed(4), sub: "what you actually get" },
+        { label: "MAE", value: `₹${metrics.served.mae.toFixed(2)}`, sub: "typical error" },
         {
           label: "Cost band",
           value: `${(metrics.band_accuracy * 100).toFixed(1)}%`,
           sub: "baseline 25.0%",
         },
         {
-          label: "Traffic",
-          value: `${(metrics.traffic_accuracy * 100).toFixed(1)}%`,
-          sub: `baseline ${(metrics.traffic_baseline * 100).toFixed(1)}%`,
+          label: "Handed the answer",
+          value: metrics.fed_true_components.r2.toFixed(4),
+          sub: "a question nobody can ask",
         },
       ]
     : []

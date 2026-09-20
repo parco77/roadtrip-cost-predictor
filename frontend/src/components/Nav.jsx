@@ -1,4 +1,5 @@
 const LINKS = [
+  { href: "#distances", label: "Distances" },
   { href: "#estimate", label: "Estimate" },
   { href: "#drivers", label: "Drivers" },
   { href: "#model", label: "Model" },

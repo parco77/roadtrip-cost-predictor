@@ -33,15 +33,18 @@ async function request(path, options = {}) {
   return response.json()
 }
 
-/** Autocomplete over the 537 in-domain cities. Pass an AbortSignal so a slow
+/** Autocomplete over the in-domain cities. Pass an AbortSignal so a slow
  *  response from an earlier keystroke cannot overwrite a newer one. */
 export function searchCities(query, { limit = 8, signal } = {}) {
   const params = new URLSearchParams({ q: query, limit: String(limit) })
   return request(`/api/cities?${params}`, { signal })
 }
 
-/** Cost regression + band and traffic classification.
- *  Omit `traffic_level` to have the backend infer it from departure hour and month. */
+/** Cost for every vehicle on every fuel, in ONE response.
+ *
+ *  Deliberately not three calls. usePrediction aborts the request in flight on every
+ *  new call, so three concurrent ones would leave only the last — silently, because
+ *  AbortError is swallowed. One request cannot race itself. */
 export function predictTrip(payload, { signal } = {}) {
   return request("/api/predict", {
     method: "POST",
@@ -50,26 +53,33 @@ export function predictTrip(payload, { signal } = {}) {
   })
 }
 
-/** Predicted cost across all 24 departure hours for the same route — the "when should I
- *  leave?" chart. Takes the same payload as predictTrip; traffic_level is ignored because the
- *  point is to let the classifier infer it per hour. */
-export function fetchDepartureSweep(payload, { signal } = {}) {
-  return request("/api/departure-sweep", {
-    method: "POST",
-    body: JSON.stringify(payload),
-    signal,
+/** Road distance between two cities, for routes the shipped table does not cover.
+ *  Falls back to the fitted distance model when routing is unavailable; the response
+ *  says which of the two answered. */
+export function fetchDistance(from, to, { signal } = {}) {
+  const params = new URLSearchParams({
+    from: from.city, from_state: from.state,
+    to: to.city, to_state: to.state,
   })
+  return request(`/api/distance?${params}`, { signal })
 }
 
-/** What the mileage sub-model predicts for a vehicle + fuel combination.
- *  Used to prefill the mileage field, so the number the user starts from came from a model
- *  rather than being the same 15.5 for an SUV as for a hatchback. */
-export function fetchDefaultMileage(vehicle, fuel, { signal } = {}) {
-  const params = new URLSearchParams({ vehicle, fuel })
+/** What each of the three vehicles manages on a given fuel, from the mileage sub-model.
+ *  All three at once, because the result prices all three at once. */
+export function fetchDefaultMileage(fuel, { signal } = {}) {
+  const params = new URLSearchParams({ fuel })
   return request(`/api/default-mileage?${params}`, { signal })
 }
 
-/** Gradient-descent loss curve plus the sklearn-vs-scratch comparison for section 5. */
+/** The shipped reference table of measured road distances.
+ *
+ *  A static file in public/, not an endpoint: it never changes between deploys, the
+ *  browser caches it, and the lookup keeps working if the API is down. ~25 KB gzipped. */
+export function loadDistanceTable({ signal } = {}) {
+  return request("/city_distances.json", { signal })
+}
+
+/** Gradient-descent loss curve plus the closed-form comparison. */
 export function fetchLossCurve({ signal } = {}) {
   return request("/api/loss-curve", { signal })
 }

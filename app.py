@@ -172,19 +172,20 @@ def predict_toll(distance: float) -> float:
     return round(max(0.0, float(PIPE["toll_model"].predict(x)[0])), 2)
 
 
-@lru_cache(maxsize=8)
-def fuel_burn_slope() -> float:
-    """The litres model's fitted slope on (distance / mileage), recovered by probing it.
+def explain_litres(distance: float, mileage: float, litres: float) -> str:
+    """The line the interface prints under each result, showing where the litres came from.
 
-    The interface prints the arithmetic behind the litres figure, and that line has to equal
-    the number beside it. Writing "distance / mileage = litres" would assert a slope of exactly
-    1.0, which is not what the model fitted - real driving burns more than the rated figure.
-    Probing at two ratios recovers the real slope, so the printed sum is the one computed.
+    Deliberately NOT written as "distance / mileage x xxx = litres". The litres model is a
+    fitted regression with its own intercept, not a multiplication, so any single factor
+    printed that way would not reproduce the figure beside it - close enough to look right and
+    wrong enough to catch a reader who checks. Showing the textbook number and the predicted
+    one as two separate quantities is both honest and more informative: the gap between them
+    IS the real-world driving penalty, and naming it is the point.
     """
-    mileage = 15.0
-    one = predict_litres(mileage * 1.0, mileage)      # ratio = 1
-    two = predict_litres(mileage * 2.0, mileage)      # ratio = 2
-    return round(two - one, 4)
+    on_paper = distance / mileage if mileage else 0.0
+    uplift = (litres / on_paper - 1) * 100 if on_paper else 0.0
+    return (f"{distance:.0f} km / {mileage} km/l = {on_paper:.2f} L on paper; "
+            f"predicted {litres} L, {uplift:+.0f}% for real-world driving")
 
 
 def resolve_city(name: str, state: Optional[str] = None):
@@ -259,10 +260,7 @@ def price_one(distance: float, vehicle: str, fuel: str, price: float,
         "cost_band": predict_band(distance, km_per_litre, price, toll, parking,
                                   litres, vehicle, fuel),
         "fuel_consumption_litres": litres,
-        "fuel_consumption_explained": (
-            f"{distance:.0f} km / {km_per_litre} km/l x {fuel_burn_slope()} "
-            f"(real-world driving) = {litres} L"
-        ),
+        "fuel_consumption_explained": explain_litres(distance, km_per_litre, litres),
         "toll_cost": toll,
         "breakdown": {
             "fuel": fuel_component, "toll": toll,
