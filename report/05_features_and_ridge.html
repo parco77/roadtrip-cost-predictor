@@ -1,0 +1,147 @@
+<h1 class="part"><span class="num">Part 8</span>Feature engineering &mdash; the interaction terms</h1>
+
+<h2>8.1 The testable claim</h2>
+<p>Part 7 named the linear model's structural blind spot:</p>
+<div class="box">
+<p>The real fuel bill is the <em>product</em> <span class="mono">litres &times; price</span>, and a
+linear model can only <strong>add</strong> its features together, never multiply them.</p>
+</div>
+<p>That is a claim that can be tested. If the missing product is really the bottleneck, then
+<strong>supplying it as a feature should beat throwing a nonlinear model at the problem</strong>
+&mdash; because a tree ensemble has to <em>approximate</em> a product it can never represent
+exactly, whereas we can simply hand it over.</p>
+
+<h2>8.2 The experiment</h2>
+<p>Four models, same 25,000 rows, same 80/20 split, same six base features
+(<span class="mono">distance_km, mileage, fuel_price, toll_cost, parking_cost,
+fuel_consumption_litres</span>):</p>
+<table>
+  <tr><th>Model</th><th class="n">Test R&sup2;</th><th class="n">Test MAE</th></tr>
+  <tr><td>Linear (no interaction)</td><td class="n">0.994666</td><td class="n">&#8377;143.85</td></tr>
+  <tr><td>RandomForest, 300 trees</td><td class="n">0.998543</td><td class="n">&#8377;69.97</td></tr>
+  <tr><td>GradientBoosting</td><td class="n">0.998560</td><td class="n">&#8377;73.50</td></tr>
+  <tr class="hl"><td><strong>Linear + <span class="mono">litres &times; price</span></strong></td><td class="n"><strong>0.999614</strong></td><td class="n"><strong>&#8377;42.60</strong></td></tr>
+</table>
+<p><strong>The prediction holds.</strong> One engineered column takes MAE from &#8377;143.85 to
+&#8377;42.60 &mdash; a <strong>3.4&times; improvement</strong> &mdash; and beats both ensembles,
+which had access to exactly the same information but had to learn the product implicitly.</p>
+
+<h2>8.3 The second missing feature</h2>
+<p>Part 5 found the per-km maintenance rate splits by vehicle: Hatchback 0.5694, Sedan 0.6943, SUV
+0.8366 &mdash; a 47% spread. None of the models above could see it, because
+<span class="mono">vehicle_type</span> is categorical and had never been encoded into the
+regression. That meant they returned the <strong>same cost for an SUV and a hatchback on an
+identical route</strong>, which is both wrong and obviously wrong to any user.</p>
+<p>One-hot encoding it (Hatchback as baseline) recovers the correct ordering: learned offsets of
+<strong>SUV +&#8377;129.63</strong> and <strong>Sedan +&#8377;64.43</strong> relative to a
+hatchback.</p>
+
+<h2>8.4 The one-hots are not enough, and the reason is the same one</h2>
+<p>Those offsets are <strong>flat</strong>. The model applies the same &#8377;129.63 to an SUV
+whether the drive is 200 km or 1,200 km &mdash; but running costs differ <em>per kilometre</em>,
+so the real gap runs from roughly &#8377;50 to &#8377;320 across that range.</p>
+<p>That error is invisible while the interface shows one vehicle at a time. It becomes the
+headline the moment it shows three side by side, which is what this product does. The fix is the
+same move as <span class="mono">fuel_bill</span>: a linear model cannot multiply unless you hand
+it the product, so <span class="mono">distance &times; SUV</span> and
+<span class="mono">distance &times; Sedan</span> go in as columns.</p>
+<table>
+  <tr><th>Feature set</th><th class="n">Test R&sup2;</th><th class="n">Test MAE</th></tr>
+  <tr><td>No interactions at all</td><td class="n">0.994795</td><td class="n">&#8377;139.75</td></tr>
+  <tr><td>Without <span class="mono">litres &times; price</span></td><td class="n">0.994918</td><td class="n">&#8377;139.01</td></tr>
+  <tr><td>Without <span class="mono">distance &times; vehicle</span></td><td class="n">0.999707</td><td class="n">&#8377;39.66</td></tr>
+  <tr class="hl"><td><strong>Both interactions &mdash; the model that ships</strong></td><td class="n"><strong>0.999778</strong></td><td class="n"><strong>&#8377;33.86</strong></td></tr>
+</table>
+<p>The first interaction is worth &#8377;105 of MAE, the second &#8377;6. The second looks small
+in aggregate and is not small where it matters: it is the entire difference between three vehicle
+prices that separate correctly with distance and three that do not. Part 10.7 measures that
+directly.</p>
+
+<div class="box good">
+<h4>Two things worth drawing out</h4>
+<ul>
+  <li><strong>Domain understanding beat model complexity.</strong> The win came from knowing what
+  the number <em>means</em>, not from a bigger hypothesis class.</li>
+  <li><strong>The model stays linear.</strong> Everything from Part 7 &mdash; the closed-form
+  solution, the from-scratch gradient descent, the interpretable coefficients &mdash; still
+  applies. A Random Forest would have cost all of that <em>and</em> performed worse.</li>
+</ul>
+</div>
+<p class="small"><strong>Note for Part 10:</strong> this conclusion holds when distance and litres
+are <em>given</em>. Part 10 re-runs the same experiment when the model must infer distance from
+coordinates, and the result reverses. Knowing the boundary of your own finding is worth more than
+the finding.</p>
+
+<h1 class="part"><span class="num">Part 9</span>Regularisation and ill-conditioning</h1>
+
+<h2>9.1 The symptom</h2>
+<p>The Part 7 from-scratch gradient descent was re-run on the 25,000-row dataset with the Part 8
+feature set. It behaved differently:</p>
+<table>
+  <tr><th style="width:56mm">Measure</th><th class="n">Value</th></tr>
+  <tr><td>R&sup2;, sklearn vs gradient descent</td><td class="n">0.999778 vs 0.999772</td></tr>
+  <tr><td>Largest gap between the two models' <strong>predictions</strong></td><td class="n">&#8377;83.95</td></tr>
+  <tr class="hl"><td>Largest gap between the two models' <strong>weights</strong></td><td class="n">722.59</td></tr>
+  <tr><td>Epochs</td><td class="n">60,000 &mdash; did <strong>not</strong> early-stop</td></tr>
+</table>
+<p><strong>Predictions agree; weights do not converge.</strong> On the original 1,129 rows the
+largest weight gap was 0.042. Here it is 682.</p>
+
+<h2>9.2 The cause, measured</h2>
+<p>The Part 8 interaction term is <span class="mono">fuel_bill = fuel_consumption_litres &times;
+fuel_price</span>. That makes <span class="mono">fuel_bill</span> almost a deterministic function
+of <span class="mono">fuel_consumption_litres</span>:</p>
+<table>
+  <tr><th style="width:56mm">Measure</th><th class="n">Value</th></tr>
+  <tr><td>corr(litres, fuel_bill)</td><td class="n"><strong>0.989</strong></td></tr>
+  <tr><td>Condition number of the Hessian, &kappa;(H)</td><td class="n"><strong>&asymp; 16,000</strong></td></tr>
+</table>
+<p>Two near-collinear columns make the loss surface a <strong>long, narrow valley</strong> rather
+than a round bowl. Many different weight combinations fit almost equally well. Gradient descent
+descends into the valley quickly and then crawls along its nearly-flat floor; sklearn's normal
+equations jump straight to one specific point. <strong>Both are correct &mdash; they simply pick
+different points in the same valley</strong>, which is why the predictions match while the weights
+do not.</p>
+
+<h2>9.3 Ridge fixes the conditioning, and costs too much</h2>
+<p>Ridge regression adds an L2 penalty, which lifts the flat direction of the valley:</p>
+<div class="formula">
+minimise &nbsp; ||Xw &minus; y||&sup2; + &alpha;||w||&sup2;
+&nbsp;&nbsp;&nbsp;&nbsp;&rarr;&nbsp;&nbsp;&nbsp;&nbsp;
+w = (X<sup>T</sup>X + &alpha;I)<sup>&minus;1</sup>X<sup>T</sup>y
+</div>
+<table>
+  <tr><th class="n">&alpha;</th><th class="n">cond(H)</th><th class="n">GD weight gap @ 20k epochs</th><th class="n">Test MAE</th></tr>
+  <tr class="hl"><td class="n">0 (OLS)</td><td class="n">16,155</td><td class="n">4090.89</td><td class="n"><strong>&#8377;39.66</strong></td></tr>
+  <tr><td class="n">10</td><td class="n">2,284</td><td class="n">0.14</td><td class="n">&#8377;109.41</td></tr>
+  <tr><td class="n">100</td><td class="n">263</td><td class="n">0.00</td><td class="n">&#8377;255.42</td></tr>
+</table>
+<p>Ridge does exactly what the theory promises &mdash; &kappa; falls ~50&times; and gradient descent
+converges essentially exactly &mdash; and it costs <strong>six times the error</strong> to do it.</p>
+
+<table>
+  <tr><th>Question</th><th style="width:26mm">Answer</th></tr>
+  <tr><td>Does regularisation fix the conditioning?</td><td><strong>Yes</strong> &mdash; &kappa; falls ~50&times;</td></tr>
+  <tr><td>Does it make gradient descent converge?</td><td><strong>Yes</strong> &mdash; gap 4113 &rarr; 0.00</td></tr>
+  <tr class="hl"><td>Should we use it for this model?</td><td><strong>No</strong></td></tr>
+</table>
+
+<div class="box key">
+<h4>The conclusion &mdash; a strong viva answer</h4>
+<p>We do not actually <em>need</em> gradient descent. The normal equations solve this model
+exactly, in one step, and are <strong>indifferent to the condition number</strong>. Gradient
+descent was an <em>exercise</em> in understanding what <span class="mono">fit()</span> does &mdash;
+and the exercise taught something more useful than &ldquo;the two methods agree&rdquo;:</p>
+<p><strong>An ill-conditioned problem is not a broken model. It is a problem where iterative solvers
+struggle and direct solvers do not.</strong> Reaching for Ridge here would trade real accuracy to
+fix a difficulty that only exists because of the solver we chose.</p>
+<p>So the model that ships is ordinary least squares with the Part 8 interaction term, solved in
+closed form. Part 12 then confirms this mechanically: a <span class="mono">GridSearchCV</span> over
+&alpha; drives it to the bottom of the grid without being told any of the above.</p>
+</div>
+
+<p class="small">Also measured: the divergence threshold for the learning rate on this data is
+<strong>lr &asymp; 0.45</strong> (0.5 blows up to <span class="mono">inf</span>), closely matching
+the &asymp; 0.44 ceiling found on the original CSV. Training uses 0.4. All of this is surfaced in
+the application through the <span class="mono">/api/loss-curve</span> endpoint rather than
+hidden.</p>

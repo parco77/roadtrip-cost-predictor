@@ -4,8 +4,8 @@ Emit the model-pipeline chapter of the full project report as HTML, straight fro
 Companion to scripts/build_report_tables.py, which emits the evaluation chapter. Split into two
 files purely so each stays readable.
 
-PART and WEEK are set here rather than hardcoded through the text, so renumbering the report is
-a one-line change in each builder instead of a search across generated prose.
+PART is set here rather than hardcoded through the text, so renumbering the report is a one-line
+change in each builder instead of a search across generated prose.
 
 Run:  python scripts/build_report_week10.py > <out>.html
 """
@@ -15,8 +15,7 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-PART = 12
-WEEK = 10
+PART = 10
 
 
 def load(name):
@@ -67,8 +66,8 @@ abl = R["ablations"]
 base = d["constant_baseline"]
 ch = d["chosen_scores"]["test"]
 
-w(f'<h1 class="part"><span class="num">Part {PART} &middot; Week {WEEK}</span>'
-  f'The model pipeline</h1>')
+w(f'<h1 class="part"><span class="num">Part {PART}</span>'
+  f'The model pipeline &mdash; every model and what it does</h1>')
 
 # ---------------------------------------------------------------------------------- .1
 w(f"<h2>{PART}.1 What the pipeline is for</h2>")

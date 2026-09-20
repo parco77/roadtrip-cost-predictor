@@ -1,0 +1,203 @@
+<h1 class="part"><span class="num">Part 5</span>Recovering the generating formula</h1>
+
+<h2>5.1 The question that started it</h2>
+<p>Part 7 ended at R&sup2; = 0.9928. That is a suspiciously good score for a dataset with weather,
+traffic and human behaviour in it. So Part 5 asked a different question &mdash; <strong>not
+&ldquo;how well can we predict the target&rdquo; but &ldquo;what actually generated
+it?&rdquo;</strong></p>
+
+<p>The method is deliberately simple: <strong>subtract the cost components we already know about
+and study what is left.</strong> If the residual is structured rather than random, the data came
+from a formula.</p>
+
+<pre>raw['fuel_cost'] = raw.fuel_consumption_litres * raw.fuel_price
+raw['residual']  = raw.total_trip_cost - raw.fuel_cost - raw.toll_cost - raw.parking_cost</pre>
+
+<h2>5.2 The residual is not noise</h2>
+<table>
+  <tr><th class="n">count</th><th class="n">mean</th><th class="n">std</th><th class="n">min</th><th class="n">25%</th><th class="n">50%</th><th class="n">75%</th><th class="n">max</th></tr>
+  <tr><td class="n">1140</td><td class="n">166.16</td><td class="n">67.29</td><td class="n">48.50</td><td class="n">111.59</td><td class="n">159.43</td><td class="n">206.47</td><td class="n">448.25</td></tr>
+</table>
+<p>Two facts jump out. The residual is <strong>never negative and never zero</strong> &mdash; so
+something is systematically missing, not randomly scattered. And it correlates
+<strong>+0.8462 with distance</strong>. Something proportional to distance is unaccounted for.</p>
+
+<h2>5.3 Finding which column controls it</h2>
+<p>Dividing the residual by distance gives a per-kilometre rate. Grouping that rate by each
+categorical column shows which one governs it:</p>
+<table>
+  <tr><th style="width:44mm">Grouped by</th><th>Mean residual per km, by category</th><th style="width:34mm">Verdict</th></tr>
+  <tr class="hl"><td><span class="mono">vehicle_type</span></td><td>Hatchback <strong>0.5694</strong> &middot; Sedan <strong>0.6943</strong> &middot; SUV <strong>0.8366</strong> (sd 0.077&ndash;0.108)</td><td><strong>This is it</strong> &mdash; a clean 47% spread</td></tr>
+  <tr><td><span class="mono">fuel_type</span></td><td>CNG 0.6958 &middot; Diesel 0.6890 &middot; Petrol 0.7006</td><td>No effect &mdash; all within noise</td></tr>
+  <tr><td><span class="mono">traffic_level</span></td><td>High 0.6862 &middot; Low 0.7008 &middot; Medium 0.6968</td><td>No effect</td></tr>
+  <tr><td><span class="mono">weather_condition</span></td><td>Clear 0.6917 &middot; Cloudy 0.7032 &middot; Fog 0.7147 &middot; Rain 0.6923</td><td>No effect</td></tr>
+</table>
+<p>Only <span class="mono">vehicle_type</span> splits it, and it splits it cleanly. That residual is
+a <strong>per-kilometre maintenance / wear-and-tear charge that depends on the vehicle</strong>.</p>
+
+<h2>5.4 The recovered formula</h2>
+<pre>total_trip_cost = fuel_consumption_litres x fuel_price
+                + toll_cost
+                + parking_cost
+                + distance_km x maintenance_rate(vehicle_type)
+
+maintenance_rate (Rs/km):   Hatchback 0.5694   Sedan 0.6943   SUV 0.8366
+
+fuel_consumption_litres = (distance_km / mileage) x traffic_multiplier
+traffic_multiplier:         Low 0.9445   Medium 1.0446   High 1.1653
+estimated_time_min/km:      Low 0.919    Medium 1.059    High 1.263
+toll = distance x N(1.301, 0.360) Rs/km
+parking is drawn uniformly from {0, 40, 60, 80, 120, 150}
+weather_condition has NO effect on anything</pre>
+
+<h4>How well does the recovered formula reproduce the data?</h4>
+<table>
+  <tr><th class="n">R&sup2; of reconstruction</th><th class="n">Mean absolute error</th><th class="n">Max absolute error</th></tr>
+  <tr class="hl"><td class="n"><strong>0.999162</strong></td><td class="n">&#8377;18.44</td><td class="n">&#8377;66.85</td></tr>
+</table>
+<p>The traffic multipliers were confirmed independently by taking the ratio of actual litres to
+ideal litres (<span class="mono">distance / mileage</span>) and grouping by traffic level:</p>
+<table>
+  <tr><th>Traffic level</th><th class="n">mean ratio</th><th class="n">min</th><th class="n">max</th></tr>
+  <tr><td>Low</td><td class="n">0.9445</td><td class="n">0.9118</td><td class="n">0.9770</td></tr>
+  <tr><td>Medium</td><td class="n">1.0446</td><td class="n">1.0089</td><td class="n">1.0817</td></tr>
+  <tr><td>High</td><td class="n">1.1653</td><td class="n">1.1256</td><td class="n">1.2063</td></tr>
+</table>
+<p class="small">Grouped by weather instead: Clear 1.0513, Cloudy 1.0434, Fog 1.0408, Rain 1.0478
+&mdash; flat, confirming weather does nothing.</p>
+
+<div class="box">
+<h4>Where that multiplier goes in the finished product</h4>
+<p>The recovered formula says fuel burn runs <em>above</em> the textbook
+<span class="mono">distance / mileage</span>, by an amount that depends on driving conditions.
+That is a real effect and it is worth about 4&ndash;17%.</p>
+<p>But the interface never asks about conditions, because <strong>a traveller cannot state them
+before setting off</strong> &mdash; nobody knows what traffic they will meet. So the litres
+sub-model is given distance and mileage only, and it absorbs the multiplier into a single fitted
+slope: <strong>1.0497</strong>, which sits almost exactly on the mix of conditions in the data.
+The spread around it becomes irreducible error rather than a feature, and Part 9.4 measures what
+that costs.</p>
+<p>This is the pattern the whole project turns on: <em>an effect being real is not sufficient
+reason to put it in the form.</em> It also has to be something the user can answer.</p>
+</div>
+
+<div class="box key">
+<h4>What this result means, and why it is the intellectual centre of the project</h4>
+<p><strong>R&sup2; = 0.999162 from arithmetic alone.</strong> No model was fitted &mdash; the
+formula was recovered by inspection and then evaluated. Two consequences follow:</p>
+<ul>
+  <li><strong>Part 7's R&sup2; = 0.9928 was measuring formula recovery, not predictive
+  skill.</strong> The model was rediscovering an equation that generates the data exactly, which is
+  why the score was so high.</li>
+  <li>It also unlocks Part 6: because the generating physics is known, a much larger dataset can be
+  generated over <em>real</em> geography that is <strong>physically consistent</strong> with the
+  original.</li>
+</ul>
+<p>This is also the reason the project reports two accuracy figures. If the target is a formula and
+the model is handed three of its four terms, a near-perfect score is arithmetic, not
+intelligence &mdash; the point Parts 10 and 12 pursue to its conclusion.</p>
+</div>
+
+<h1 class="part"><span class="num">Part 6</span>Building the training data and the distance table</h1>
+
+<h2>6.1 Why this was necessary</h2>
+<p>The original dataset covers only <strong>9 fixed city pairs</strong>, 110&ndash;460 km. A model
+trained on it cannot serve a user who wants Kochi to Nagpur &mdash; it has never seen a route it
+was not given. To build something usable, the dataset had to cover arbitrary Indian routes.</p>
+
+<h2>6.2 How the wide dataset was built</h2>
+<table>
+  <tr><th style="width:44mm">Step</th><th>Detail</th></tr>
+  <tr><td>City source</td><td>GeoNames <span class="mono">cities15000</span> &rarr; 3,739 Indian cities with real latitude/longitude (CC BY 4.0)</td></tr>
+  <tr><td>Filter</td><td>Population &ge; 100,000 &rarr; <strong>537 cities</strong> in domain</td></tr>
+  <tr><td>Route sampling</td><td>5,000 distinct pairs, sampled with a short-trip preference (decay 350 km) so the set resembles real road trips rather than random long-haul pairs</td></tr>
+  <tr><td>Trips per route</td><td>5 &rarr; <strong>25,000 trips</strong>, covering <strong>534</strong> distinct cities</td></tr>
+  <tr><td>Distance band</td><td>50&ndash;1,500 km</td></tr>
+  <tr><td>Straight-line distance</td><td><strong>Haversine</strong> on the real coordinates</td></tr>
+  <tr><td>Road distance</td><td>haversine &times; N(1.2355, 0.082) &mdash; the winding ratio measured on the project's own 9 routes</td></tr>
+  <tr><td>Costs</td><td>Generated with the Part 5 formula, so they are physically consistent with the original data</td></tr>
+</table>
+
+<p>Resulting distance distribution across the 25,000 trips:</p>
+<table>
+  <tr><th class="n">count</th><th class="n">mean</th><th class="n">std</th><th class="n">min</th><th class="n">25%</th><th class="n">50%</th><th class="n">75%</th><th class="n">max</th></tr>
+  <tr><td class="n">25,000</td><td class="n">485.0</td><td class="n">319.4</td><td class="n">50.0</td><td class="n">236.0</td><td class="n">412.5</td><td class="n">667.5</td><td class="n">1,500.0</td></tr>
+</table>
+
+<h2>6.3 What is real and what is modelled &mdash; stated openly</h2>
+<table>
+  <tr><th style="width:26mm">Status</th><th>Which parts</th></tr>
+  <tr><td><strong>Real</strong></td><td>City names, states, latitude and longitude (GeoNames, 3,739 cities). Straight-line distances computed by haversine on those real coordinates.</td></tr>
+  <tr><td><strong>Calibrated</strong></td><td>Road distance = haversine &times; 1.2355, measured on the project's own 9 routes and cross-checked against OSRM (agreed within 5&ndash;9%). Running-cost rate, toll rate and mileage ranges &mdash; all measured from the original CSV in Part 5.</td></tr>
+  <tr><td><strong>Partly real</strong></td><td>Fuel prices &mdash; 6 states verified from public reporting, 29 estimated. <span class="mono">data/fuel_prices.csv</span> records which is which per row.</td></tr>
+  <tr><td><strong>Generated</strong></td><td>Every trip record: vehicle, fuel, mileage, weather, and all cost columns.</td></tr>
+</table>
+
+<div class="box warn">
+<h4>The limitation this creates, stated before being asked</h4>
+<p>The cost relationships are learned from generated trips. They are physically consistent with
+the original data &mdash; same recovered formula, real coordinates, real geography &mdash; but
+they are not independent evidence, and no amount of volume changes that. 25,000 rows of generated
+data is 25,000 rows of the same assumption.</p>
+<p>One thing does break out of it: the <strong>distance</strong> side of the product is measured,
+not generated. Part 10 fits the distance model on 840 real OSRM routes, and the reference table
+below is built the same way. The limitation is therefore bounded rather than merely admitted
+&mdash; Part 9.2 measures how far the generated convention sits from the real road network
+(&minus;0.42% in the mean, 6.3% route by route).</p>
+</div>
+
+<h2>6.4 The distance reference table</h2>
+<p>A user is asked for exactly one thing they have to look up: <strong>how far they are
+driving</strong>. So the site ships the answer rather than making them find it elsewhere &mdash;
+a searchable table of measured road distances, built offline and served as a static file.</p>
+
+<table>
+  <tr><th style="width:44mm">Property</th><th>Value</th></tr>
+  <tr><td>Cities</td><td><strong>139</strong>, hand-picked, across 28 states</td></tr>
+  <tr><td>Pairs fetched</td><td>9,591</td></tr>
+  <tr><td>Routes shipped</td><td><strong>5,538</strong> (50&ndash;1,500 km)</td></tr>
+  <tr><td>File size</td><td>74.7 KB raw, <strong>25.6 KB gzipped</strong></td></tr>
+  <tr><td>Build cost</td><td>6 HTTP requests, about 10 seconds, run once and committed</td></tr>
+  <tr><td>Source</td><td>OSRM <span class="mono">/table</span>, driving profile</td></tr>
+</table>
+
+<h3>Why <span class="mono">/table</span> and not <span class="mono">/route</span></h3>
+<p><span class="mono">scripts/fetch_real_distances.py</span> asks OSRM for one route at a time,
+which is right when the routes are unrelated. Here every city is wanted against every other, and
+the <span class="mono">/table</span> endpoint answers that shape directly: one request returns a
+full N&times;N distance matrix.</p>
+<p>The limit is <strong>exactly 100 coordinates</strong> &mdash; 101 returns HTTP 400
+<span class="mono">TooBig</span> &mdash; so larger lists are covered by pairing blocks of 50 and
+slicing the cross sub-matrix out of each response. A 100-coordinate request returns 4,950 pairs
+in about 1.3 seconds. The same work through the per-pair loop would take hours and would trip
+rate limiting long before finishing.</p>
+<p>The two endpoints were checked against each other on the 34 pairs that appear both in this
+table and in <span class="mono">data/real_distances.csv</span>: <strong>mean difference
+0.008%</strong>, worst 0.131%. They are the same road network, asked a different way.</p>
+
+<div class="box key">
+<h4>Why the city list is hand-written, and not the top 139 by population</h4>
+<p>GeoNames ranks administrative units, not the places people name when they describe a drive.
+Taking its top rows verbatim puts <strong>Rasapudipalem</strong> above Visakhapatnam, lists Pimpri
+twice (once as Pimpri, once as Pimpri-Chinchwad), and fills the table with
+<strong>Mumbai &rarr; Dharavi at 8.5 km</strong>.</p>
+<p>A city autocomplete hides that, because nobody searches for a suburb they have never heard of.
+<strong>A browsable table does not.</strong> Every name in the list is therefore written out by
+hand; the coordinates still come from <span class="mono">india_cities.csv</span>, so the names are
+curated and the geography is not.</p>
+<p>A proximity pass runs afterwards as a safety net: walking in population order, any city within
+40 km of one already accepted is dropped. It caught 15 satellites the names alone let through
+&mdash; Noida beside Delhi, Bhiwandi beside Mumbai, Howrah beside Kolkata, Bokaro beside
+Dhanbad.</p>
+</div>
+
+<h3>Why the table is filtered to 50&ndash;1,500 km</h3>
+<p>That is the range the cost model was trained on. Random pairs drawn from a national city list
+are mostly long-haul, and <strong>4,053 of the 9,591 fetched pairs exceed 1,500 km</strong>. An
+unfiltered table would invite the user to type a number the estimator then has to flag as
+extrapolation, roughly two times in five.</p>
+<p>Those routes are real and they are fetched; they are simply left out of the shipped file.
+<strong>A reference page should not hand the user a number its own calculator distrusts.</strong>
+Anything outside the band, or any pair the table does not carry, goes to
+<span class="mono">/api/distance</span>, which asks OSRM live and falls back to the fitted
+distance model when routing is unreachable &mdash; and says which of the two answered.</p>

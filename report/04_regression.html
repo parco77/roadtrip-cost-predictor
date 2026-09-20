@@ -1,18 +1,18 @@
 <!-- ============================== PART 5 ============================== -->
-<h1 class="part"><span class="num">Part 5 &middot; Week 3</span>Linear regression: <span class="mono" style="font-size:15pt">fit()</span> and gradient descent from scratch</h1>
+<h1 class="part"><span class="num">Part 7</span>Linear regression: <span class="mono" style="font-size:15pt">fit()</span> and gradient descent from scratch</h1>
 
-<p>Week 3 has two halves that must arrive at the same answer.</p>
+<p>Part 7 has two halves that must arrive at the same answer.</p>
 <table>
   <tr><th style="width:18mm">Part</th><th>What it does</th><th style="width:56mm">Tool</th></tr>
   <tr><td><strong>A</strong></td><td>Fit a linear model the fast, production way</td><td><span class="mono">sklearn.linear_model.LinearRegression().fit()</span></td></tr>
   <tr><td><strong>B</strong></td><td>Find the <em>same</em> parameters by hand, to see what <span class="mono">fit()</span> does underneath</td><td>NumPy only &mdash; own loss, gradients, update rule</td></tr>
 </table>
 
-<h2>5.1 The model</h2>
+<h2>7.1 The model</h2>
 <p>Because several columns are useful, this is <strong>multiple</strong> linear regression:</p>
 <div class="formula">&#374; = w<sub>1</sub>X<sub>1</sub> + w<sub>2</sub>X<sub>2</sub> + &hellip; + w<sub>k</sub>X<sub>k</sub> + c</div>
 
-<h2>5.2 Feature selection &mdash; and the one decision that needs defending</h2>
+<h2>7.2 Feature selection &mdash; and the one decision that needs defending</h2>
 <p>Six numeric features were kept:</p>
 <table>
   <tr><th style="width:52mm">Feature</th><th>Why it is in</th></tr>
@@ -43,7 +43,7 @@ combinations produce the exact same predictions. sklearn silently picks one of t
 pseudo-inverse; gradient descent, starting from zeros and walking downhill, would converge on a
 <em>different</em> one. Both would be equally correct and the two weight vectors would look
 completely different.</p>
-<p>Since the entire point of Week 3 is to compare the two sets of parameters, keeping those columns
+<p>Since the entire point of Part 7 is to compare the two sets of parameters, keeping those columns
 would have made a correct result <em>look</em> broken. Dropping them keeps the comparison
 meaningful. This is the single most likely thing to be probed in a viva, and the answer is
 &ldquo;identical columns &rarr; infinitely many solutions &rarr; the comparison becomes
@@ -53,7 +53,7 @@ meaningless&rdquo;.</p>
 <p>Final matrices: <span class="mono">X</span> shape (1129, 6), values 0.000&ndash;1.000;
 <span class="mono">y</span> shape (1129,), &#8377;688.79&ndash;&#8377;4,271.82.</p>
 
-<h2>5.3 Part A &mdash; sklearn</h2>
+<h2>7.3 Part A &mdash; sklearn</h2>
 <p>sklearn solves the <strong>normal equations</strong> internally, in one algebraic step:</p>
 <div class="formula">w = (X<sup>T</sup>X)<sup>&minus;1</sup> X<sup>T</sup>y</div>
 
@@ -84,7 +84,7 @@ identifiable as the dominant driver.</p>
   <tr><td class="n">0.992841</td><td class="n">4284.6703</td><td class="n">&#8377;65.4574</td><td class="n">&#8377;48.2964</td></tr>
 </table>
 
-<h2>5.4 Part B (warm-up) &mdash; one feature, by hand</h2>
+<h2>7.4 Part B (warm-up) &mdash; one feature, by hand</h2>
 <p>Before doing six features at once, the classic <span class="mono">y = mx + c</span> case, using
 <span class="mono">distance_km</span> alone. The three steps of gradient descent:</p>
 
@@ -118,7 +118,7 @@ c &larr; c &minus; lr &middot; &part;L/&part;c
 changed by less than 1e&minus;8. R&sup2; using distance alone: 0.6914 &mdash; which is exactly why
 the multi-feature model is needed.</p>
 
-<h2>5.5 Part B &mdash; all six features</h2>
+<h2>7.5 Part B &mdash; all six features</h2>
 <p>Extending <span class="mono">m, c</span> to <span class="mono">w, b</span>: one weight per
 feature plus a single bias.</p>
 <div class="formula">
@@ -174,7 +174,7 @@ vectorised form &mdash; it is both far faster and closer to the mathematics.</p>
 &mdash; the raw curve, a zoom on the first 500 epochs, and a log-scale version showing the long
 flat tail.</p>
 
-<h2>5.6 The comparison &mdash; do they match?</h2>
+<h2>7.6 The comparison &mdash; do they match?</h2>
 <table>
   <tr><th style="width:48mm">Parameter</th><th class="n">sklearn</th><th class="n">Gradient descent</th><th class="n">Abs. diff</th></tr>
   <tr><td><span class="mono">distance_km</span></td><td class="n">225.038176</td><td class="n">225.073171</td><td class="n">0.034995</td></tr>
@@ -208,7 +208,7 @@ place, because there is nowhere else to land.</strong></p>
 the hundreds and thousands.</p>
 </div>
 
-<h2>5.7 Where a difference <em>would</em> come from</h2>
+<h2>7.7 Where a difference <em>would</em> come from</h2>
 <p>That the two agree is not automatic. Two experiments were run to show what goes wrong otherwise.</p>
 
 <h4>Experiment 1 &mdash; learning rate, fixed budget of 3,000 epochs</h4>
@@ -233,11 +233,11 @@ the hundreds and thousands.</p>
   <tr><td>Learning rate too small</td><td>Loss still falling when the loop ends; weights stuck near their starting values</td><td><span class="mono">lr = 0.2</span></td></tr>
   <tr><td>Too few epochs</td><td>Same undertrained result even at a good learning rate</td><td>Budget 50,000, early-stopped at 14,317</td></tr>
   <tr><td>Learning rate too large</td><td>Updates overshoot; loss oscillates and blows up to <span class="mono">inf</span>/<span class="mono">NaN</span></td><td>Kept below the measured &asymp; 0.44 ceiling</td></tr>
-  <tr><td>Unscaled features</td><td>Features on very different ranges make the loss surface a narrow valley; one learning rate cannot suit all weights</td><td>MinMax scaling in Week 2, Step 7</td></tr>
+  <tr><td>Unscaled features</td><td>Features on very different ranges make the loss surface a narrow valley; one learning rate cannot suit all weights</td><td>MinMax scaling in Part 4, Step 7</td></tr>
 </table>
 
-<h2>5.8 Using the model on a new trip</h2>
-<p>A new trip must pass through the <em>same</em> Week 2 scaler before either model can see it
+<h2>7.8 Using the model on a new trip</h2>
+<p>A new trip must pass through the <em>same</em> Part 4 scaler before either model can see it
 &mdash; a point worth stressing, because fitting a fresh scaler on one row would be meaningless.</p>
 <table>
   <tr><th style="width:56mm">Input (raw units)</th><th class="n">Value</th></tr>
@@ -255,13 +255,13 @@ the hundreds and thousands.</p>
   <tr class="hl"><td>Difference</td><td class="n">&#8377;0.002191</td></tr>
 </table>
 
-<h2>5.9 Week 3 conclusion</h2>
+<h2>7.9 Part 7 conclusion</h2>
 <div class="box key">
 <p><strong>Do the sklearn parameters and the gradient-descent parameters match? Yes &mdash; to
 within 0.03%</strong>, for both the single-feature warm-up and the six-feature model. Predictions
 never differ by more than <strong>&#8377;0.011</strong> across all 1,129 trips, R&sup2; is identical
 to six decimal places, and RMSE and MAE agree to three.</p>
-<p>Week 3 ended with R&sup2; = 0.992841 and a note that the remaining 0.7% looked
-&ldquo;structural&rdquo;. That number was suspiciously high &mdash; which is what sent Week 4
+<p>Part 7 ended with R&sup2; = 0.992841 and a note that the remaining 0.7% looked
+&ldquo;structural&rdquo;. That number was suspiciously high &mdash; which is what sent Part 5
 looking for the reason.</p>
 </div>

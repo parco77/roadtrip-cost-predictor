@@ -1,0 +1,78 @@
+<h1 class="part"><span class="num">Part 11</span>Classification &mdash; the cost band</h1>
+
+<p>The task asked for classification where it adds value. The interface needs one label that a
+number cannot supply, so that is the target: <strong>is this trip cheap or expensive for its
+length?</strong></p>
+
+<h2>11.1 Why the target is &#8377;/km and not rupees</h2>
+<p>Absolute cost is close to determined by distance. A 1,200 km drive costs more than a 200 km one
+without being worse value, so classifying total cost would tell a user nothing they could not read
+off the headline figure.</p>
+<p><span class="mono">cost_band</span> is therefore a <strong>quartile split of &#8377;/km</strong>
+into Excellent / Good / Average / Poor. That isolates the thing the user is actually choosing
+between: vehicle, mileage and fuel.</p>
+
+<h2>11.2 The result, and the honest caveat</h2>
+<p>Both rows below are <span class="mono">LogisticRegression</span> on the canonical split, so
+they are directly comparable. Part 12 runs all five model families on both.</p>
+<table>
+  <tr><th>Feature set</th><th class="n">Accuracy</th><th class="n">Baseline</th></tr>
+  <tr><td>Everything the pipeline produces</td><td class="n"><strong>71.4%</strong></td><td class="n">25.7%</td></tr>
+  <tr><td>Only what the form collects</td><td class="n">65.4%</td><td class="n">25.7%</td></tr>
+</table>
+
+<div class="box warn">
+<h4>71.4% is partly high by construction, and saying so is part of the answer</h4>
+<p><span class="mono">cost_band</span> is a discretisation of a quantity the Part 8 regressor
+already predicts to within &#8377;34. Some of this accuracy is therefore inherited rather than
+earned, and a report that quoted it without that sentence would be overselling.</p>
+<p>It earns its place because the interface needs the label, not because it demonstrates difficult
+learning. <strong>Volunteering this distinction is stronger than being caught by it.</strong></p>
+</div>
+
+<h2>11.3 The second row is the experiment</h2>
+<p>The two rows above are the same target, the same split and the same model. The only difference
+is that the second run drops <span class="mono">toll_cost</span> and
+<span class="mono">fuel_consumption_litres</span> &mdash; the two columns no traveller can supply,
+which the sub-models in Part 10 predict on their behalf.</p>
+<p>So the <strong>6.0-point gap</strong> is not a footnote about feature selection. It is a
+measurement of what those sub-models are worth, in the currency of the thing they feed. Without
+them the classifier still beats a 25.7% baseline comfortably; with them it does measurably better,
+and the difference is attributable rather than asserted.</p>
+
+<div class="box key">
+<h4>This is also where the overfitting diagnosis finally bites</h4>
+<p>On the cost target, step 2 of the Task 5 checklist was close to uninformative: every model
+scored above R&sup2; 0.99 because the target is a formula, so train-versus-test told you almost
+nothing. Here it separates the models immediately.</p>
+<table style="margin-top:2mm">
+  <tr><th>Model</th><th class="n">Train</th><th class="n">Test</th><th class="n">Gap</th><th>Verdict</th></tr>
+  <tr><td>LogisticRegression</td><td class="n">0.7279</td><td class="n">0.7142</td><td class="n">+0.014</td><td>Good fit</td></tr>
+  <tr><td>RandomForest (300)</td><td class="n">1.0000</td><td class="n">0.7160</td><td class="n">+0.284</td><td><strong>Overfitting</strong></td></tr>
+  <tr><td>DecisionTree</td><td class="n">1.0000</td><td class="n">0.6438</td><td class="n">+0.356</td><td><strong>Overfitting</strong></td></tr>
+</table>
+<p>A tree grown to purity memorises every training row and reports perfect training accuracy while
+losing 28 to 36 points on held-out data.</p>
+<p><strong>Note which model has the best raw test score.</strong> RandomForest edges
+LogisticRegression by 0.0018 &mdash; well inside the cross-validation spread &mdash; while
+carrying a train-test gap twenty times larger. The selection rule used throughout this project
+(error band, then the one-standard-error rule, then simplicity) picks the logistic model, and this
+is exactly the case it exists for: <strong>a score that is higher by less than its own uncertainty
+is not higher.</strong></p>
+</div>
+
+<h2>11.4 How the label earns its place in the product</h2>
+<p>A classifier that outputs one word is decoration unless the word changes a decision. This one
+sits on every result card, beside a figure the user is about to compare against two others.</p>
+<p>Because the interface prices a hatchback, a sedan and an SUV on the same route, the three bands
+are read together rather than alone &mdash; and they separate cleanly. On Agra &rarr; Jaipur at
+241 km:</p>
+<table>
+  <tr><th>Fuel</th><th>Hatchback</th><th>Sedan</th><th>SUV</th></tr>
+  <tr><td>Petrol at &#8377;106.50</td><td>Good &mdash; &#8377;2,028</td><td>Average &mdash; &#8377;2,299</td><td>Poor &mdash; &#8377;2,930</td></tr>
+  <tr><td>Diesel at &#8377;98.20</td><td>Excellent &mdash; &#8377;1,793</td><td>Good &mdash; &#8377;2,022</td><td>Average &mdash; &#8377;2,542</td></tr>
+</table>
+<p>The rupee figures alone would leave the user to work out whether &#8377;2,930 is bad value or
+simply a bigger car. The band answers that directly &mdash; and the second row shows the same
+three vehicles each moving up one band on a cheaper fuel, which is the comparison the whole
+section exists to make.</p>

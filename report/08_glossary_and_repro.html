@@ -1,5 +1,5 @@
 <!-- ============================== PART 16 ============================== -->
-<h1 class="part"><span class="num">Part 16</span>Glossary &mdash; every technical term used in this project</h1>
+<h1 class="part"><span class="num">Part 15</span>Glossary &mdash; every technical term used in this project</h1>
 
 <p>Alphabetical. If an examiner uses one of these words, this is the definition to give, with the
 project's own example attached where there is one.</p>
@@ -13,7 +13,7 @@ project's own example attached where there is one.</p>
 
   <tr><td><strong>Baseline</strong></td><td>The score to beat before a model means anything. For classification, the majority-class rate; for a replaced constant, the constant's own error. Every table in this project carries one.</td></tr>
 
-  <tr><td><strong>Bias (statistical)</strong></td><td>Systematic error &mdash; being wrong in the same direction on average. The winding-factor constant is nearly <em>unbiased</em> (&minus;0.4%) yet wrong by 6.3% per route, which is the distinction Part 12 turns on.</td></tr>
+  <tr><td><strong>Bias (statistical)</strong></td><td>Systematic error &mdash; being wrong in the same direction on average. The winding-factor constant is nearly <em>unbiased</em> (&minus;0.4%) yet wrong by 6.3% per route, which is the distinction Part 10 turns on.</td></tr>
 
   <tr><td><strong>Bias&ndash;variance tradeoff</strong></td><td>Error decomposes into bias&sup2; (model too simple) + variance (model fits noise) + irreducible noise. Capping the traffic classifier's <span class="mono">max_depth</span> at 4 added bias, cut variance, and improved the test score.</td></tr>
 
@@ -25,7 +25,7 @@ project's own example attached where there is one.</p>
 
   <tr><td><strong>Coefficient / weight</strong></td><td>The number a linear model multiplies a feature by. Because features here are scaled to 0&ndash;1, each weight reads as &ldquo;rupees of change as this feature goes from its minimum to its maximum&rdquo;.</td></tr>
 
-  <tr><td><strong>Condition number &kappa;</strong></td><td>Ratio of largest to smallest eigenvalue of the Hessian; how &ldquo;stretched&rdquo; the loss surface is. At &kappa; &asymp; 16,000 the surface is a long narrow valley, which is why gradient descent stopped converging on weights in Week 8.</td></tr>
+  <tr><td><strong>Condition number &kappa;</strong></td><td>Ratio of largest to smallest eigenvalue of the Hessian; how &ldquo;stretched&rdquo; the loss surface is. At &kappa; &asymp; 16,000 the surface is a long narrow valley, which is why gradient descent stopped converging on weights in Part 9.</td></tr>
 
   <tr><td><strong>Confusion matrix</strong></td><td>A table of actual class against predicted class. Shows <em>how</em> a classifier fails, not just how often &mdash; this project's traffic errors concentrate between adjacent levels, which is the right failure mode for an ordered target.</td></tr>
 
@@ -51,23 +51,23 @@ project's own example attached where there is one.</p>
 
   <tr><td><strong>Feature engineering</strong></td><td>Constructing new input columns from existing ones. The project's largest single accuracy gain: adding <span class="mono">litres &times; price</span> cut MAE from &#8377;143.85 to &#8377;42.60.</td></tr>
 
-  <tr><td><strong>Feature importance</strong></td><td>How much each feature contributed. For trees, impurity reduction; for a scaled linear model, |coefficient|. It reports what the model <em>used</em>, not what is <em>true</em> &mdash; see the vehicle one-hot trap in Part 12.7.</td></tr>
+  <tr><td><strong>Feature importance</strong></td><td>How much each feature contributed. For trees, impurity reduction; for a scaled linear model, |coefficient|. It reports what the model <em>used</em>, not what is <em>true</em> &mdash; see the vehicle one-hot trap in Part 9.7.</td></tr>
 
   <tr><td><strong>GradientBoosting</strong></td><td>Boosting where each new tree is fitted to the residuals of the ensemble so far. Won the traffic classification here.</td></tr>
 
-  <tr><td><strong>Gradient descent</strong></td><td>Iterative optimisation: compute the loss, compute its gradient, step in the opposite direction. Implemented from scratch in NumPy in Week 3.</td></tr>
+  <tr><td><strong>Gradient descent</strong></td><td>Iterative optimisation: compute the loss, compute its gradient, step in the opposite direction. Implemented from scratch in NumPy in Part 7.</td></tr>
 
   <tr><td><strong>GridSearchCV</strong></td><td>Exhaustive search over every combination in a parameter grid, scored by cross-validation. Used for Ridge &alpha; and the traffic classifier.</td></tr>
 
   <tr><td><strong>Haversine</strong></td><td>Great-circle (straight-line) distance between two points on a sphere. The starting point for road distance, which is always longer.</td></tr>
 
-  <tr><td><strong>Hessian</strong></td><td>Matrix of second derivatives of the loss; describes the curvature of the loss surface. Its condition number is what diagnosed the Week 8 problem.</td></tr>
+  <tr><td><strong>Hessian</strong></td><td>Matrix of second derivatives of the loss; describes the curvature of the loss surface. Its condition number is what diagnosed the Part 9 problem.</td></tr>
 
   <tr><td><strong>Hyperparameter</strong></td><td>A setting chosen <em>before</em> training, not learned from data &mdash; learning rate, number of trees, <span class="mono">max_depth</span>, Ridge &alpha;. Contrast with <em>parameters</em> (weights), which are learned.</td></tr>
 
   <tr><td><strong>Interaction term</strong></td><td>A feature formed by multiplying two others, letting an additive model express a product. This project's central technique &mdash; used for the fuel bill, for the litres model's traffic multipliers, and for the mileage model's nine cells.</td></tr>
 
-  <tr><td><strong>IQR method</strong></td><td>Outlier rule: drop points outside <span class="mono">[Q1 &minus; 1.5&times;IQR, Q3 + 1.5&times;IQR]</span>. Removed 11 of 1,140 rows in Week 2.</td></tr>
+  <tr><td><strong>IQR method</strong></td><td>Outlier rule: drop points outside <span class="mono">[Q1 &minus; 1.5&times;IQR, Q3 + 1.5&times;IQR]</span>. Removed 11 of 1,140 rows in Part 4.</td></tr>
 
   <tr><td><strong>Irreducible error</strong></td><td>Error no model can remove because the data itself is random. Here: toll noise (&plusmn;&#8377;219) and parking noise (&plusmn;&#8377;50), which together with the fuel-bill term account for &#8377;529 of the &#8377;596 RMSE.</td></tr>
 
@@ -113,13 +113,13 @@ project's own example attached where there is one.</p>
 
   <tr><td><strong>RandomizedSearchCV</strong></td><td>Samples a fixed number of random hyperparameter combinations instead of trying all. Covers a bigger space for a fixed budget.</td></tr>
 
-  <tr><td><strong>Rank deficiency</strong></td><td>When columns of the design matrix are linearly dependent, so infinitely many weight vectors give identical predictions. Why the fixed-pair city one-hots were dropped in Week 3.</td></tr>
+  <tr><td><strong>Rank deficiency</strong></td><td>When columns of the design matrix are linearly dependent, so infinitely many weight vectors give identical predictions. Why the fixed-pair city one-hots were dropped in Part 7.</td></tr>
 
   <tr><td><strong>Recall</strong></td><td><span class="mono">TP/(TP+FN)</span> &mdash; of the items that <em>are</em> positive, how many were found.</td></tr>
 
   <tr><td><strong>Regularisation</strong></td><td>Penalising weight size to reduce variance. Rejected here after measuring that it cost six times the error.</td></tr>
 
-  <tr><td><strong>Residual</strong></td><td><span class="mono">y &minus; &#375;</span>. Studying residuals is how Week 4 recovered the generating formula.</td></tr>
+  <tr><td><strong>Residual</strong></td><td><span class="mono">y &minus; &#375;</span>. Studying residuals is how Part 5 recovered the generating formula.</td></tr>
 
   <tr><td><strong>Ridge regression</strong></td><td>Linear regression with an L2 penalty: <span class="mono">w = (X&#7488;X + &alpha;I)&#8315;&sup9;X&#7488;y</span>.</td></tr>
 
@@ -141,20 +141,20 @@ project's own example attached where there is one.</p>
 </table>
 
 <!-- ============================== PART 17 ============================== -->
-<h1 class="part"><span class="num">Part 17</span>How to reproduce every number in this report</h1>
+<h1 class="part"><span class="num">Part 16</span>How to reproduce every number in this report</h1>
 
-<h2>17.1 Just run the application</h2>
+<h2>16.1 Just run the application</h2>
 <pre>pip install -r requirements.txt
 uvicorn app:app              # -&gt; http://127.0.0.1:8000</pre>
 <p>Everything needed is committed: the trained models, the datasets and the built frontend.</p>
 
-<h2>17.2 Rebuild everything from scratch, in order</h2>
+<h2>16.2 Rebuild everything from scratch, in order</h2>
 <pre>python scripts/build_cities.py             # 3,739 Indian cities with real lat/lon (GeoNames)
 python scripts/build_fuel_prices.py        # per-state fuel prices
 python scripts/build_wide_dataset.py       # 25,000 trips over real geography
 python scripts/fetch_real_distances.py     # 840 REAL road distances from OSRM  (~6 min)
 
-python scripts/train_models.py             # -&gt; models/model.joblib   (Week 6 regressor)
+python scripts/train_models.py             # -&gt; models/model.joblib   (Part 8 regressor)
 python scripts/train_pipeline.py           # -&gt; models/pipeline.joblib (the six sub-models)
 python scripts/train_end_to_end.py         # -&gt; the honesty benchmark
 
@@ -165,43 +165,43 @@ python scripts/build_notebook_chapters.py  # notebook Weeks 4-8
 python scripts/build_task5_chapters.py     # notebook Weeks 9-10
 python scripts/execute_new_chapters.py     # execute the appended cells, keep their outputs
 
-pytest -q                                  # 65 tests</pre>
+pytest -q                                  # 70 tests</pre>
 
 <div class="box warn">
 <p><strong>Order matters for the notebook steps.</strong>
-<span class="mono">build_notebook_chapters.py</span> rebuilds everything from Week 4 onwards, so it
-<em>wipes</em> Weeks 9&ndash;10 and they must be re-appended after it.
+<span class="mono">build_notebook_chapters.py</span> rebuilds everything from Part 5 onwards, so it
+<em>wipes</em> Parts 10 and 12 and they must be re-appended after it.
 <span class="mono">execute_new_chapters.py</span> executes only the appended cells &mdash; running
 the whole notebook would redo the 60,000-epoch gradient descent for no reason.</p>
 </div>
 
-<h2>17.3 Which file produces which number</h2>
+<h2>16.3 Which file produces which number</h2>
 <table>
   <tr><th style="width:56mm">Number in this report</th><th>Produced by</th></tr>
-  <tr><td>Weeks 1&ndash;3 &mdash; all figures</td><td><span class="mono">RoadTripCost.ipynb</span> cells 0&ndash;74, executed</td></tr>
-  <tr><td>Week 4 formula recovery</td><td>notebook cells 75&ndash;83</td></tr>
-  <tr><td>Week 5 dataset statistics</td><td><span class="mono">scripts/build_wide_dataset.py</span></td></tr>
-  <tr><td>Weeks 6&ndash;8 tables</td><td>notebook cells 88&ndash;106</td></tr>
-  <tr><td>Part 11 (Week 9 / Task 5)</td><td><span class="mono">data/task5_evaluation.json</span> via <span class="mono">scripts/evaluate_models.py</span></td></tr>
-  <tr><td>Part 12 sub-model tables</td><td><span class="mono">data/pipeline_report.json</span> via <span class="mono">scripts/train_pipeline.py</span></td></tr>
-  <tr><td>Part 12 end-to-end tables</td><td><span class="mono">data/end_to_end_report.json</span> via <span class="mono">scripts/train_end_to_end.py</span></td></tr>
+  <tr><td>Notebook weeks 1&ndash;3 &mdash; all figures</td><td><span class="mono">RoadTripCost.ipynb</span> cells 0&ndash;74, executed</td></tr>
+  <tr><td>Part 5 formula recovery</td><td>notebook cells 75&ndash;83</td></tr>
+  <tr><td>Part 6 dataset statistics</td><td><span class="mono">scripts/build_wide_dataset.py</span></td></tr>
+  <tr><td>Notebook weeks 6&ndash;8 tables</td><td>notebook cells 88&ndash;106</td></tr>
+  <tr><td>Part 12 (Part 12 / Task 5)</td><td><span class="mono">data/task5_evaluation.json</span> via <span class="mono">scripts/evaluate_models.py</span></td></tr>
+  <tr><td>Part 10 sub-model tables</td><td><span class="mono">data/pipeline_report.json</span> via <span class="mono">scripts/train_pipeline.py</span></td></tr>
+  <tr><td>Part 10 end-to-end tables</td><td><span class="mono">data/end_to_end_report.json</span> via <span class="mono">scripts/train_end_to_end.py</span></td></tr>
   <tr><td>The 840 real distances</td><td><span class="mono">data/real_distances.csv</span> via <span class="mono">scripts/fetch_real_distances.py</span></td></tr>
   <tr><td>Parts 11&ndash;12 of this PDF</td><td><span class="mono">scripts/build_report_tables.py</span> and <span class="mono">scripts/build_report_week10.py</span> &mdash; generated from the JSON, never typed</td></tr>
 </table>
 
-<h2>17.4 Reproducibility guarantees</h2>
+<h2>16.4 Reproducibility guarantees</h2>
 <ul>
   <li><strong>Every random operation is seeded.</strong>
   <span class="mono">random_state=42</span> for all splits and models; a fixed seed for route
   sampling and for the bootstrap.</li>
   <li><strong>Verified in practice.</strong> After re-running the whole pipeline to fix the model
-  file sizes, every metric returned <em>bit-identical</em> &mdash; R&sup2; 0.964542, MAE
-  &#8377;391.16, distance MAE 30.67 km &mdash; which is why the notebook outputs and the generated
+  file sizes, every metric returned <em>bit-identical</em> &mdash; R&sup2; 0.981574, MAE
+  &#8377;291.69, distance MAE 30.67 km &mdash; which is why the notebook outputs and the generated
   documents remained valid without re-execution.</li>
   <li><strong>One scoring module.</strong> All metrics come from
   <span class="mono">scripts/evaluation.py</span>, so the notebook, <span class="mono">TASK5.md</span>,
   this PDF and the API cannot disagree.</li>
-  <li><strong>65 tests</strong> pin the behaviour, including the error budget and the honest
+  <li><strong>70 tests</strong> pin the behaviour, including the error budget and the honest
   reporting.</li>
 </ul>
 
@@ -209,16 +209,16 @@ the whole notebook would redo the 60,000-epoch gradient descent for no reason.</
 
 <div class="box key">
 <h4>Closing note</h4>
-<p>If only one thing from this report is remembered going into a viva, make it this: the project
-reports <strong>R&sup2; 0.9645 and MAE &#8377;391</strong> as its accuracy, not the R&sup2; 0.9997
-that appears in Weeks 6 to 8. The larger number is real but was measured with the model holding
-three of the four terms of its own answer. Knowing the difference &mdash; and being able to explain
+<p>If only one thing from this report is remembered, make it this: the project reports
+<strong>R&sup2; 0.9816 and MAE &#8377;292</strong> as its accuracy, not the R&sup2; 0.9998
+that appears in Parts 8 and 9. The larger number is real but was measured with the model holding
+the two terms that carry its own uncertainty. Knowing the difference &mdash; and being able to explain
 <em>why</em> the difference exists &mdash; is what the ten weeks were actually for.</p>
 </div>
 
 <p class="small" style="margin-top:8mm; text-align:center; color:#8a95a0">
 Road Trip Cost Prediction &middot; Param Kotadiya &middot; Semester 5 Machine Learning<br>
-Complete project report &mdash; Weeks 1 to 10, generated from the project's own saved metrics.
+Complete project report &mdash; by topic, generated from the project's own saved metrics.
 </p>
 
 </body>

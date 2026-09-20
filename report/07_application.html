@@ -3,53 +3,60 @@
 
 <h2>13.1 What happens on one prediction</h2>
 <p>This is the whole system in one sequence. Worth being able to narrate.</p>
-<pre>POST /api/predict  { start_city, destination_city, vehicle_type, fuel_type,
-                     departure_hour, month, passengers,
-                     mileage?, fuel_price?, parking_cost?, traffic_level? }
+<pre>POST /api/predict  { distance_km,
+                     petrol_price?, diesel_price?, cng_price?,
+                     parking_cost, passengers, mileage? }
 
- 1. resolve_city()        city name -> (state, lat, lon), largest city wins on ambiguity
- 2. road_distance_km()    try LIVE OSRM routing
-                          on failure -> sub-model 1 (distance model)
- 3. predict_traffic()     sub-model 6: hour + month -> Low / Medium / High
-                          (skipped if the user supplied traffic_level)
- 4. default_mileage()     sub-model 2: vehicle + fuel -> km/l
-                          (skipped if the user supplied mileage)
- 5. fuel_price_for()      per-state lookup table; a user-supplied price always wins
- 6. predict_litres()      sub-model 3: distance + mileage + traffic -> litres
- 7. predict_toll()        sub-model 4: distance -> Rs
- 8. DEFAULT_PARKING       sub-model 5 FAILED, so the training mean is used
- 9. cost_model_chained    the chained regressor totals it
-10. predict_band()        cost-band classifier -> Excellent / Good / Average / Poor
-11. warnings[]            extrapolation, estimated fuel price, routing fallback
-12. breakdown             fuel / toll / parking / wear-and-tear, by subtraction</pre>
+ 1. validate            distance bounded 10-3000 km in the request schema itself;
+                        extra="forbid", so an unknown field is a 422, never ignored
+ 2. prices              whatever the user typed wins; a blank field falls back to the
+                        national average and is LABELLED national_average
+ 3. for each of 3 vehicles x 3 fuels:
+      default_mileage() sub-model 2: vehicle + fuel -> km/l   (user override wins)
+      predict_litres()  sub-model 3: distance + mileage -> litres
+      predict_toll()    sub-model 4: distance -> Rs
+      cost_model_chained  the chained regressor totals it
+      predict_band()    cost-band classifier -> Excellent / Good / Average / Poor
+ 4. breakdown           fuel / toll / parking / running cost, by subtraction
+ 5. cheapest, dearest   across all nine, plus the spread between them
+ 6. warnings[]          extrapolation beyond 50-1500 km, national-average prices</pre>
+
+<p>Distance and parking are not in that list because they are <strong>typed, not derived</strong>.
+The distance lookup is a separate endpoint, and parking has no model at all &mdash; Part 10.4
+shows why.</p>
 
 <h2>13.2 Worked example</h2>
-<p>Jaipur &rarr; Agra, SUV, Diesel, 9am departure, nothing else supplied:</p>
+<p>240 km, diesel at &#8377;98.20, &#8377;70 parking, 4 passengers. This is the SUV row of the
+nine that come back:</p>
 <table>
   <tr><th style="width:44mm">Field</th><th>Value</th><th>Where it came from</th></tr>
-  <tr><td>distance_km</td><td>240.05</td><td><span class="mono">osrm</span> &mdash; live routing</td></tr>
+  <tr><td>distance_km</td><td>240</td><td><strong>typed by the user</strong> &mdash; looked up in Part 6's table</td></tr>
   <tr><td>mileage</td><td>12.68 km/l</td><td><span class="mono">mileage_model</span> &mdash; sub-model 2</td></tr>
-  <tr><td>fuel_price</td><td>&#8377;102.27</td><td>state table, marked <span class="mono">estimated</span></td></tr>
-  <tr><td>traffic_level</td><td>High</td><td>inferred by sub-model 6 from 9am</td></tr>
-  <tr><td>fuel_consumption_litres</td><td>22.055 L</td><td>sub-model 3</td></tr>
-  <tr><td>toll_cost</td><td>&#8377;311.24</td><td>sub-model 4</td></tr>
-  <tr><td>parking_cost</td><td>&#8377;75.09</td><td>training mean &mdash; no model beat it</td></tr>
-  <tr class="hl"><td><strong>total_trip_cost</strong></td><td><strong>&#8377;2,879.60</strong></td><td>chained cost regressor</td></tr>
-  <tr><td>typical_error</td><td>&plusmn; &#8377;391.16</td><td>the chain's own held-out MAE</td></tr>
-  <tr><td>cost_band</td><td>Poor</td><td>cost-band classifier</td></tr>
+  <tr><td>fuel_price</td><td>&#8377;98.20</td><td>the user's own figure</td></tr>
+  <tr><td>fuel_consumption_litres</td><td>19.811 L</td><td>sub-model 3</td></tr>
+  <tr><td>toll_cost</td><td>&#8377;311.18</td><td>sub-model 4</td></tr>
+  <tr><td>parking_cost</td><td>&#8377;70.00</td><td><strong>typed by the user</strong> &mdash; no model beat the mean</td></tr>
+  <tr class="hl"><td><strong>total_trip_cost</strong></td><td><strong>&#8377;2,531.98</strong></td><td>chained cost regressor</td></tr>
+  <tr><td>cost_per_km</td><td>&#8377;10.55</td><td>by division</td></tr>
+  <tr><td>typical_error</td><td>&plusmn; &#8377;291.69</td><td>the chain's own held-out MAE</td></tr>
+  <tr><td>cost_band</td><td>Average</td><td>cost-band classifier</td></tr>
 </table>
-<p>Breakdown: fuel &#8377;2,255.56 + toll &#8377;311.24 + parking &#8377;75.09 + wear &#8377;237.71
-= &#8377;2,879.60 &mdash; it sums exactly, which is asserted by a test.</p>
+<p>Breakdown: fuel &#8377;1,945.44 + toll &#8377;311.18 + parking &#8377;70.00 + running cost
+&#8377;205.36 = &#8377;2,531.98 &mdash; it sums exactly, which is asserted by a test.</p>
+<p>The response also carries the arithmetic behind the litres, ready to render:
+<span class="mono">240 km / 12.68 km/l = 18.93 L on paper; predicted 19.811 L, +5% for real-world
+driving</span>. It is written as two quantities rather than one multiplication because the litres
+model has an intercept &mdash; a single printed factor would look right and not quite reconcile.</p>
 
 <h2>13.3 The API</h2>
 <table>
   <tr><th style="width:52mm">Endpoint</th><th>Purpose</th></tr>
-  <tr><td><span class="mono">GET /api/cities?q=</span></td><td>Autocomplete over the 537 in-domain cities. Prefix matches rank above substring matches; each result carries its state's fuel prices so the UI can prefill without another round trip.</td></tr>
-  <tr><td><span class="mono">GET /api/default-mileage</span></td><td>What the mileage sub-model predicts for a vehicle + fuel pair. Lets the interface start from a modelled figure instead of one hardcoded 15.5 for every car.</td></tr>
-  <tr><td><span class="mono">POST /api/predict</span></td><td>The chained prediction, with breakdown, band, warnings and error bar.</td></tr>
-  <tr><td><span class="mono">POST /api/departure-sweep</span></td><td>Expected cost for all 24 departure hours &mdash; &ldquo;when should I leave?&rdquo;</td></tr>
+  <tr><td><span class="mono">GET /api/cities?q=</span></td><td>Autocomplete over the 537 in-domain cities, for the distance lookup. Prefix matches rank above substring matches.</td></tr>
+  <tr><td><span class="mono">GET /api/distance?from=&amp;to=</span></td><td>Road distance between two cities, for routes the shipped table does not carry. Tries live routing, falls back to sub-model 1, and says which answered. Returns the straight-line distance alongside, so the winding ratio is visible.</td></tr>
+  <tr><td><span class="mono">GET /api/default-mileage?fuel=</span></td><td>What each of the three vehicles manages on that fuel. All three at once, because the result prices all three at once.</td></tr>
+  <tr><td><span class="mono">POST /api/predict</span></td><td>All nine vehicle &times; fuel combinations, each with breakdown, band and warnings.</td></tr>
   <tr><td><span class="mono">GET /api/metrics</span></td><td>Honest test-set numbers: <span class="mono">served</span>, <span class="mono">fed_true_components</span>, the <span class="mono">honesty_gap</span> between them, per-sub-model metrics, and the error budget.</td></tr>
-  <tr><td><span class="mono">GET /api/loss-curve</span></td><td>The Week 3 gradient-descent loss curve and the sklearn comparison, including the Week 8 non-convergence.</td></tr>
+  <tr><td><span class="mono">GET /api/loss-curve</span></td><td>The Part 7 gradient-descent loss curve and the closed-form comparison, including the Part 9 non-convergence.</td></tr>
   <tr><td><span class="mono">GET /api/health</span></td><td>Liveness.</td></tr>
 </table>
 
@@ -60,10 +67,14 @@ correlation +0.96. It would be trivially easy to build a form that asks for it &
 resulting product would be useless, because <strong>nobody knows how many litres they will burn
 before they set off</strong>. The same is true of toll and, for most people, their car's exact
 mileage.</p>
-<p>So the form asks for two city names, a vehicle, a fuel type and a time. Everything else is
-predicted. That choice is <em>why</em> the honest accuracy is R&sup2; 0.9645 rather than 0.9997
-&mdash; and it is the right trade, because the 0.9997 version could not be used by a real
-person.</p>
+<p>So the form asks for four things: a distance, a fuel price, a parking figure and a passenger
+count. Everything else is predicted. That choice is <em>why</em> the honest accuracy is
+R&sup2; 0.9816 rather than 0.9998 &mdash; and it is the right trade, because the 0.9998 version
+could not be used by a real person.</p>
+<p>The one input that <em>is</em> asked for and could have been predicted is <strong>distance
+</strong>, and it is asked for because it is the one thing a traveller can look up exactly. The
+site ships the lookup rather than sending them elsewhere for it, and the measured number beats a
+predicted one every time it is available.</p>
 </div>
 
 <h3>Two things the API deliberately does <em>not</em> hide</h3>
@@ -78,40 +89,41 @@ person.</p>
   price was an estimate, it says so and invites the user to override it.</li>
 </ul>
 
-<h3>The departure sweep &mdash; expected cost, not argmax cost</h3>
-<p>Worth understanding because it is the one place a classifier's <em>probabilities</em> are used
-rather than its label:</p>
-<div class="formula">
-E[cost | hour] = &sum;<sub>levels</sub> P(level | hour) &times; cost(level)
-</div>
-<p>Taking the single most likely traffic level would collapse 24 hours onto 3 distinct values and
-throw away everything the model knows about its own confidence. Weighting by probability gives a
-smooth curve where an hour that is 55% High reads differently from one that is 95% High.</p>
+<h3>One request, nine answers</h3>
+<p><span class="mono">POST /api/predict</span> returns every vehicle on every fuel in a single
+response &mdash; nine priced combinations &mdash; rather than one per request.</p>
+<p>That is a correctness decision, not an optimisation. The frontend hook aborts the request in
+flight whenever a new one starts, and it swallows the resulting
+<span class="mono">AbortError</span>. Three concurrent calls would therefore have left only the
+last one standing, silently, with no error state and nothing in the console. One request cannot
+race itself.</p>
+<p>It also makes the fuel toggle on the result instant: switching Petrol to Diesel re-reads data
+already in the browser instead of asking the server again, so there is no window in which a stale
+answer can land.</p>
 
 <h2>13.4 The frontend</h2>
 <table>
   <tr><th style="width:40mm">Aspect</th><th>Detail</th></tr>
-  <tr><td>Stack</td><td>React 19, Vite 7, Tailwind v4, GSAP for scroll animation, Recharts for the charts</td></tr>
+  <tr><td>Stack</td><td>React 19, Vite 7, Tailwind v4, GSAP for scroll animation, Recharts for the loss curve</td></tr>
   <tr><td>Style</td><td>Editorial single-page site &mdash; photographic hero, torn-paper edges, serif display type</td></tr>
-  <tr><td>Components</td><td>17, including <span class="mono">Predictor</span>, <span class="mono">ResultCard</span>, <span class="mono">Breakdown</span>, <span class="mono">DepartureChart</span>, <span class="mono">LossCurve</span>, <span class="mono">ReportCard</span>, <span class="mono">Warnings</span></td></tr>
+  <tr><td>Components</td><td>16, including <span class="mono">Predictor</span>, <span class="mono">ResultCard</span>, <span class="mono">Breakdown</span>, <span class="mono">LossCurve</span>, <span class="mono">ReportCard</span>, <span class="mono">Warnings</span></td></tr>
   <tr><td>Build</td><td><span class="mono">npm run build</span> emits into <span class="mono">static/</span>, which FastAPI serves at <span class="mono">/</span> &mdash; so production is one process</td></tr>
-  <tr><td>Mileage field</td><td>Seeded from <span class="mono">/api/default-mileage</span> for the chosen vehicle and fuel; stops updating once the user moves the slider</td></tr>
+  <tr><td>Mileage fields</td><td>One per vehicle, seeded from <span class="mono">/api/default-mileage</span>; each stops updating once the user edits it</td></tr>
 </table>
 
-<h2>13.5 The test suite &mdash; 65 tests</h2>
+<h2>13.5 The test suite &mdash; 70 tests</h2>
 <p>The tests deliberately cover the things that <em>broke</em> during development rather than
 trivially exercising every endpoint. A selection, with what each one protects:</p>
 <table>
   <tr><th style="width:60mm">Test</th><th>What would break without it</th></tr>
-  <tr><td><span class="mono">test_litres_come_from_the_model_and_still_match_the_recovered_formula</span></td><td>Sub-model 3 silently drifting away from the Week 4 formula</td></tr>
+  <tr><td><span class="mono">test_litres_come_from_the_model_and_still_match_the_recovered_formula</span></td><td>Sub-model 3 silently drifting away from the Part 5 formula</td></tr>
   <tr><td><span class="mono">test_toll_is_a_model_and_not_a_single_multiplication</span></td><td>A regression back to <span class="mono">distance &times; 1.301</span> &mdash; it asserts the implied rate <em>varies</em> with distance</td></tr>
-  <tr><td><span class="mono">test_vehicle_type_actually_changes_the_prediction</span></td><td>The real bug from Week 6: the UI collected <span class="mono">vehicle_type</span> and the model ignored it, so all three vehicles returned an identical total</td></tr>
-  <tr><td><span class="mono">test_distance_model_beats_the_constant_on_the_gulf_of_khambhat</span></td><td>The distance sub-model regressing to something no better than the constant on the hardest real route</td></tr>
-  <tr><td><span class="mono">test_the_error_bar_beside_a_prediction_describes_that_prediction</span></td><td>Re-introducing the &#8377;39.66 error bar that no real prediction can achieve</td></tr>
+  <tr><td><span class="mono">test_the_vehicle_gap_scales_with_distance</span></td><td>The <span class="mono">distance &times; vehicle</span> interaction being dropped, which would flatten the SUV premium to a constant &mdash; invisible in any single estimate</td></tr>
+  <tr><td><span class="mono">test_distance_model_beats_a_single_ratio_on_the_gulf_of_khambhat</span></td><td>The distance sub-model regressing to something no better than the constant on the hardest real route</td></tr>
+  <tr><td><span class="mono">test_the_error_bar_beside_a_prediction_describes_that_prediction</span></td><td>Re-introducing the &#8377;33.86 error bar that no real prediction can achieve</td></tr>
   <tr><td><span class="mono">test_metrics_error_budget_explains_the_remaining_error</span></td><td>The chain getting quietly worse &mdash; it pins the RMSE-to-irreducible-noise ratio to 0.7&ndash;1.6</td></tr>
   <tr><td><span class="mono">test_metrics_disclose_the_parking_negative_result</span></td><td>The failed sub-model being quietly dropped from the report</td></tr>
   <tr><td><span class="mono">test_offline_the_distance_model_takes_over_from_osrm</span></td><td>The fallback path breaking unnoticed &mdash; it monkeypatches the network away</td></tr>
-  <tr><td><span class="mono">test_night_departure_is_cheaper_than_rush_hour</span></td><td>The traffic classifier losing its effect on cost</td></tr>
   <tr><td><span class="mono">test_breakdown_sums_to_the_total</span></td><td>A breakdown that does not add up to the number shown</td></tr>
   <tr><td><span class="mono">test_ambiguous_city_name_resolves_to_the_largest</span></td><td>India has several Udaipurs; it must pick Rajasthan's, not Tripura's</td></tr>
 </table>
@@ -214,18 +226,13 @@ instructive: the model was never wrong, the <em>reporting</em> was.</p>
   rejected (one stale, one paid, one JavaScript-only). The CSV records which is which per row, the
   API warns when a prediction uses an estimate, and the user can override it.</li>
 
-  <li><strong>The rush-hour traffic profile was injected deliberately.</strong> In the original data
-  traffic is statistically independent of departure hour &mdash; all five classifiers land on
-  exactly the 50.88% majority baseline. The generator adds a realistic profile, so the traffic
-  classifier's 57.0% measures that design choice, not Indian roads.</li>
-
   <li><strong>Parking is not predicted, because it cannot be.</strong> Six model families all
-  scored test R&sup2; &le; 0, so the training mean is served. Roughly &#8377;50 of the reported
-  error bar is this term alone.</li>
+  scored test R&sup2; &le; 0, which is why it is a field on the form rather than a model.</li>
 
-  <li><strong>The error bar is large, and that is the honest number.</strong> MAE &#8377;391, of
-  which about &#8377;529 of the &#8377;596 RMSE is irreducible noise in the generated data. Only
-  the fuel-bill term could be improved by a better model.</li>
+  <li><strong>The error bar is large, and that is the honest number.</strong> MAE &#8377;292.
+  Of the &#8377;430 RMSE, &#8377;421 is irreducible noise in the data &mdash; toll spread and
+  real-world fuel burn, the two terms nobody can state in advance. Distance and parking
+  contribute nothing, because the user typed them.</li>
 
   <li><strong>Predictions beyond 1,500 km extrapolate.</strong> The model was trained on
   50&ndash;1,500 km; the API returns an explicit warning outside that range rather than silently

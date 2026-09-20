@@ -1,5 +1,5 @@
 <!-- ============================== PART 2 ============================== -->
-<h1 class="part"><span class="num">Part 2</span>The dataset in detail</h1>
+<h1 class="part"><span class="num">Part 2</span>The dataset</h1>
 
 <h2>2.1 Every column of the original dataset</h2>
 <p><span class="mono">road_trip_data.csv</span> &mdash; 1,140 rows &times; 16 columns, 181 KB in
@@ -51,7 +51,7 @@ columns.</p>
 </table>
 
 <p>The nine routes, with their straight-line distance and the actual road distance &mdash; this
-table becomes important in Weeks 5 and 10:</p>
+table becomes important in Parts 6 and 10:</p>
 <table>
   <tr><th>Route</th><th class="n">Straight line (km)</th><th class="n">Road (km)</th><th class="n">Winding factor</th></tr>
   <tr><td>Ahmedabad &rarr; Surat</td><td class="n">205.0</td><td class="n">274.6</td><td class="n">1.340</td></tr>
@@ -69,8 +69,8 @@ table becomes important in Weeks 5 and 10:</p>
 <h2>2.4 The three datasets, and which one is real</h2>
 <table>
   <tr><th style="width:40mm">Dataset</th><th class="n" style="width:18mm">Rows</th><th>What it is</th><th style="width:24mm">Real or generated?</th></tr>
-  <tr><td><span class="mono">road_trip_data.csv</span></td><td class="n">1,140</td><td>The dataset handed out with the assignment. 9 city pairs, 110&ndash;460 km.</td><td><strong>Synthetic</strong> (proved in Week 4)</td></tr>
-  <tr><td><span class="mono">road_trip_wide.csv</span></td><td class="n">25,000</td><td>The same cost physics regenerated over real Indian geography, 534 cities, 50&ndash;1,500 km.</td><td><strong>Generated</strong> (Week 5), on real coordinates</td></tr>
+  <tr><td><span class="mono">road_trip_data.csv</span></td><td class="n">1,140</td><td>The dataset handed out with the assignment. 9 city pairs, 110&ndash;460 km.</td><td><strong>Synthetic</strong> (proved in Part 5)</td></tr>
+  <tr><td><span class="mono">road_trip_wide.csv</span></td><td class="n">25,000</td><td>The same cost physics regenerated over real Indian geography, 534 cities, 50&ndash;1,500 km.</td><td><strong>Generated</strong> (Part 6), on real coordinates</td></tr>
   <tr class="hl"><td><span class="mono">real_distances.csv</span></td><td class="n">840</td><td>Actual driving distances from the OSRM routing engine for a stratified sample of city pairs.</td><td><strong>Observed</strong> &mdash; the only real data</td></tr>
 </table>
 
@@ -78,18 +78,18 @@ table becomes important in Weeks 5 and 10:</p>
 <h4>Be ready for this question</h4>
 <p><em>&ldquo;If your data is synthetic, what have you actually learned?&rdquo;</em></p>
 <p>Three answers, all defensible. First, the synthetic nature was <strong>discovered, not
-assumed</strong> &mdash; Week 4 recovered the generating formula from the data with R&sup2;
+assumed</strong> &mdash; Part 5 recovered the generating formula from the data with R&sup2;
 0.999162, which is itself a result. Second, the geography is <strong>real</strong>: cities,
 coordinates and 840 road distances come from GeoNames and OSRM, so the distance sub-model is
 trained on observed data. Third, the project states explicitly which numbers are measurements of
-real skill and which are measurements of formula recovery &mdash; that distinction is Part 12 of
+real skill and which are measurements of formula recovery &mdash; that distinction is Part 10 of
 this report and the reason two accuracy figures are quoted rather than one.</p>
 </div>
 
 <!-- ============================== PART 3 ============================== -->
-<h1 class="part"><span class="num">Part 3 &middot; Week 1</span>Problem definition and dataset exploration</h1>
+<h1 class="part"><span class="num">Part 3</span>Exploring the data</h1>
 
-<h2>3.1 What Week 1 did</h2>
+<h2>3.1 What Part 3 did</h2>
 <ol>
   <li>Loaded <span class="mono">road_trip_data.csv</span> and inspected the first rows.</li>
   <li>Stated the problem and identified the target as continuous &rarr; a regression problem.</li>
@@ -112,21 +112,21 @@ this report and the reason two accuracy figures are quoted rather than one.</p>
 <div class="box">
 <h4>Why &ldquo;no missing values&rdquo; was itself a clue</h4>
 <p>A real-world dataset of 1,140 road trips with <em>zero</em> missing values, zero duplicates and
-perfectly consistent dtypes is unusual. At the time this was recorded as a convenience. In Week 4
+perfectly consistent dtypes is unusual. At the time this was recorded as a convenience. In Part 5
 it became evidence: datasets this clean are usually generated. Noticing it early and testing it
 later is the honest version of the story.</p>
 </div>
 
 <h2>3.3 The correlation analysis that drove feature selection</h2>
 <p>Every numeric column was correlated against the target. This single table decided which
-features Week 3 would use.</p>
+features Part 7 would use.</p>
 <table>
   <tr><th>Feature</th><th class="n" style="width:26mm">Pearson r</th><th>Interpretation</th></tr>
   <tr class="hl"><td><span class="mono">fuel_consumption_litres</span></td><td class="n">+0.9606</td><td>Dominant. Burning fuel is the main cost.</td></tr>
   <tr><td><span class="mono">distance_km</span></td><td class="n">+0.8315</td><td>Strong. Longer trip &rarr; more fuel.</td></tr>
   <tr><td><span class="mono">estimated_time_minutes</span></td><td class="n">+0.7282</td><td>Strong, but nearly a copy of distance.</td></tr>
   <tr><td><span class="mono">toll_cost</span></td><td class="n">+0.6701</td><td>A direct additive component of the bill.</td></tr>
-  <tr><td><span class="mono">fuel_price</span></td><td class="n">+0.1450</td><td>Weak alone &mdash; it only matters <em>multiplied</em> by litres. Week 6 exploits this.</td></tr>
+  <tr><td><span class="mono">fuel_price</span></td><td class="n">+0.1450</td><td>Weak alone &mdash; it only matters <em>multiplied</em> by litres. Part 8 exploits this.</td></tr>
   <tr><td><span class="mono">parking_cost</span></td><td class="n">+0.0970</td><td>Additive but small and random.</td></tr>
   <tr><td><span class="mono">departure_hour</span></td><td class="n">&minus;0.0261</td><td>Effectively zero.</td></tr>
   <tr><td><span class="mono">passengers</span></td><td class="n">&minus;0.0468</td><td>Effectively zero.</td></tr>
@@ -139,14 +139,14 @@ features Week 3 would use.</p>
 looks unimportant. But fuel is the largest single cost, and the real fuel bill is
 <span class="mono">litres &times; price</span>. Price appears weak on its own because it only
 matters <em>as a product</em> with litres &mdash; and a linear model can only add its features,
-never multiply them. Week 6 turns this observation into the project's biggest single accuracy
+never multiply them. Part 8 turns this observation into the project's biggest single accuracy
 gain.</p>
 </div>
 
 <!-- ============================== PART 4 ============================== -->
-<h1 class="part"><span class="num">Part 4 &middot; Week 2</span>Data preprocessing &mdash; all eight steps</h1>
+<h1 class="part"><span class="num">Part 4</span>Data preprocessing &mdash; all eight steps</h1>
 
-<p>Week 2 followed the standard 8-step preprocessing checklist. Each step is given below with what
+<p>Part 4 followed the standard 8-step preprocessing checklist. Each step is given below with what
 was done, why, and what changed.</p>
 
 <h2>Step 1 &mdash; Understand the data</h2>
@@ -196,7 +196,7 @@ to each in turn:</p>
 <strong>before</strong> the train/test split, which technically lets information about the test
 rows influence which rows exist. With 11 rows out of 1,140 the effect is negligible, but the
 correct order in a strict pipeline is split first, then fit any data-dependent transformation on
-the training half only. Weeks 9 and 10 do exactly that for scaling &mdash; see Part 14.</p>
+the training half only. Parts 10 and 12 do exactly that for scaling &mdash; see Part 14.</p>
 </div>
 
 <h2>Step 6 &mdash; Encode categorical columns</h2>
@@ -246,11 +246,11 @@ comparable scale, so a single learning rate works for every weight.</p>
   <tr><td>Line plot</td><td>cost over row order</td><td>A proxy for trend over time; no drift visible</td></tr>
   <tr><td>Bar chart</td><td><span class="mono">vehicle_type</span></td><td>Trip counts per vehicle</td></tr>
   <tr><td>Pie chart</td><td><span class="mono">fuel_type</span></td><td>Share of each fuel</td></tr>
-  <tr><td>Count plot</td><td><span class="mono">traffic_level</span></td><td>Class balance for the Week 7 classifier</td></tr>
+  <tr><td>Count plot</td><td><span class="mono">traffic_level</span></td><td>Class balance for the Part 11 classifier</td></tr>
   <tr><td>Boxplot grid &times;2</td><td>all 10 numeric</td><td>Before and after outlier removal</td></tr>
 </table>
 
-<h2>Week 2 output</h2>
+<h2>Part 4 output</h2>
 <p>The chain <strong>cleaned &rarr; de-duplicated &rarr; outlier-trimmed &rarr; one-hot encoded
 &rarr; MinMax-scaled</strong> produced <span class="mono">df_scaled</span>: 1,129 rows &times; 31
-columns, which is where Week 3 begins.</p>
+columns, which is where Part 7 begins.</p>

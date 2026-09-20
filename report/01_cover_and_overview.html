@@ -96,65 +96,63 @@
   <table class="meta">
     <tr><td>Author</td><td><strong>Param Kotadiya</strong></td></tr>
     <tr><td>Subject</td><td>Machine Learning (Semester 5)</td></tr>
-    <tr><td>Artifact</td><td><span class="mono">RoadTripCost.ipynb</span> &mdash; Weeks 1&ndash;10, 162 cells, all executed</span></td></tr>
-    <tr><td>Problem type</td><td>Regression (primary) + 2 classification tasks</td></tr>
+    <tr><td>Artifact</td><td><span class="mono">RoadTripCost.ipynb</span> &mdash; every part of this report, 162 cells, all executed</span></td></tr>
+    <tr><td>Problem type</td><td>Regression (primary) + 1 classification task</td></tr>
     <tr><td>Target</td><td><span class="mono">total_trip_cost</span> (continuous, &#8377;)</td></tr>
     <tr><td>Datasets</td><td>1,140 original trips &middot; 25,000 generated trips &middot; 840 real road distances</td></tr>
-    <tr><td>Models trained</td><td>9 sub-models / architectures, 7 algorithm families each</td></tr>
-    <tr><td>Tests</td><td>65 automated tests, all passing</td></tr>
+    <tr><td>Models trained</td><td>8 models across 6 algorithm families, scored on one split</td></tr>
+    <tr><td>Tests</td><td>70 automated tests, all passing</td></tr>
   </table>
 
   <div class="box key" style="margin-top:16mm">
-    <h4>The one thing to remember before a viva</h4>
-    <p>This project reports <strong>two</strong> accuracy figures, and knowing why is the whole
-    point of it.</p>
-    <p><strong>R&sup2; = 0.999707</strong> is real, but it was measured with the true
-    <span class="mono">toll_cost</span>, <span class="mono">parking_cost</span> and
+    <h4>The one thing to take from this report</h4>
+    <p>It reports <strong>two</strong> accuracy figures, and knowing why is the whole point of
+    it.</p>
+    <p><strong>R&sup2; = 0.999778</strong> is real, but it was measured with the true
+    <span class="mono">toll_cost</span> and
     <span class="mono">fuel_consumption_litres</span> handed to the model as input features.
-    Those are three of the four terms of the cost formula, and a traveller knows none of them
-    before setting off. It answers <em>&ldquo;given the litres burnt and the toll paid, can you
-    total the bill?&rdquo;</em></p>
-    <p><strong>R&sup2; = 0.9645, MAE &#8377;391</strong> is what the model achieves predicting
-    from what a user actually knows: two city names, a vehicle, a fuel type and a departure
-    time. That is the number the deployed application reports, and the honest one to quote.</p>
+    Those are the two terms that carry the uncertainty in the total, and a traveller knows
+    neither before setting off. It answers <em>&ldquo;given the litres burnt and the toll paid,
+    can you total the bill?&rdquo;</em></p>
+    <p><strong>R&sup2; = 0.9816, MAE &#8377;292</strong> is what the model achieves predicting
+    from what a user actually supplies: a distance, a fuel price and a parking figure. That is
+    the number the deployed application reports, and the honest one to quote.</p>
   </div>
-</div>
 
 <!-- ============================== TOC ============================== -->
 <h1 class="part"><span class="num">Contents</span>What is in this report</h1>
 
-<p>This document is written to be <strong>read once, cover to cover, before a viva</strong>. It
-covers every week of the project, every model that was trained (including the ones that failed),
-every number that appears in the notebook, and the reasoning behind each decision. Part 15 turns
-all of it into likely examiner questions with prepared answers.</p>
+<p>This document is organised <strong>by topic</strong>, not by the order the work happened in.
+Each part covers one subject &mdash; the data, the preprocessing, the regression, the feature
+engineering, the models, the evaluation &mdash; and can be read on its own. Part 10 is the
+centre: every model in the project, what it takes in, what it returns, and what it scores.</p>
 
 <table class="toc">
-  <tr><td>Part 1</td><td>The project at a glance &mdash; problem, data, stack, file map</td><td>overview</td></tr>
-  <tr><td>Part 2</td><td>The dataset in detail &mdash; every column, every statistic</td><td>data</td></tr>
-  <tr><td>Part 3</td><td><strong>Week 1</strong> &mdash; Problem definition and dataset exploration</td><td>week 1</td></tr>
-  <tr><td>Part 4</td><td><strong>Week 2</strong> &mdash; Data preprocessing, all 8 steps</td><td>week 2</td></tr>
-  <tr><td>Part 5</td><td><strong>Week 3</strong> &mdash; Linear regression: <span class="mono">fit()</span> and gradient descent from scratch</td><td>week 3</td></tr>
-  <tr><td>Part 6</td><td><strong>Week 4</strong> &mdash; Proving the dataset is synthetic; recovering the formula</td><td>week 4</td></tr>
-  <tr><td>Part 7</td><td><strong>Week 5</strong> &mdash; Scaling from 9 routes to 534 cities</td><td>week 5</td></tr>
-  <tr><td>Part 8</td><td><strong>Week 6</strong> &mdash; One engineered feature beats two ensembles</td><td>week 6</td></tr>
-  <tr><td>Part 9</td><td><strong>Week 7</strong> &mdash; Classification, and which target is real</td><td>week 7</td></tr>
-  <tr><td>Part 10</td><td><strong>Week 8</strong> &mdash; Why gradient descent stopped converging</td><td>week 8</td></tr>
-  <tr><td>Part 11</td><td><strong>Week 9</strong> &mdash; Task 5: evaluation, validation, tuning</td><td>week 9</td></tr>
-  <tr><td>Part 12</td><td><strong>Week 10</strong> &mdash; Removing the magic numbers: a chained pipeline</td><td>week 10</td></tr>
+  <tr><td>Part 1</td><td>The project at a glance &mdash; problem, stack, and the model catalogue</td><td>overview</td></tr>
+  <tr><td>Part 2</td><td>The dataset &mdash; every column, every statistic</td><td>data</td></tr>
+  <tr><td>Part 3</td><td>Exploring the data</td><td>data</td></tr>
+  <tr><td>Part 4</td><td>Data preprocessing &mdash; all eight steps</td><td>data</td></tr>
+  <tr><td>Part 5</td><td>Recovering the generating formula</td><td>analysis</td></tr>
+  <tr><td>Part 6</td><td>Building the training data and the distance table</td><td>data</td></tr>
+  <tr><td>Part 7</td><td>Linear regression: <span class="mono">fit()</span> and gradient descent from scratch</td><td>modelling</td></tr>
+  <tr><td>Part 8</td><td>Feature engineering &mdash; the interaction terms</td><td>modelling</td></tr>
+  <tr><td>Part 9</td><td>Regularisation and ill-conditioning</td><td>modelling</td></tr>
+  <tr><td><strong>Part 10</strong></td><td><strong>The model pipeline &mdash; every model and what it does</strong></td><td>models</td></tr>
+  <tr><td>Part 11</td><td>Classification &mdash; the cost band</td><td>models</td></tr>
+  <tr><td>Part 12</td><td>Evaluation, validation and tuning</td><td>evaluation</td></tr>
   <tr><td>Part 13</td><td>The application &mdash; API, frontend, deployment, tests</td><td>engineering</td></tr>
   <tr><td>Part 14</td><td>Bugs found in this project's own code, and limitations</td><td>honesty</td></tr>
-  <tr><td>Part 15</td><td><strong>Viva preparation</strong> &mdash; 60 questions with answers</td><td>Q&amp;A</td></tr>
-  <tr><td>Part 16</td><td>Glossary of every technical term used</td><td>reference</td></tr>
-  <tr><td>Part 17</td><td>How to reproduce every number in this report</td><td>reference</td></tr>
+  <tr><td>Part 15</td><td>Glossary of every technical term used</td><td>reference</td></tr>
+  <tr><td>Part 16</td><td>How to reproduce every number in this report</td><td>reference</td></tr>
 </table>
 
 <h3>A note on how to read the tables</h3>
 <p>Wherever a model is scored, the report gives <strong>train</strong> and <strong>test</strong>
 figures side by side, plus a <strong>cross-validation mean and standard deviation</strong>. A
 single test score can be luck; the CV standard deviation is what says whether a model is stable.
-Wherever a constant was replaced by a model, the constant is kept in the table as the
-<strong>baseline row</strong> &mdash; a model that cannot beat the thing it replaced has not
-earned its place.</p>
+Every model is also shown against a <strong>baseline row</strong> &mdash; the simplest thing that
+could stand in its place. A model that cannot beat that has not earned its slot, and one of them
+does not.</p>
 
 <!-- ============================== PART 1 ============================== -->
 <h1 class="part"><span class="num">Part 1</span>The project at a glance</h1>
@@ -168,33 +166,86 @@ Estimating that total in advance is useful for planning and budgeting.</p>
   <tr><th style="width:34mm">Item</th><th>Value</th></tr>
   <tr><td>Problem statement</td><td>Given the details of a road trip, predict the <strong>total trip cost</strong> using machine learning.</td></tr>
   <tr><td>Target variable</td><td><span class="mono">total_trip_cost</span> &mdash; continuous, in rupees</td></tr>
-  <tr><td>Problem type</td><td><strong>Regression</strong> (a continuous numeric value). Two <strong>classification</strong> tasks were added in Week 7 where they add value.</td></tr>
+  <tr><td>Problem type</td><td><strong>Regression</strong> (a continuous numeric value). Two <strong>classification</strong> tasks were added in Part 11 where they add value.</td></tr>
   <tr><td>Original dataset</td><td><span class="mono">road_trip_data.csv</span> &mdash; 1,140 rows, 16 columns, 9 fixed city pairs</td></tr>
   <tr><td>Final serving domain</td><td>Any two of <strong>537</strong> Indian cities (population &ge; 100,000), 50&ndash;1,500 km</td></tr>
 </table>
 
 <h2>1.2 What the finished thing does</h2>
-<p>The user picks two cities, a vehicle, a fuel type and a departure time. They are asked only for
-things they could actually know. Everything else &mdash; road distance, their car's fuel
-efficiency, litres burnt, toll, traffic level &mdash; is <strong>predicted by its own fitted
-sub-model</strong>, and a chained cost regressor totals them. The response carries a full cost
-breakdown, an efficiency band, an honest error bar, and the caveats that apply to that particular
-prediction.</p>
+<p>The user types <strong>how far they are driving</strong>, what fuel costs where they are, and
+what they expect to pay for parking. Back comes a price for a <strong>hatchback, a sedan and an
+SUV at once</strong>, on all three fuels, each with a full cost breakdown, an efficiency band, an
+honest error bar and the caveats that apply to that particular estimate.</p>
+<p>They are asked only for things they could actually know. Everything else &mdash; the litres
+they will burn, the tolls they will pay, and the km/l each vehicle manages &mdash; is
+<strong>predicted by its own fitted sub-model</strong>, and a chained cost regressor totals them.
+Distance is the one lookup, and the site ships a table of measured road distances between 139
+cities so it is not a lookup the user has to do elsewhere.</p>
 
-<h2>1.3 The ten weeks</h2>
-<table>
-  <tr><th style="width:14mm">Week</th><th>What it established</th><th style="width:44mm">Headline result</th></tr>
-  <tr><td>1</td><td>Problem definition, dataset exploration, correlation analysis</td><td>1,140&times;16, no missing values, no duplicates</td></tr>
-  <tr><td>2</td><td>Preprocessing: 8-step checklist, outliers, encoding, scaling, 7 visualisations</td><td>1,140 &rarr; 1,129 rows; 16 &rarr; 31 columns</td></tr>
-  <tr><td>3</td><td>Linear regression by <span class="mono">sklearn.fit()</span> <em>and</em> by gradient descent written from scratch in NumPy</td><td>Both agree to <strong>0.03%</strong>; R&sup2; 0.992841</td></tr>
-  <tr><td>4</td><td>Discovered the dataset is <strong>synthetic</strong> and recovered the formula that generated it</td><td>Reconstruction R&sup2; <strong>0.999162</strong> from arithmetic alone</td></tr>
-  <tr><td>5</td><td>Regenerated the same cost physics over real geography for 534 cities</td><td>25,000 trips, 50&ndash;1,500 km</td></tr>
-  <tr><td>6</td><td>One engineered feature (<span class="mono">litres &times; price</span>) versus two ensemble models</td><td>MAE &#8377;143.85 &rarr; <strong>&#8377;39.66</strong></td></tr>
-  <tr><td>7</td><td>Classification on two targets, with an explicit judgement on which is real</td><td>traffic 53.9%&nbsp;/ cost-band 85.8%</td></tr>
-  <tr><td>8</td><td>Diagnosed why gradient descent stopped converging; rejected Ridge with evidence</td><td>&kappa; &asymp; 16,000; ships OLS</td></tr>
-  <tr><td>9</td><td><strong>Task 5</strong> &mdash; metrics, fit diagnosis, cross-validation, bootstrap, comparison, tuning, ensembles</td><td>2 of 3 tuning searches improved</td></tr>
-  <tr><td>10</td><td>Replaced 5 hardcoded constants with 6 fitted sub-models; measured the honest accuracy</td><td>R&sup2; <strong>0.9645</strong>, MAE <strong>&#8377;391</strong></td></tr>
+<h2>1.3 Every model in this project, and what it does</h2>
+<p>Eight fitted things carry the product. Five are sub-models that supply a quantity the user
+cannot, one is the regressor that totals them, one is the label on each result, and one is a
+method demonstration rather than a served model. <strong>Part 10 scores all of them</strong>;
+this table is the map.</p>
+
+<table class="wide">
+  <tr><th style="width:34mm">Model</th><th>In &rarr; out</th><th style="width:30mm">Family</th><th>What it is for</th></tr>
+
+  <tr><td><strong>Distance</strong></td>
+      <td>four coordinates &rarr; road km</td>
+      <td>RandomForest regressor</td>
+      <td>Answers the distance lookup for any city pair the shipped table does not carry, and whenever live routing is unreachable. The <strong>only model here trained on observed rather than generated data</strong>.</td></tr>
+
+  <tr><td><strong>Mileage</strong></td>
+      <td>vehicle + fuel &rarr; km/l</td>
+      <td>Linear regression</td>
+      <td>Gives each of the three vehicles its own fuel efficiency. One typed figure cannot be honest for a hatchback and an SUV at once, and the gap between the three is most of the gap between their costs.</td></tr>
+
+  <tr><td><strong>Litres</strong></td>
+      <td>distance + mileage &rarr; litres</td>
+      <td>Linear regression</td>
+      <td>How much fuel the trip burns. Its fitted slope sits above the textbook <span class="mono">distance &divide; mileage</span>, because real driving costs more than the rated figure.</td></tr>
+
+  <tr><td><strong>Toll</strong></td>
+      <td>distance &rarr; &#8377;</td>
+      <td>Linear regression</td>
+      <td>The toll bill. Close to a per-km rate, but fitted and carrying its own error bar rather than asserted as a constant.</td></tr>
+
+  <tr><td><strong>Parking</strong></td>
+      <td>&mdash;</td>
+      <td><strong>none &mdash; it failed</strong></td>
+      <td>Six model families were fitted and every one scored worse than predicting the mean. That negative result is why parking is the one cost the form asks for outright.</td></tr>
+
+  <tr class="hl"><td><strong>Cost (chained)</strong></td>
+      <td>the four above + what you typed &rarr; &#8377;</td>
+      <td>Linear regression</td>
+      <td><strong>The headline.</strong> Trained on its sub-models' <em>predictions</em> rather than on ground truth, so training and serving see the same kind of input. Called three times per request, once per vehicle.</td></tr>
+
+  <tr><td><strong>Cost band</strong></td>
+      <td>the cost terms &rarr; Excellent / Good / Average / Poor</td>
+      <td>Logistic regression</td>
+      <td>Is this trip cheap or expensive <em>for its length</em>? A quartile split of &#8377;/km, which is the one judgement the rupee figure cannot make on its own.</td></tr>
+
+  <tr><td><strong>Gradient descent</strong></td>
+      <td>same fit, solved iteratively</td>
+      <td>from scratch, NumPy only</td>
+      <td>Not served. It solves the same regression as the closed form and is kept to show the two agree on predictions while disagreeing on weights &mdash; which is what an ill-conditioned problem looks like.</td></tr>
 </table>
+
+<div class="box key">
+<h4>The shape of the thing: what is asked for, and what is derived</h4>
+<p>The user supplies four numbers &mdash; <strong>distance, fuel price, parking,
+passengers</strong> &mdash; and gets back a cost for a hatchback, a sedan and an SUV, on all
+three fuels, with a breakdown for each.</p>
+<p>Everything else is predicted, and the split is deliberate. <strong>Distance</strong> is asked
+for because it is the one input a traveller can look up exactly; the site ships a table of
+measured road distances so they do not have to go elsewhere. <strong>Parking</strong> is asked
+for because nothing predicts it. <strong>Litres and tolls are never asked for</strong>, because
+nobody knows them before setting off &mdash; and litres is the cost model's single strongest
+feature, so requesting it would be handing the model its own answer.</p>
+<p>That last point is the whole design. An input is only worth collecting if the user can
+actually answer it.</p>
+</div>
 
 <h2>1.4 Technology used</h2>
 <table>
@@ -202,7 +253,7 @@ prediction.</p>
   <tr><td>Language</td><td>Python 3.13</td><td>Standard for ML coursework</td></tr>
   <tr><td>Data</td><td>pandas 3.0.3, NumPy</td><td>Loading, cleaning, tabular manipulation</td></tr>
   <tr><td>Models</td><td>scikit-learn 1.9.0</td><td>LinearRegression, Ridge, DecisionTree, RandomForest, AdaBoost, GradientBoosting, LogisticRegression</td></tr>
-  <tr><td>From scratch</td><td>NumPy only</td><td>Gradient descent, so Week 3 shows what <span class="mono">fit()</span> does underneath</td></tr>
+  <tr><td>From scratch</td><td>NumPy only</td><td>Gradient descent, so Part 7 shows what <span class="mono">fit()</span> does underneath</td></tr>
   <tr><td>Charts</td><td>matplotlib, seaborn</td><td>All notebook visualisations</td></tr>
   <tr><td>Backend</td><td>FastAPI + uvicorn</td><td>Serves the models over HTTP</td></tr>
   <tr><td>Frontend</td><td>React 19, Vite 7, Tailwind v4, GSAP</td><td>Single-page editorial site</td></tr>
@@ -213,7 +264,7 @@ prediction.</p>
 </table>
 
 <h2>1.5 File map</h2>
-<pre>RoadTripCost.ipynb       Weeks 1-10. The graded artifact. 162 cells, all executed.
+<pre>RoadTripCost.ipynb       The graded notebook, week by week.  162 cells, all executed.
 TASK5.md                 Task 5 answered, tables filled (generated from JSON)
 FINDINGS.md              Evidence log, 15 sections - including the dead ends
 README.md                Front door: results, how to run, limitations
@@ -231,7 +282,7 @@ data/
   task5_evaluation.json  Every Task 5 number
 
 models/
-  model.joblib           Week 6 regressor + cost-band classifier + GD history (10 KB)
+  model.joblib           Part 8 regressor + cost-band classifier + GD history (10 KB)
   pipeline.joblib        The six sub-models + chained cost regressor (5.1 MB, served)
 
 scripts/
@@ -246,7 +297,7 @@ scripts/
 
 frontend/                React source
 static/                  Built frontend, served by FastAPI
-tests/test_api.py        65 tests</pre>
+tests/test_api.py        70 tests</pre>
 
 <div class="box">
 <h4>Why there is a shared <span class="mono">roadtrip_features.py</span> at the project root</h4>

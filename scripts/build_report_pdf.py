@@ -1,28 +1,32 @@
 """
-Build Project_Report.pdf - the complete project report, Weeks 1 to 10.
+Build Project_Report.pdf - the complete project report, organised by topic.
 
 HOW THE DOCUMENT IS PUT TOGETHER
 --------------------------------
-The report is assembled from nine HTML sections and then printed to PDF by headless Chrome,
+The report is assembled from ten HTML sections and then printed to PDF by headless Chrome,
 which is used because it is the only PDF engine available here that honours real print CSS
 (@page size and margins, page-break-before, page-break-inside: avoid).
 
-Two of the nine sections are NOT stored as files - they are generated:
+Two of the ten sections are NOT stored as files - they are generated:
 
-    report/01_cover_and_overview.html      hand-written
-    report/02_dataset_week1_week2.html     hand-written
-    report/03_week3_regression.html        hand-written
-    report/04_week4_to_week8.html          hand-written
-    <generated>                            scripts/build_report_tables.py   -> Part 11, Week 9
-    <generated>                            scripts/build_report_week10.py   -> Part 12, Week 10
-    report/07_application_and_bugs.html    hand-written
-    report/08_viva_questions.html          hand-written
-    report/09_glossary_and_repro.html      hand-written  (closes <body>/<html>)
+    report/01_cover_and_overview.html   cover, contents, Part 1 (the model catalogue)
+    report/02_dataset.html              Parts 2-4   data, exploration, preprocessing
+    report/03_formula_and_data.html     Parts 5-6   formula recovery, training data + distances
+    report/04_regression.html           Part 7      regression and gradient descent
+    report/05_features_and_ridge.html   Parts 8-9   interactions, regularisation
+    <generated>                         scripts/build_report_week10.py  -> Part 10, the models
+    report/06_classification.html       Part 11     the cost band
+    <generated>                         scripts/build_report_tables.py  -> Part 12, evaluation
+    report/07_application.html          Parts 13-14 the application, bugs and limitations
+    report/08_glossary_and_repro.html   Parts 15-16 glossary, reproduction (closes body/html)
 
-Parts 11 and 12 are generated because between them they quote roughly two hundred measured
+Parts 10 and 12 are generated because between them they quote roughly two hundred measured
 numbers. Typed by hand they would start with a transcription error and go stale on the next
 retrain; generated from the same JSON that TASK5.md and the notebook read, the four artefacts
 cannot disagree with each other.
+
+The order is by SUBJECT, not by the order the work happened in. Each part covers one topic and
+can be read on its own; Part 10 is the catalogue of every model and what it does.
 
 The stylesheet lives at the top of section 01 and therefore applies to the whole document.
 
@@ -51,16 +55,18 @@ CHROME_CANDIDATES = [
 ]
 
 # (filename, generator script) - exactly one of the two is set per section.
+# Document order IS this list, so a part's position in the report is changed here.
 SECTIONS = [
-    ("01_cover_and_overview.html", None),
-    ("02_dataset_week1_week2.html", None),
-    ("03_week3_regression.html", None),
-    ("04_week4_to_week8.html", None),
-    (None, "build_report_tables.py"),     # Part 11 - Week 9 / Task 5
-    (None, "build_report_week10.py"),     # Part 12 - Week 10
-    ("07_application_and_bugs.html", None),
-    ("08_viva_questions.html", None),
-    ("09_glossary_and_repro.html", None),
+    ("01_cover_and_overview.html", None),     # cover, contents, Part 1
+    ("02_dataset.html", None),                # Parts 2-4
+    ("03_formula_and_data.html", None),       # Parts 5-6
+    ("04_regression.html", None),             # Part 7
+    ("05_features_and_ridge.html", None),     # Parts 8-9
+    (None, "build_report_week10.py"),         # Part 10 - the model pipeline
+    ("06_classification.html", None),         # Part 11
+    (None, "build_report_tables.py"),         # Part 12 - evaluation
+    ("07_application.html", None),            # Parts 13-14
+    ("08_glossary_and_repro.html", None),     # Parts 15-16
 ]
 
 
