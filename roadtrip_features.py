@@ -6,7 +6,7 @@ WHY A SHARED MODULE
 Every model in this project is trained in scripts/ and served from app.py. If those two build
 their feature vectors separately, they will drift - a column reordered in one place and not the
 other produces predictions that are wrong but not obviously wrong. So each model has exactly one
-function here that returns (names, values) in a fixed order, and both sides call it.
+function here that returns values in a fixed order, and both sides call it.
 
 `scripts/` is excluded from the Docker image, so this module lives at the project root where the
 API can import it.
@@ -32,14 +32,22 @@ def haversine(lat1, lon1, lat2, lon2):
 
 # ---------------------------------------------------------------- 1. road distance model
 #
-# Replaces the hardcoded `WINDING_FACTOR = 1.2355`. The winding factor is not a constant: a
-# coastal route bends, a Deccan highway runs straight, a hill road switchbacks. It depends on
-# WHERE the route is, so the model is given the endpoints and the shape of the line between them,
-# not just its length.
+# Powers the distance lookup when a city pair is not in the shipped reference table.
+#
+# Road distance is not the straight-line distance times some fixed number. A coastal route
+# bends, a Deccan highway runs straight, a hill road switchbacks - Surat and Bhavnagar sit 94 km
+# apart across the Gulf of Khambhat and 339 km apart by road. The ratio depends on WHERE the
+# route is, so the model is given the endpoints and the shape of the line between them, not just
+# its length.
+#
+# It predicts the RATIO and multiplies by haversine afterwards, rather than predicting kilometres
+# directly. That keeps the target scale-free, so the model spends its capacity on the part that
+# is genuinely unknown - the shape of the route - instead of re-learning "longer straight line,
+# longer road".
 
 DISTANCE_FEATURES = [
     "haversine_km",      # the dominant term - road distance is mostly proportional to it
-    "log_haversine",     # lets the factor vary smoothly with trip length
+    "log_haversine",     # lets the ratio vary smoothly with trip length
     "start_lat", "start_lon", "dest_lat", "dest_lon",
     "mid_lat", "mid_lon",   # roughly "which part of India is this route in"
     "abs_dlat", "abs_dlon",
@@ -64,12 +72,15 @@ def distance_features(start_lat, start_lon, dest_lat, dest_lon):
 
 # ------------------------------------------------------------------- 2. mileage model
 #
-# Replaces making the user look up their own fuel efficiency. The original CSV gives a different
-# mileage range for each (vehicle, fuel) pair - nine cells in total. Additive one-hots alone can
-# only fit 1 + 2 + 2 = 5 parameters, which cannot reproduce nine independent cell means, so the
-# four vehicle x fuel interaction terms are included as well. With them the design matrix spans
-# all nine cells exactly. This is the same "a linear model cannot multiply unless you hand it the
-# product" lesson as the Week 6 fuel-bill interaction.
+# Gives each vehicle its own fuel efficiency, which is what makes pricing all three at once
+# mean anything: a hatchback and an SUV on the same route do not burn the same fuel, and the
+# difference between them is mostly mileage, not wear.
+#
+# The data gives a different mileage range for each (vehicle, fuel) pair - nine cells in total.
+# Additive one-hots alone can only fit 1 + 2 + 2 = 5 parameters, which cannot reproduce nine
+# independent cell means, so the four vehicle x fuel interaction terms are included as well.
+# With them the design matrix spans all nine cells exactly. Same "a linear model cannot multiply
+# unless you hand it the product" idea as the fuel-bill term in the cost model below.
 
 MILEAGE_FEATURES = [
     "vehicle_Sedan", "vehicle_SUV",        # Hatchback is the baseline
@@ -89,34 +100,30 @@ def mileage_features(vehicle, fuel):
 
 # -------------------------------------------------------------------- 3. litres model
 #
-# Replaces `TRAFFIC_MULT = {"Low": 0.944, "Medium": 1.045, "High": 1.165}`.
+# Fuel burnt over the trip. The dominant term is the ratio distance / mileage, which is why it
+# is handed over directly rather than left for the model to discover from its two parts - a
+# linear model cannot divide.
 #
-# The quantity being predicted is  litres = (distance / mileage) * traffic_multiplier  - a
-# PRODUCT of a ratio and a per-class constant. A linear model can only add, so it is handed:
-#   * the ratio itself (distance / mileage), and
-#   * that ratio multiplied by each traffic one-hot.
-# The fitted weights on those three columns then recover the three multipliers directly.
+# Real fuel burn is not exactly that ratio: the same car on the same road burns more in dense
+# traffic than in clear. Nothing the user tells us says which they will meet, so that variation
+# is unobserved. The fitted slope on the ratio therefore comes out slightly above 1.0 - it
+# settles at the average conditions in the data rather than at the textbook figure - and the
+# spread around it is irreducible error that scales with trip length. Both are measured in
+# scripts/train_pipeline.py rather than assumed.
 
-LITRES_FEATURES = [
-    "distance_km", "mileage",
-    "km_per_litre_ratio",              # distance / mileage - litres before traffic
-    "traffic_Medium", "traffic_High",  # Low is the baseline
-    "ratio_x_Medium", "ratio_x_High",  # the interaction terms that make the product expressible
-]
+LITRES_FEATURES = ["distance_km", "mileage", "km_per_litre_ratio"]
 
 
-def litres_features(distance_km, mileage, traffic_level):
+def litres_features(distance_km, mileage):
     ratio = distance_km / mileage if mileage else 0.0
-    medium = 1.0 if traffic_level == "Medium" else 0.0
-    high = 1.0 if traffic_level == "High" else 0.0
-    return [distance_km, mileage, ratio, medium, high, ratio * medium, ratio * high]
+    return [distance_km, mileage, ratio]
 
 
 # ---------------------------------------------------------------------- 4. toll model
 #
-# Replaces `TOLL_RATE = 1.301`. Toll is genuinely close to a per-km rate, so this model is
-# almost as simple as the constant it replaces - but it is FITTED, it reports its own error bar,
-# and it is evaluated like every other model instead of being asserted.
+# Toll is close to a per-km rate, so this model is nearly as simple as a rate would be - but it
+# is FITTED, it reports its own error bar, and it is evaluated like every other model instead of
+# being asserted. The log term lets the effective rate drift with trip length.
 
 TOLL_FEATURES = ["distance_km", "log_distance"]
 
@@ -125,12 +132,13 @@ def toll_features(distance_km):
     return [distance_km, math.log1p(distance_km)]
 
 
-# ------------------------------------------------------------------- 5. parking model
+# ----------------------------------------------------------------- 5. parking (no model)
 #
-# Replaces `DEFAULT_PARKING = 70.0`. Included for completeness and expected to FAIL: in the
-# generator, parking is drawn uniformly from {0, 40, 60, 80, 120, 150} independently of every
-# other column, so nothing predicts it and the best possible model is the mean. Reported as a
-# negative result rather than tuned until it looks respectable.
+# Parking is a user input, and these features exist to show why. Six model families are fitted
+# against them in scripts/train_pipeline.py and every one scores test R2 <= 0 - worse than
+# predicting the mean - because parking in this data carries no relationship to distance,
+# vehicle or party size at all. A quantity nothing predicts should be asked for, not guessed,
+# and the negative result is reported rather than tuned away.
 
 PARKING_FEATURES = ["distance_km", "vehicle_Sedan", "vehicle_SUV", "passengers"]
 
@@ -142,96 +150,39 @@ def parking_features(distance_km, vehicle, passengers):
             float(passengers)]
 
 
-# ------------------------------------------------------------------ 6. traffic model
+# --------------------------------------------------------------- 6. cost regressor
 #
-# Departure hour is CYCLICAL: 23:00 and 00:00 are one hour apart, not twenty-three. Feeding the
-# raw integer would make the model treat them as maximally distant, so hour and month go in as
-# sin/cos pairs. `is_peak` gives a linear model the rush-hour block directly, since sin/cos alone
-# cannot express "high between 8-11 and again between 17-21".
-
-TRAFFIC_FEATURES = ["hour_sin", "hour_cos", "is_peak", "month_sin", "month_cos"]
-
-
-def traffic_features(departure_hour, month):
-    return [
-        math.sin(2 * math.pi * departure_hour / 24),
-        math.cos(2 * math.pi * departure_hour / 24),
-        1.0 if (8 <= departure_hour <= 11 or 17 <= departure_hour <= 21) else 0.0,
-        math.sin(2 * math.pi * month / 12),
-        math.cos(2 * math.pi * month / 12),
-    ]
-
-
-# --------------------------------------------------------------- 7. cost regressor
+# The final stage. Consumes the sub-model outputs above plus what the user typed, and is trained
+# on PREDICTED components rather than true ones so that training and serving see the same kind
+# of input (see scripts/train_pipeline.py).
 #
-# Unchanged from the Week 6 model that this project already ships, so the chained pipeline is a
-# fair swap: same target, same features, same closed-form linear fit. The only difference is
-# where `toll_cost`, `parking_cost` and `fuel_consumption_litres` come from - sub-model
-# predictions instead of arithmetic constants.
+# Two groups of terms are here because a purely additive model cannot express them:
+#
+#   fuel_bill = litres x price. The cost contains that product; given only the two factors, an
+#   additive model would have to approximate it.
+#
+#   distance_x_SUV / distance_x_Sedan. Running costs differ between vehicles PER KILOMETRE, not
+#   by a flat amount per trip. With the plain one-hots alone the fitted SUV premium is a
+#   constant - about Rs 130 whether the trip is 200 km or 1200 km - when the real gap runs from
+#   roughly Rs 50 to Rs 320 across that range. Since this model prices all three vehicles side
+#   by side, that gap IS the output, so the interaction is load-bearing rather than decorative.
 
 COST_FEATURES = [
     "distance_km", "mileage", "fuel_price", "toll_cost", "parking_cost",
     "fuel_consumption_litres",
-    "fuel_bill",                             # litres x price - the Week 6 interaction term
-    "vehicle_type_SUV", "vehicle_type_Sedan",   # Hatchback is the baseline
+    "fuel_bill",                                 # litres x price
+    "vehicle_type_SUV", "vehicle_type_Sedan",    # Hatchback is the baseline
+    "distance_x_SUV", "distance_x_Sedan",        # per-km running-cost difference
 ]
 
 
 def cost_features(distance_km, mileage, fuel_price, toll_cost, parking_cost, litres, vehicle):
+    suv = 1.0 if vehicle == "SUV" else 0.0
+    sedan = 1.0 if vehicle == "Sedan" else 0.0
     return [distance_km, mileage, fuel_price, toll_cost, parking_cost, litres,
             litres * fuel_price,
-            1.0 if vehicle == "SUV" else 0.0,
-            1.0 if vehicle == "Sedan" else 0.0]
-
-
-# ------------------------------------------------------- 8. end-to-end (honesty) model
-#
-# The benchmark model: fed ONLY what a traveller could actually know, with nothing derived by
-# arithmetic first. No distance, no toll, no litres. Its error against the cost regressor above
-# measures how much of that model's R2 was arithmetic being handed back to it.
-#
-# The last two columns are the Week 6 lesson applied again. The true cost contains
-# (distance / mileage) * fuel_price, so a purely additive model is structurally incapable of
-# fitting it. Both variants are trained and compared in scripts/train_end_to_end.py.
-
-END_TO_END_BASE = [
-    "haversine_km", "log_haversine",
-    "start_lat", "start_lon", "dest_lat", "dest_lon", "mid_lat", "mid_lon",
-    "abs_dlat", "abs_dlon",
-    "mileage", "fuel_price", "passengers",
-    "hour_sin", "hour_cos", "is_peak", "month_sin", "month_cos",
-    "vehicle_Sedan", "vehicle_SUV", "fuel_Diesel", "fuel_CNG",
-]
-END_TO_END_INTERACTIONS = ["hav_over_mileage", "hav_over_mileage_x_price"]
-END_TO_END_FEATURES = END_TO_END_BASE + END_TO_END_INTERACTIONS
-
-
-def end_to_end_features(start_lat, start_lon, dest_lat, dest_lon, mileage, fuel_price,
-                        passengers, departure_hour, month, vehicle, fuel,
-                        interactions=True):
-    hav = haversine(start_lat, start_lon, dest_lat, dest_lon)
-    abs_dlat = abs(dest_lat - start_lat)
-    abs_dlon = abs(dest_lon - start_lon)
-    row = [
-        hav, math.log1p(hav),
-        start_lat, start_lon, dest_lat, dest_lon,
-        (start_lat + dest_lat) / 2.0, (start_lon + dest_lon) / 2.0,
-        abs_dlat, abs_dlon,
-        mileage, fuel_price, float(passengers),
-        math.sin(2 * math.pi * departure_hour / 24),
-        math.cos(2 * math.pi * departure_hour / 24),
-        1.0 if (8 <= departure_hour <= 11 or 17 <= departure_hour <= 21) else 0.0,
-        math.sin(2 * math.pi * month / 12),
-        math.cos(2 * math.pi * month / 12),
-        1.0 if vehicle == "Sedan" else 0.0,
-        1.0 if vehicle == "SUV" else 0.0,
-        1.0 if fuel == "Diesel" else 0.0,
-        1.0 if fuel == "CNG" else 0.0,
-    ]
-    if interactions:
-        ratio = hav / mileage if mileage else 0.0
-        row += [ratio, ratio * fuel_price]
-    return row
+            suv, sedan,
+            distance_km * suv, distance_km * sedan]
 
 
 # ------------------------------------------------------------------------- city lookup

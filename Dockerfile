@@ -22,9 +22,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Only what the server actually needs at runtime. The notebook, the raw CSV, the scripts and
 # the frontend source are all build-time or documentation artifacts.
-COPY app.py .
+#
+# roadtrip_features.py and models/pipeline.joblib are both read at module scope — app.py imports
+# the first and joblib.loads the second before it serves a single request — so omitting either
+# makes the container exit on start. That failure is invisible behind render.yaml's health check,
+# which just reports a deploy that never goes live, so it is worth stating why they are here.
+COPY app.py roadtrip_features.py ./
 COPY data/india_cities.csv data/fuel_prices.csv ./data/
-COPY models/model.joblib ./models/
+COPY models/model.joblib models/pipeline.joblib ./models/
 COPY --from=frontend /build/dist ./static
 
 # Most hosts inject $PORT. Default to 8000 for plain `docker run`.

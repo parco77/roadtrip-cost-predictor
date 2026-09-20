@@ -1,33 +1,39 @@
 """
 Road Trip Cost Predictor - FastAPI backend.
 
-Serves a CHAINED MODEL PIPELINE over 537 Indian cities: two city names, a vehicle, a fuel type
-and a departure time go in; a cost estimate with a full breakdown comes out. Every intermediate
-quantity - road distance, fuel efficiency, litres burnt, toll, traffic level - is predicted by
-its own fitted sub-model rather than computed from a hardcoded constant. See the note below the
-imports for what those constants were, and scripts/train_pipeline.py for how each was replaced.
+You tell it how far you are driving, what fuel costs where you are, and what you expect to pay
+for parking. It prices the trip for a hatchback, a sedan and an SUV at once, on all three fuels,
+so the comparison is the answer rather than something you have to run three times to get.
 
-    python scripts/build_cities.py          # 3739 cities with real lat/lon
-    python scripts/build_fuel_prices.py     # per-state fuel prices
-    python scripts/build_wide_dataset.py    # 25,000 trips over real geography
-    python scripts/fetch_real_distances.py  # 840 REAL road distances from OSRM
-    python scripts/train_models.py          # -> models/model.joblib   (Week 6 regressor)
-    python scripts/train_pipeline.py        # -> models/pipeline.joblib (the six sub-models)
-    uvicorn app:app --reload                # -> http://127.0.0.1:8000
+Every quantity you are NOT asked for is predicted by a fitted sub-model that reports its own
+error bar - the litres you will burn, the tolls you will pay, and the km/l each vehicle manages.
+Nothing in the prediction path is a number typed in by hand.
+
+The distance is yours to supply because it is the one input you can look up exactly. The site
+ships a reference table of measured road distances between 139 cities; /api/distance covers
+anything not in it.
+
+    python scripts/build_cities.py            # cities with real lat/lon
+    python scripts/build_fuel_prices.py       # per-state fuel prices
+    python scripts/build_wide_dataset.py      # 25,000 trips
+    python scripts/fetch_real_distances.py    # 840 REAL road distances from OSRM
+    python scripts/build_distance_matrix.py   # -> frontend/public/city_distances.json
+    python scripts/train_pipeline.py          # -> models/pipeline.joblib  (the sub-models)
+    python scripts/train_models.py            # -> models/model.joblib     (band + loss curve)
+    uvicorn app:app --reload                  # -> http://127.0.0.1:8000
 
 Endpoints
-    GET  /api/cities?q=          city autocomplete (name or state), with the state's fuel prices
-    GET  /api/default-mileage    what the mileage sub-model predicts for a vehicle + fuel
-    POST /api/predict            cost regression + band and traffic classification
-    POST /api/departure-sweep    expected cost across all 24 departure hours
-    GET  /api/loss-curve         gradient-descent curve + sklearn comparison
+    GET  /api/cities             city search, for the distance lookup
+    GET  /api/distance           measured road distance between two cities
+    GET  /api/default-mileage    what each vehicle manages on a given fuel
+    POST /api/predict            cost for every vehicle and fuel, with a breakdown
+    GET  /api/loss-curve         gradient-descent curve + closed-form comparison
     GET  /api/metrics            honest test-set metrics for the report-card section
     GET  /api/health             liveness
 """
 from __future__ import annotations
 
 import json
-import math
 import os
 import urllib.error
 import urllib.request
@@ -51,36 +57,21 @@ CITIES_PATH = os.path.join(ROOT, "data", "india_cities.csv")
 FUEL_PATH = os.path.join(ROOT, "data", "fuel_prices.csv")
 STATIC_DIR = os.path.join(ROOT, "static")
 
-# --- what used to be here -----------------------------------------------------------
-# Five hardcoded constants did the real work of this API, and only the final addition was
-# a model:
-#
-#     WINDING_FACTOR = 1.2355     haversine -> road km
-#     TRAFFIC_MULT   = {...}      fuel burn by traffic level
-#     TOLL_RATE      = 1.301      Rs/km
-#     DEFAULT_PARKING = 70.0
-#     MAINTENANCE    = {...}      Rs/km by vehicle
-#
-# Each is now a fitted sub-model in models/pipeline.joblib, trained and scored by
-# scripts/train_pipeline.py. The winding factor mattered most: measured against 840 real OSRM
-# road distances it is nearly unbiased on average but wrong by 6.3% on a typical single route,
-# and by up to 260% where geography intervenes (Surat -> Bhavnagar is 94 km straight and 339 km
-# by road, around the Gulf of Khambhat). A user takes one trip, not the average of all of them.
-#
-# TWO CONSTANTS REMAIN, deliberately:
-#   TRAFFIC_MIN_PER_KM  travel TIME, which this project never modelled - it is not part of the
-#                       cost target, so fitting it would be inventing scope. Labelled, not hidden.
-#   MIN/MAX_TRAINED_KM  the training range, used only to warn about extrapolation.
-TRAFFIC_MIN_PER_KM = {"Low": 0.919, "Medium": 1.059, "High": 1.263}    # travel time, NOT modelled
+# The distance range the cost model was trained across. Outside it the estimate is
+# extrapolating, and the response says so rather than quietly returning a number. Because
+# distance now arrives as a typed value rather than being derived from two real cities, the
+# Pydantic bounds below are the real guard; this pair only controls the warning.
 MIN_TRAINED_KM, MAX_TRAINED_KM = 50.0, 1500.0
+
 OSRM_URL = "http://router.project-osrm.org/route/v1/driving/{},{};{},{}?overview=false"
 OSRM_TIMEOUT = 4.0
 
 VehicleType = Literal["Hatchback", "Sedan", "SUV"]
 FuelType = Literal["Petrol", "Diesel", "CNG"]
-TrafficLevel = Literal["Low", "Medium", "High"]
+VEHICLES: tuple[str, ...] = ("Hatchback", "Sedan", "SUV")
+FUELS: tuple[str, ...] = ("Petrol", "Diesel", "CNG")
 
-app = FastAPI(title="Road Trip Cost Predictor", version="1.0")
+app = FastAPI(title="Road Trip Cost Predictor", version="2.0")
 app.add_middleware(
     CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"]
 )
@@ -89,11 +80,9 @@ app.add_middleware(
 # Both paths below are generated by scripts/ in this project and committed alongside it; no
 # model file is ever fetched from a remote or user-supplied location.
 #
-# Two bundles, on purpose.
-#   BUNDLE  models/model.joblib     - the Week 6 cost regressor, the cost-band classifier and
-#                                     the gradient-descent history the /api/loss-curve endpoint
-#                                     serves. Kept so the notebook's Week 3-8 story stays live.
-#   PIPE    models/pipeline.joblib  - the six sub-models that replaced the constants, plus the
+#   BUNDLE  models/model.joblib     - the cost-band classifier and the gradient-descent history
+#                                     that /api/loss-curve serves.
+#   PIPE    models/pipeline.joblib  - the sub-models (distance, mileage, litres, toll) and the
 #                                     chained cost regressor trained on their predictions.
 BUNDLE = joblib.load(MODEL_PATH)
 PIPE = joblib.load(PIPELINE_PATH)
@@ -106,41 +95,38 @@ CITY_INDEX = {
     (r.city.lower(), r.state.lower()): r for r in IN_DOMAIN.itertuples(index=False)
 }
 
+# Used only to prefill the price fields, never inside a prediction that the user has priced
+# themselves. Whatever they type wins, and the response labels which of the two produced each
+# figure so an unedited field is never passed off as a real pump price.
+NATIONAL_PRICE = {
+    "Petrol": round(float(FUEL.petrol.mean()), 2),
+    "Diesel": round(float(FUEL.diesel.mean()), 2),
+    "CNG": round(float(FUEL.cng.mean()), 2),
+}
+
 
 # --------------------------------------------------------------------------- helpers
-def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    r = 6371.0088
-    p1, p2 = math.radians(lat1), math.radians(lat2)
-    dp = p2 - p1
-    dl = math.radians(lon2 - lon1)
-    h = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
-    return 2 * r * math.asin(math.sqrt(h))
-
-
 def model_distance_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    """Road distance from the fitted distance model - sub-model 1, the offline fallback.
+    """Road distance from the fitted distance model - the offline path for /api/distance.
 
-    Trained on 840 real OSRM road distances (data/real_distances.csv), so unlike the constant
-    it replaces this has actually seen Indian road geometry. It predicts the WINDING FACTOR and
-    multiplies by haversine, rather than predicting kilometres directly: that keeps the target
-    scale-free, so the model spends its capacity on the part that is genuinely unknown - the
-    shape of the route - instead of re-learning "longer straight line, longer road".
+    Trained on 840 real OSRM road distances (data/real_distances.csv), so it has seen Indian
+    road geometry rather than assuming a fixed ratio to the straight line. It predicts the
+    ratio and multiplies by haversine, which keeps the target scale-free.
     """
     x = np.array([rf.distance_features(lat1, lon1, lat2, lon2)], dtype=float)
     predicted = float(PIPE["distance_model"].predict(x)[0])
     if PIPE["distance_parameterisation"] == "factor":
-        predicted *= haversine_km(lat1, lon1, lat2, lon2)
+        predicted *= rf.haversine(lat1, lon1, lat2, lon2)
     return round(predicted, 2)
 
 
 @lru_cache(maxsize=4096)
 def road_distance_km(lat1: float, lon1: float, lat2: float, lon2: float) -> tuple[float, str]:
-    """Real road distance via OSRM, falling back to the fitted distance model.
+    """Measured road distance via OSRM, falling back to the fitted model.
 
-    Live routing is still preferred - a real answer beats a predicted one whenever it is
-    available. The change is what happens when it is not: the fallback used to be
-    `haversine x 1.2355`, and is now a model whose held-out error is known (RMSE 46.6 km vs
-    53.1 km for the constant, MAE 30.7 km vs 34.3 km - a 10.7% reduction).
+    Live routing is preferred - a measured answer beats a predicted one whenever it is
+    available. When it is not, the fallback is a model whose held-out error is known
+    (RMSE 46.6 km, MAE 30.7 km), and the response says which of the two produced the number.
     """
     try:
         url = OSRM_URL.format(lon1, lat1, lon2, lat2)
@@ -148,67 +134,57 @@ def road_distance_km(lat1: float, lon1: float, lat2: float, lon2: float) -> tupl
         with urllib.request.urlopen(req, timeout=OSRM_TIMEOUT) as resp:
             payload = json.loads(resp.read())
         if payload.get("code") == "Ok" and payload.get("routes"):
-            return round(payload["routes"][0]["distance"] / 1000.0, 2), "osrm"
+            return round(payload["routes"][0]["distance"] / 1000.0, 2), "measured"
     except (urllib.error.URLError, TimeoutError, ValueError, KeyError, OSError):
         pass  # network unavailable or rate-limited - fall through to the model
     return model_distance_km(lat1, lon1, lat2, lon2), "distance_model"
 
 
 def default_mileage(vehicle: str, fuel: str) -> float:
-    """Fuel efficiency from the mileage model - sub-model 2.
+    """Fuel efficiency from the mileage sub-model.
 
-    Replaces asking every user for their own km/l, or defaulting all nine (vehicle, fuel)
-    combinations to a single 15.5. Honest ceiling: the training data draws mileage uniformly
-    inside a per-combination range, so the best any model can do is name the middle of the
-    right cell - test R2 0.673, and the rest is irreducible.
+    This is what makes pricing three vehicles at once mean anything. A single typed mileage
+    cannot describe a hatchback and an SUV at the same time, so each vehicle gets its own
+    figure, and the difference between those figures is most of the difference in cost.
+
+    Honest ceiling: the training data draws mileage uniformly inside a per-combination range,
+    so this is the middle of the right range rather than any particular car - test R2 0.673,
+    and the rest is irreducible. The user can override it per vehicle.
     """
     x = np.array([rf.mileage_features(vehicle, fuel)], dtype=float)
     return round(float(PIPE["mileage_model"].predict(x)[0]), 2)
 
 
-def predict_litres(distance: float, mileage: float, traffic: str) -> float:
-    """Fuel consumed, from the litres model - sub-model 3. Replaces TRAFFIC_MULT."""
-    x = np.array([rf.litres_features(distance, mileage, traffic)], dtype=float)
+def predict_litres(distance: float, mileage: float) -> float:
+    """Fuel consumed over the trip, from the litres sub-model."""
+    x = np.array([rf.litres_features(distance, mileage)], dtype=float)
     return round(float(PIPE["litres_model"].predict(x)[0]), 3)
 
 
 def predict_toll(distance: float) -> float:
-    """Toll, from the toll model - sub-model 4. Replaces TOLL_RATE = 1.301.
+    """Toll, from the toll sub-model.
 
-    Honest ceiling: the training data sets toll = distance x N(1.301, 0.360), so the RATE is
-    recoverable but the per-trip spread is noise. Test R2 0.795, and the residual RMSE of about
+    Honest ceiling: toll in the training data carries a per-trip spread around its rate, so the
+    rate is recoverable but the spread is not. Test R2 0.795, and the residual RMSE of about
     Rs 212 cannot be reduced by any model on this data.
     """
     x = np.array([rf.toll_features(distance)], dtype=float)
     return round(max(0.0, float(PIPE["toll_model"].predict(x)[0])), 2)
 
 
-# Sub-model 5, parking, is deliberately absent. Six model families were fitted and every one
-# scored test R2 <= 0 - worse than predicting the mean - because the training data draws parking
-# uniformly from {0, 40, 60, 80, 120, 150} independently of everything else. A model with
-# negative R2 has no business in a prediction path, so the training-set mean is served instead
-# and the negative result is reported rather than buried. See scripts/train_pipeline.py.
-DEFAULT_PARKING = round(float(PIPE["parking_mean"]), 2)
+@lru_cache(maxsize=8)
+def fuel_burn_slope() -> float:
+    """The litres model's fitted slope on (distance / mileage), recovered by probing it.
 
-
-def recovered_traffic_multipliers() -> dict:
-    """The fuel-burn multipliers, read back out of the fitted litres model.
-
-    The old code hardcoded {"Low": 0.944, "Medium": 1.045, "High": 1.165}. These are the same
-    numbers, but measured from the model at startup rather than asserted: litres is linear in
-    (distance / mileage), so the multiplier for a traffic level is just the slope of litres
-    against that ratio. Probing the model for two distances recovers it.
+    The interface prints the arithmetic behind the litres figure, and that line has to equal
+    the number beside it. Writing "distance / mileage = litres" would assert a slope of exactly
+    1.0, which is not what the model fitted - real driving burns more than the rated figure.
+    Probing at two ratios recovers the real slope, so the printed sum is the one computed.
     """
-    out = {}
-    mileage = 15.5
-    for level in ("Low", "Medium", "High"):
-        one = predict_litres(mileage * 1.0, mileage, level)      # ratio = 1
-        two = predict_litres(mileage * 2.0, mileage, level)      # ratio = 2
-        out[level] = round(two - one, 3)
-    return out
-
-
-TRAFFIC_MULT = recovered_traffic_multipliers()
+    mileage = 15.0
+    one = predict_litres(mileage * 1.0, mileage)      # ratio = 1
+    two = predict_litres(mileage * 2.0, mileage)      # ratio = 2
+    return round(two - one, 4)
 
 
 def resolve_city(name: str, state: Optional[str] = None):
@@ -219,81 +195,34 @@ def resolve_city(name: str, state: Optional[str] = None):
             return hit
     matches = IN_DOMAIN[IN_DOMAIN.city.str.lower() == key_name]
     if matches.empty:
-        raise HTTPException(404, f"City not found in the model's 537-city domain: {name!r}")
+        raise HTTPException(404, f"City not found: {name!r}")
     # ambiguous name -> largest city wins
     return matches.sort_values("population", ascending=False).iloc[0]
 
 
-def fuel_price_for(state: str, fuel: FuelType, override: Optional[float] = None):
-    """Resolve the price per litre, preferring what the user actually told us.
-
-    Only 6 of 35 states have a verified price; the rest are estimates. Someone filling their own
-    tank knows the real number better than this table does, so a supplied value always wins and
-    is reported as source="user" — which also suppresses the estimated-price warning, because
-    with a real figure there is nothing left to caveat.
-    """
-    if override is not None:
-        return float(override), "user"
-    if state in FUEL.index:
-        row = FUEL.loc[state]
-        return float(row[fuel.lower()]), str(row["source"])
-    return 107.5, "fallback"
-
-
 def state_fuel_prices(state: str) -> dict:
-    """All three prices for a state, so the UI can prefill the field the moment a city is
-    chosen instead of making another round trip."""
+    """All three prices for a state, so the lookup page can offer them as a starting point."""
     if state in FUEL.index:
         row = FUEL.loc[state]
         return {
             "petrol": float(row["petrol"]), "diesel": float(row["diesel"]),
             "cng": float(row["cng"]), "source": str(row["source"]),
         }
-    return {"petrol": 107.5, "diesel": 99.8, "cng": 84.5, "source": "fallback"}
-
-
-def traffic_features(hour: int, month: int) -> np.ndarray:
-    """Cyclical encoding, matching training. Hour is fed as sin/cos rather than 0-23 so the
-    model does not treat 23:00 and 00:00 as maximally distant."""
-    return np.array([rf.traffic_features(hour, month)], dtype=float)
-
-
-def predict_traffic(hour: int, month: int) -> str:
-    """Traffic level, from the traffic classifier - sub-model 6."""
-    return str(PIPE["traffic_model"].predict(traffic_features(hour, month))[0])
-
-
-def estimate_cost(distance, mileage, fuel_price, parking, traffic, vehicle):
-    """Core cost computation, shared by /api/predict and /api/departure-sweep.
-
-    Returns (litres, toll, total). Every intermediate value now comes from a sub-model rather
-    than from a constant, and the final regressor was TRAINED on sub-model predictions rather
-    than on ground truth - which matters more than it sounds.
-
-    Fitting the cost model on true toll/parking/litres and then serving it predicted ones is a
-    train/serve mismatch: the model learns to trust inputs that are exact and then receives
-    inputs that are not. scripts/train_pipeline.py measures both ways, and the chain-consistent
-    model (trained out-of-fold on its own sub-models' predictions) is the one loaded here.
-
-    Litres and toll stay DERIVED, never asked for. A traveller cannot know their fuel
-    consumption before setting off, and it is the regressor's strongest feature - which is
-    exactly why handing it in inflated the old R2. See FINDINGS.md.
-    """
-    litres = predict_litres(distance, mileage, traffic)
-    toll = predict_toll(distance)
-
-    x = np.array([rf.cost_features(distance, mileage, fuel_price, toll, parking, litres,
-                                   vehicle)], dtype=float)
-    total = float(PIPE["cost_model_chained"].predict(x)[0])
-    return litres, toll, total
+    return {"petrol": NATIONAL_PRICE["Petrol"], "diesel": NATIONAL_PRICE["Diesel"],
+            "cng": NATIONAL_PRICE["CNG"], "source": "national average"}
 
 
 def predict_band(distance, mileage, fuel_price, toll, parking, litres,
-                 vehicle: str, fuel: str, traffic: str) -> str:
+                 vehicle: str, fuel: str) -> str:
+    """Is this trip cheap or expensive FOR ITS LENGTH? A quartile split of Rs/km.
+
+    Rupees alone cannot answer that question - a 1200 km drive costs more than a 200 km one
+    without being worse value - so the band is what the result cards carry alongside the total.
+    """
     frame = pd.DataFrame([{
         "distance_km": distance, "mileage": mileage, "fuel_price": fuel_price,
         "toll_cost": toll, "parking_cost": parking, "fuel_consumption_litres": litres,
-        "vehicle_type": vehicle, "fuel_type": fuel, "traffic_level": traffic,
+        "vehicle_type": vehicle, "fuel_type": fuel,
     }])
     encoded = pd.get_dummies(frame, columns=BUNDLE["band_categorical"], drop_first=True)
     encoded = encoded.reindex(columns=BUNDLE["band_columns"], fill_value=0)
@@ -301,32 +230,76 @@ def predict_band(distance, mileage, fuel_price, toll, parking, litres,
     return str(BUNDLE["band_classifier"].predict(scaled)[0])
 
 
+def price_one(distance: float, vehicle: str, fuel: str, price: float,
+              parking: float, passengers: int, mileage: Optional[float]) -> dict:
+    """One vehicle on one fuel. Every field a result card shows comes from here."""
+    mileage_source = "user" if mileage is not None else "mileage_model"
+    km_per_litre = mileage if mileage is not None else default_mileage(vehicle, fuel)
+
+    litres = predict_litres(distance, km_per_litre)
+    toll = predict_toll(distance)
+    x = np.array([rf.cost_features(distance, km_per_litre, price, toll, parking,
+                                   litres, vehicle)], dtype=float)
+    total = float(PIPE["cost_model_chained"].predict(x)[0])
+
+    fuel_component = round(litres * price, 2)
+    # Whatever the model's total does not account for as fuel, toll or parking is the running
+    # cost of the vehicle itself. Clamped at zero so a rounding artefact cannot show as negative.
+    running = round(max(0.0, total - fuel_component - toll - parking), 2)
+
+    return {
+        "vehicle_type": vehicle,
+        "fuel_type": fuel,
+        "mileage": km_per_litre,
+        "mileage_source": mileage_source,
+        "fuel_price": price,
+        "total_trip_cost": round(total, 2),
+        "cost_per_km": round(total / distance, 2),
+        "cost_per_passenger": round(total / passengers, 2),
+        "cost_band": predict_band(distance, km_per_litre, price, toll, parking,
+                                  litres, vehicle, fuel),
+        "fuel_consumption_litres": litres,
+        "fuel_consumption_explained": (
+            f"{distance:.0f} km / {km_per_litre} km/l x {fuel_burn_slope()} "
+            f"(real-world driving) = {litres} L"
+        ),
+        "toll_cost": toll,
+        "breakdown": {
+            "fuel": fuel_component, "toll": toll,
+            "parking": parking, "running_cost": running,
+        },
+    }
+
+
 # ---------------------------------------------------------------------------- schemas
 class PredictRequest(BaseModel):
-    start_city: str
-    destination_city: str
-    start_state: Optional[str] = None
-    destination_state: Optional[str] = None
-    vehicle_type: VehicleType = "Sedan"
-    fuel_type: FuelType = "Petrol"
-    mileage: Optional[float] = Field(
-        None, gt=3, lt=60,
-        description="km per litre. Omit and the mileage sub-model fills it in from the "
-                    "vehicle and fuel type, so you are never asked for a number you may "
-                    "not know.",
+    """What the form collects. Anything absent here is predicted, not assumed.
+
+    extra="forbid" matters more than it looks: without it a stale client posting fields this
+    API no longer reads would get a confident 200 back, computed from inputs it believed were
+    honoured and were silently dropped. A 422 is the kinder failure.
+    """
+    model_config = {"extra": "forbid"}
+
+    # Bounds, not warnings. Distance used to be derived from two real cities, which made a sane
+    # value structurally guaranteed; a typed box guarantees nothing. At 0 the cost-per-km divides
+    # by zero, below about 10 km the toll model is outside anything it ever saw, and with no
+    # ceiling a stray keypress extrapolates linearly into six figures without erroring.
+    distance_km: float = Field(
+        ..., gt=10, le=3000,
+        description="road distance in km - look it up on the distance page",
     )
-    departure_hour: int = Field(9, ge=0, le=23)
-    month: int = Field(6, ge=1, le=12)
-    traffic_level: Optional[TrafficLevel] = Field(
-        None, description="omit to have the traffic classifier infer it from hour and month"
-    )
-    fuel_price: Optional[float] = Field(
-        None, gt=30, lt=300,
-        description="rupees per litre (per kg for CNG). Omit to use the per-state table, "
-                    "which is verified for only 6 of 35 states.",
-    )
-    parking_cost: Optional[float] = Field(None, ge=0, le=2000)
+    petrol_price: Optional[float] = Field(None, gt=30, lt=300)
+    diesel_price: Optional[float] = Field(None, gt=30, lt=300)
+    cng_price: Optional[float] = Field(None, gt=30, lt=300,
+                                       description="rupees per kg for CNG")
+    parking_cost: float = Field(70, ge=0, le=2000)
     passengers: int = Field(4, ge=1, le=8)
+    mileage: Optional[dict[VehicleType, float]] = Field(
+        None,
+        description='per-vehicle km/l override, e.g. {"SUV": 12.5}. Omit a vehicle and the '
+                    'mileage sub-model fills it in.',
+    )
 
 
 # ----------------------------------------------------------------------------- routes
@@ -339,13 +312,11 @@ def health():
 def metrics():
     """Honest test-set numbers. The UI shows these verbatim - do not round them up.
 
-    This endpoint used to report R2 = 0.999707 as the accuracy of a prediction. That number is
-    real but it does not describe what a user receives: it was measured with the true toll,
-    parking and litres handed to the model as inputs, and a user supplies none of those. What
-    they get is the chained pipeline, which starts from two city names.
-
-    Both are reported, labelled, with the gap between them stated. The headline the UI should
-    quote is `served`.
+    Two numbers get reported because there are two different questions, and only one of them is
+    the user's. `served` is what a prediction from this API is worth. `fed_true_components` is
+    the same regressor handed the litres actually burnt and the toll actually paid - it scores
+    far higher and it answers a question nobody can ask, because those are exactly the figures
+    you cannot know before setting off. Quote `served`.
     """
     pm = PIPE["metrics"]
     m = dict(BUNDLE["metrics"])
@@ -353,20 +324,20 @@ def metrics():
     served = pm["cost_chained"]
     fed = pm["cost_true_components"]
     m["served"] = {
-        "what": "chained pipeline: two city names + vehicle + fuel + departure time",
+        "what": "distance + fuel price + parking in, a cost for every vehicle out",
         "r2": served["r2"], "rmse": served["rmse"], "mae": served["mae"],
         "note": "This is what a prediction from this API is worth.",
     }
     m["fed_true_components"] = {
-        "what": "the same cost regressor, given the true toll, parking and litres",
+        "what": "the same cost regressor, given the true toll and litres",
         "r2": fed["r2"], "rmse": fed["rmse"], "mae": fed["mae"],
-        "note": ("Kept for comparison, not as a headline. It answers 'given the litres burnt "
+        "note": ("Reported for contrast, not as a headline. It answers 'given the litres burnt "
                  "and the toll paid, can you add them up?' - which is not the user's question."),
     }
     m["honesty_gap"] = {
         "r2": round(fed["r2"] - served["r2"], 6),
         "mae_rupees": round(served["mae"] - fed["mae"], 2),
-        "note": ("The cost of asking the model to derive its own inputs instead of being "
+        "note": ("What it costs to derive the two inputs nobody can supply, instead of being "
                  "handed them. This gap IS the finding, not an embarrassment."),
     }
     m["sub_models"] = {
@@ -374,121 +345,46 @@ def metrics():
             "trained_on": f"{pm['n_real_distance_pairs']} real OSRM road distances",
             "r2": pm["distance_real"]["r2"], "rmse_km": pm["distance_real"]["rmse"],
             "mae_km": pm["distance_real"]["mae"],
-            "constant_baseline_mae_km": pm["distance_constant_baseline"]["mae"],
-            "note": ("Replaces the hardcoded winding factor 1.2355. The only sub-model trained "
-                     "on observed rather than generated data."),
+            "fixed_ratio_baseline_mae_km": pm["distance_constant_baseline"]["mae"],
+            "note": ("The only model here trained on observed rather than generated data. It "
+                     "fills in road distances the reference table does not cover."),
+        },
+        "litres": {
+            "r2": pm["litres"]["r2"], "rmse_litres": pm["litres"]["rmse"],
+            "fitted_ratio_slope": pm["litres_ratio_slope"],
+            "note": ("The slope sits above 1.0 because real driving burns more than "
+                     "distance / mileage. How much more depends on conditions nobody can state "
+                     "in advance, so the model learns the average and carries the rest as "
+                     "error - the largest single term in the budget below."),
         },
         "parking": {
-            "note": ("NEGATIVE RESULT: six model families all scored test R2 <= 0, because "
-                     "parking is drawn uniformly at random in the training data. The mean is "
-                     "served instead of a model."),
+            "best_r2": pm["parking_negative_result"]["best_r2"],
+            "note": ("NEGATIVE RESULT: six model families all scored test R2 <= 0, worse than "
+                     "predicting the mean. Nothing in the inputs predicts parking, which is "
+                     "why it is asked for rather than guessed."),
         },
-        "traffic": pm["traffic"],
         "error_budget": pm["error_budget"],
     }
-    m["geography_bias"] = pm["geography_bias"]
+    m["distance_convention_gap"] = pm["distance_convention_gap"]
     m["notes"] = {
-        "regression": "Linear regression including the litres x price interaction term.",
+        "regression": ("Linear regression including the litres x price and distance x vehicle "
+                       "interaction terms."),
         "band": ("cost_band is a quartile split of Rs/km, which the regressor already predicts "
-                 "well, so this accuracy is high by construction."),
-        "traffic": ("Genuinely non-trivial: traffic is only partly determined by departure hour, "
-                    "so the ceiling here is low. Compare against the majority baseline."),
-        "served_vs_fed": ("Quote `served`. `fed_true_components` is the older, larger number "
-                          "and it measures a different question."),
+                 "well, so this accuracy is partly high by construction."),
+        "served_vs_fed": ("Quote `served`. `fed_true_components` is the larger number and it "
+                          "measures a different question."),
     }
     return m
 
 
-@app.post("/api/departure-sweep")
-def departure_sweep(req: PredictRequest):
-    """Predicted cost for every one of the 24 departure hours on the same route.
-
-    This is what makes the traffic classifier do real work. In the main prediction it produces
-    a single word; here it drives 24 predictions and answers a question a traveller actually
-    has — "when should I leave?"
-
-    traffic_level is ignored if supplied: the whole point is to let the classifier infer it per
-    hour. Distance is resolved once (and cached), so this is 24 cheap model calls, not 24 routing
-    round-trips.
-    """
-    origin = resolve_city(req.start_city, req.start_state)
-    dest = resolve_city(req.destination_city, req.destination_state)
-    if (origin.city, origin.state) == (dest.city, dest.state):
-        raise HTTPException(400, "Start and destination must be different cities.")
-
-    distance, distance_source = road_distance_km(
-        float(origin.lat), float(origin.lon), float(dest.lat), float(dest.lon)
-    )
-    fuel_price, _ = fuel_price_for(origin.state, req.fuel_type, req.fuel_price)
-    parking = DEFAULT_PARKING if req.parking_cost is None else req.parking_cost
-    mileage = (req.mileage if req.mileage is not None
-               else default_mileage(req.vehicle_type, req.fuel_type))
-
-    # Expected cost, not argmax cost.
-    #
-    # Taking the classifier's single most likely traffic level gives a 3-level step function —
-    # every hour collapses onto one of three values, which hides everything the model actually
-    # knows. Weighting each level by its predicted probability gives a smooth curve that
-    # reflects the classifier's real confidence: an hour that is 55% High reads differently
-    # from one that is 95% High, and it should.
-    clf = BUNDLE["traffic_classifier"]
-    levels = list(clf.classes_)
-
-    hours = []
-    for hour in range(24):
-        probs = clf.predict_proba(traffic_features(hour, req.month))[0]
-        per_level = {
-            level: estimate_cost(distance, mileage, fuel_price, parking,
-                                 level, req.vehicle_type)
-            for level in levels
-        }
-        expected_cost = sum(p * per_level[l][2] for l, p in zip(levels, probs))
-        expected_litres = sum(p * per_level[l][0] for l, p in zip(levels, probs))
-        expected_minutes = sum(
-            p * distance * TRAFFIC_MIN_PER_KM[l] for l, p in zip(levels, probs)
-        )
-        modal = levels[int(np.argmax(probs))]
-
-        hours.append({
-            "hour": hour,
-            "traffic_level": modal,
-            "traffic_confidence": round(float(max(probs)), 3),
-            "traffic_probabilities": {l: round(float(p), 3) for l, p in zip(levels, probs)},
-            "total_trip_cost": round(expected_cost, 2),
-            "fuel_consumption_litres": round(expected_litres, 3),
-            "estimated_time_minutes": round(expected_minutes, 1),
-        })
-
-    cheapest = min(hours, key=lambda h: h["total_trip_cost"])
-    dearest = max(hours, key=lambda h: h["total_trip_cost"])
-
-    return {
-        "route": {
-            "from": {"city": origin.city, "state": origin.state},
-            "to": {"city": dest.city, "state": dest.state},
-            "distance_km": distance,
-            "distance_source": distance_source,
-        },
-        "hours": hours,
-        "cheapest": cheapest,
-        "dearest": dearest,
-        "max_saving": round(dearest["total_trip_cost"] - cheapest["total_trip_cost"], 2),
-        "note": (
-            "Cost varies with departure hour only through traffic, which changes how much fuel "
-            "is burnt. Tolls, parking and distance are unaffected."
-        ),
-    }
-
-
 @app.get("/api/loss-curve")
 def loss_curve():
-    """Gradient-descent-from-scratch results for the 'Two Roads, One Answer' section.
+    """Gradient-descent-from-scratch results, against the closed-form solution.
 
-    The honest headline: the two methods agree on PREDICTIONS but not yet on WEIGHTS.
-    fuel_bill is by construction ~ fuel_consumption_litres x fuel_price, so the design
-    matrix is near-collinear, the loss surface is a long narrow valley, and gradient
-    descent crawls along the flat direction. This is the same ill-conditioning the
-    notebook flags in section 3.2 - surfaced rather than hidden.
+    The honest headline: the two methods agree on PREDICTIONS but not on WEIGHTS. fuel_bill is
+    by construction ~ litres x price, so the design matrix is near-collinear, the loss surface
+    is a long narrow valley, and gradient descent crawls along the flat direction. Surfaced
+    rather than hidden.
     """
     gd = BUNDLE["gradient_descent"]
     converged = gd["epochs_used"] < 60_000
@@ -511,24 +407,23 @@ def loss_curve():
             "weights have not converged after {:,} epochs. fuel_bill is almost exactly "
             "fuel_consumption_litres x fuel_price, so those columns are near-collinear: many "
             "different weight combinations fit equally well and gradient descent drifts slowly "
-            "along that flat direction. sklearn jumps straight to one solution via the normal "
-            "equations. Both are correct; they simply pick different points in the valley."
+            "along that flat direction. The closed form jumps straight to one solution via the "
+            "normal equations. Both are correct; they simply pick different points in the "
+            "valley."
         ).format(gd["max_prediction_gap"], gd["epochs_used"]),
     }
 
 
 @app.get("/api/default-mileage")
-def default_mileage_endpoint(vehicle: VehicleType = "Sedan", fuel: FuelType = "Petrol"):
-    """What the mileage sub-model predicts for this vehicle and fuel.
+def default_mileage_endpoint(fuel: FuelType = "Petrol"):
+    """What each of the three vehicles manages on this fuel, from the mileage sub-model.
 
-    Exists so the interface can prefill the mileage field with a figure that came from a model
-    instead of a single hardcoded 15.5 for every car. The user can still override it, and the
-    prediction response reports which of the two was used via `inputs.mileage_source`.
+    The form prefills from this rather than asking for a number nobody knows offhand, and it
+    returns all three at once because the result prices all three at once.
     """
     return {
-        "vehicle_type": vehicle,
         "fuel_type": fuel,
-        "mileage": default_mileage(vehicle, fuel),
+        "mileage": {v: default_mileage(v, fuel) for v in VEHICLES},
         "source": "mileage_model",
         "note": ("Predicted from vehicle and fuel type. The training data draws mileage "
                  "uniformly inside a per-combination range, so this is the middle of the "
@@ -538,7 +433,7 @@ def default_mileage_endpoint(vehicle: VehicleType = "Sedan", fuel: FuelType = "P
 
 @app.get("/api/cities")
 def search_cities(q: str = Query("", max_length=64), limit: int = Query(12, ge=1, le=50)):
-    """Autocomplete over the 537 in-domain cities. Prefix matches rank above substring matches."""
+    """Autocomplete over the in-domain cities, for the distance lookup."""
     term = q.strip().lower()
     if not term:
         top = IN_DOMAIN.nlargest(limit, "population")
@@ -559,111 +454,103 @@ def search_cities(q: str = Query("", max_length=64), limit: int = Query(12, ge=1
     }
 
 
-@app.post("/api/predict")
-def predict(req: PredictRequest):
-    origin = resolve_city(req.start_city, req.start_state)
-    dest = resolve_city(req.destination_city, req.destination_state)
-    if (origin.city, origin.state) == (dest.city, dest.state):
+@app.get("/api/distance")
+def distance_between(
+    origin: str = Query(..., alias="from", max_length=64),
+    destination: str = Query(..., alias="to", max_length=64),
+    origin_state: Optional[str] = Query(None, alias="from_state", max_length=64),
+    destination_state: Optional[str] = Query(None, alias="to_state", max_length=64),
+):
+    """Road distance between two cities, for routes the shipped reference table does not cover.
+
+    Tries live routing first and falls back to the fitted distance model, reporting which one
+    answered. `straight_line_km` comes back alongside so the gap between the two is visible:
+    the ratio between them is not a constant, which is the reason a model sits here at all.
+    """
+    a = resolve_city(origin, origin_state)
+    b = resolve_city(destination, destination_state)
+    if (a.city, a.state) == (b.city, b.state):
         raise HTTPException(400, "Start and destination must be different cities.")
 
-    distance, distance_source = road_distance_km(
-        float(origin.lat), float(origin.lon), float(dest.lat), float(dest.lon)
-    )
+    km, source = road_distance_km(float(a.lat), float(a.lon), float(b.lat), float(b.lon))
+    straight = round(rf.haversine(float(a.lat), float(a.lon), float(b.lat), float(b.lon)), 2)
+    return {
+        "from": {"city": a.city, "state": a.state},
+        "to": {"city": b.city, "state": b.state},
+        "distance_km": km,
+        "straight_line_km": straight,
+        "winding_ratio": round(km / straight, 3) if straight else None,
+        "source": source,
+        "fuel_prices": {"from": state_fuel_prices(a.state), "to": state_fuel_prices(b.state)},
+        "in_trained_range": MIN_TRAINED_KM <= km <= MAX_TRAINED_KM,
+    }
 
-    traffic = req.traffic_level
-    traffic_inferred = traffic is None
-    if traffic_inferred:
-        traffic = predict_traffic(req.departure_hour, req.month)
 
-    fuel_price, price_source = fuel_price_for(origin.state, req.fuel_type, req.fuel_price)
-    parking = DEFAULT_PARKING if req.parking_cost is None else req.parking_cost
+@app.post("/api/predict")
+def predict(req: PredictRequest):
+    """Price the trip for every vehicle on every fuel.
 
-    # Sub-model 2 fills this in when the user does not know their own fuel efficiency.
-    mileage_source = "user" if req.mileage is not None else "mileage_model"
-    mileage = (req.mileage if req.mileage is not None
-               else default_mileage(req.vehicle_type, req.fuel_type))
+    All nine combinations come back in one response rather than one request each. That lets the
+    interface switch fuel and compare vehicles without another round trip, and - more to the
+    point - a single request cannot race itself the way three concurrent ones can.
+    """
+    distance = req.distance_km
+    overrides = req.mileage or {}
 
-    litres, toll, total = estimate_cost(
-        distance, mileage, fuel_price, parking, traffic, req.vehicle_type
-    )
+    supplied = {"Petrol": req.petrol_price, "Diesel": req.diesel_price, "CNG": req.cng_price}
+    prices = {f: (supplied[f] if supplied[f] is not None else NATIONAL_PRICE[f]) for f in FUELS}
+    price_sources = {f: ("user" if supplied[f] is not None else "national_average")
+                     for f in FUELS}
 
-    band = predict_band(distance, mileage, fuel_price, toll, parking, litres,
-                        req.vehicle_type, req.fuel_type, traffic)
+    results = {
+        fuel: [price_one(distance, vehicle, fuel, prices[fuel], req.parking_cost,
+                         req.passengers, overrides.get(vehicle))
+               for vehicle in VEHICLES]
+        for fuel in FUELS
+    }
+
+    flat = [row for rows in results.values() for row in rows]
+    cheapest = min(flat, key=lambda r: r["total_trip_cost"])
+    dearest = max(flat, key=lambda r: r["total_trip_cost"])
 
     warnings: list[str] = []
     if not (MIN_TRAINED_KM <= distance <= MAX_TRAINED_KM):
         warnings.append(
-            f"{distance:.0f} km is outside the model's training range "
+            f"{distance:.0f} km is outside the range the model was trained on "
             f"({MIN_TRAINED_KM:.0f}-{MAX_TRAINED_KM:.0f} km) - this estimate is extrapolating."
         )
-    if distance_source == "haversine":
+    estimated = [f for f in FUELS if price_sources[f] == "national_average"]
+    if estimated:
         warnings.append(
-            "Routing service unavailable; distance is a calibrated straight-line estimate "
-            "(haversine x 1.2355) and may differ from the real road distance."
-        )
-    # "user" is not a caveat — if someone typed the price they paid, there is nothing to warn
-    # about. Only the table's own estimates and the fallback need disclosing.
-    if price_source in ("estimated", "fallback"):
-        warnings.append(
-            f"Fuel price for {origin.state} is an estimate, not a measured price "
-            f"(source: {price_source}). Enter the price at your pump for a firmer number."
+            f"{', '.join(estimated)} priced at the national average rather than a figure you "
+            f"gave us. Enter the price at your pump for a firmer number."
         )
 
-    # The error bar shown next to the prediction must describe THIS prediction. It used to be
-    # BUNDLE["metrics"]["regression"]["mae"] = Rs 39.66, measured with the true toll, parking
-    # and litres handed to the model - none of which the user supplied. The chained pipeline's
-    # own held-out MAE is the honest figure, and it is an order of magnitude larger. Quoting
-    # the small number beside a prediction that cannot achieve it is the exact dishonesty this
-    # refactor set out to remove.
+    # The error bar shown beside a prediction must describe THIS prediction. It is the chained
+    # pipeline's own held-out MAE, not the far smaller figure the regressor scores when it is
+    # handed the true toll and litres - quoting that one next to a number that cannot achieve
+    # it would be dishonest.
     served = PIPE["metrics"]["cost_chained"]
-    fuel_component = round(litres * fuel_price, 2)
-    maintenance = round(max(0.0, total - fuel_component - toll - parking), 2)
 
     return {
-        "route": {
-            "from": {"city": origin.city, "state": origin.state},
-            "to": {"city": dest.city, "state": dest.state},
-            "distance_km": distance,
-            "distance_source": distance_source,
-        },
         "inputs": {
-            "vehicle_type": req.vehicle_type, "fuel_type": req.fuel_type,
-            "mileage": mileage, "mileage_source": mileage_source,
-            "fuel_price": fuel_price,
-            "fuel_price_source": price_source, "parking_cost": parking,
-            "departure_hour": req.departure_hour, "month": req.month,
+            "distance_km": distance,
+            "parking_cost": req.parking_cost,
             "passengers": req.passengers,
+            "fuel_prices": prices,
+            "fuel_price_sources": price_sources,
         },
-        "derived": {
-            "traffic_level": traffic,
-            "traffic_inferred": traffic_inferred,
-            "fuel_consumption_litres": litres,
-            # The multiplier quoted here is read back out of the fitted litres model at
-            # startup (see recovered_traffic_multipliers), not hardcoded. The model reproduces
-            # the relationship to R2 = 1.000000, so the arithmetic shown is genuinely what it
-            # computed - the string stays honest without pretending no model was involved.
-            "fuel_consumption_explained": (
-                f"{distance:.0f} km / {mileage} km/l x {TRAFFIC_MULT[traffic]} "
-                f"({traffic.lower()} traffic) = {litres} L"
-            ),
-            "toll_cost": toll,
-            "estimated_time_minutes": round(distance * TRAFFIC_MIN_PER_KM[traffic], 1),
-        },
+        "results": results,
+        "cheapest": {k: cheapest[k] for k in ("vehicle_type", "fuel_type", "total_trip_cost")},
+        "dearest": {k: dearest[k] for k in ("vehicle_type", "fuel_type", "total_trip_cost")},
+        "max_saving": round(dearest["total_trip_cost"] - cheapest["total_trip_cost"], 2),
         "prediction": {
-            "total_trip_cost": round(total, 2),
             "typical_error": round(served["mae"], 2),
             "typical_error_note": (
                 "Mean absolute error of the chained pipeline on held-out trips. Most of it is "
-                "toll and parking, which are not predictable from anything a traveller knows "
-                "before setting off."
+                "toll and real-world fuel burn, neither of which is predictable from anything "
+                "a traveller knows before setting off."
             ),
-            "cost_per_km": round(total / distance, 2),
-            "cost_per_passenger": round(total / req.passengers, 2),
-            "cost_band": band,
-            "breakdown": {
-                "fuel": fuel_component, "toll": toll,
-                "parking": parking, "wear_and_tear": maintenance,
-            },
         },
         "warnings": warnings,
     }

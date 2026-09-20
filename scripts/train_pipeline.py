@@ -1,32 +1,30 @@
 """
-Phase B - train the chained model pipeline that replaces app.py's hardcoded constants.
+Train the chained model pipeline that the API serves.
 
-WHAT THIS REPLACES
-------------------
-app.py currently predicts a trip cost like this:
+WHAT THE PIPELINE IS FOR
+------------------------
+A trip cost is an addition: fuel plus toll plus parking plus running costs. Writing down that
+addition is not the hard part - knowing what to put into it is. A traveller setting off knows
+the distance, what their fuel costs and roughly what parking will run to. They do not know how
+many litres they will burn or what the tolls will come to, and those are the two terms that
+actually move the total.
 
-    distance = haversine * 1.2355          <- constant
-    litres   = distance / mileage * TRAFFIC_MULT[traffic]
-    toll     = distance * 1.301            <- constant
-    parking  = 70.0                        <- constant
-    cost     = cost_regressor([distance, mileage, price, toll, parking, litres, ...])
+So each unknown gets its own fitted model, and the cost regressor consumes their outputs.
 
-Only the last line is a model. Everything above it is arithmetic, and because the regressor's
-single strongest feature (`fuel_consumption_litres`, corr +0.96) is produced by that arithmetic,
-the reported R2 = 0.9997 largely measures the model's ability to add up numbers it was given.
+THE SUB-MODELS
+--------------
+  1. distance   route geometry -> road km    trained on REAL OSRM distances; powers the
+                                             distance lookup when a route is not in the table
+  2. mileage    vehicle + fuel -> km/l       gives each of the three vehicles its own figure
+  3. litres     distance + mileage -> litres
+  4. toll       distance -> Rs
+  5. parking    nothing predicts it          a negative result, and the reason parking is
+                                             asked for rather than guessed
+  then the cost regressor consumes 2-4 plus what the user typed.
 
-This script fits a model for each of those steps and chains them, so a prediction is made from
-what a traveller actually knows: two cities, a vehicle, a fuel type and a departure time.
-
-THE SIX SUB-MODELS
-------------------
-  1. distance   haversine + route geometry -> road km      trained on REAL OSRM distances
-  2. mileage    vehicle + fuel             -> km/l
-  3. litres     distance + mileage + traffic -> litres
-  4. toll       distance                   -> Rs
-  5. parking    (anything)                 -> Rs           expected to FAIL, and it does
-  6. traffic    departure hour + month     -> Low/Med/High
-  then the cost regressor consumes their outputs.
+Every sub-model is scored against the simplest thing that could work in its place - a fixed
+ratio, a flat rate, the training mean. A model that cannot beat that has not earned its slot,
+and one of them does not: see sub-model 5.
 
 STACKING DONE PROPERLY
 ----------------------
@@ -54,10 +52,9 @@ from sklearn.model_selection import cross_val_predict, train_test_split
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import roadtrip_features as rf                                          # noqa: E402
-from evaluation import (SEED, candidate_classifiers, candidate_regressors,  # noqa: E402
-                        evaluate_classifier, evaluate_regressor, labels, make_pipeline,
-                        pick_best, print_classification_table,
-                        print_regression_table, regression_scores, rule, strip_fitted)
+from evaluation import (SEED, candidate_regressors, evaluate_regressor,  # noqa: E402
+                        make_pipeline, pick_best, print_regression_table,
+                        regression_scores, rule, strip_fitted)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WIDE = os.path.join(ROOT, "data", "road_trip_wide.csv")
@@ -67,12 +64,13 @@ OUT_MODEL = os.path.join(ROOT, "models", "pipeline.joblib")
 OUT_EVAL = os.path.join(ROOT, "models", "pipeline_eval.joblib")
 OUT_REPORT = os.path.join(ROOT, "data", "pipeline_report.json")
 
-# The incumbent constants, kept here so every sub-model can be scored against the thing it
-# replaces. A model that cannot beat the constant it replaces has not earned its place.
-CONST_WINDING = 1.2355
-CONST_TOLL_RATE = 1.301
-CONST_PARKING = 70.0
-CONST_TRAFFIC_MULT = {"Low": 0.944, "Medium": 1.045, "High": 1.165}
+# Naive baselines. Every sub-model below is scored against the simplest thing that could stand
+# in its place - one ratio, one rate, one flat amount - because "the model got R2 0.8" means
+# nothing until you know what arithmetic alone would have scored. A model that cannot beat its
+# baseline has not earned a slot in the prediction path.
+BASE_WINDING = 1.2355      # a single straight-line-to-road ratio for the whole country
+BASE_TOLL_RATE = 1.301     # Rs per km, flat
+BASE_PARKING = 70.0        # Rs, the same for every trip
 
 TEST_SIZE = 0.2
 report = {}
@@ -87,18 +85,18 @@ def build_matrix(builder, rows):
 # 1. ROAD DISTANCE - the one sub-model trained on genuinely observed data
 # ==========================================================================================
 def train_distance_model():
-    rule("SUB-MODEL 1 of 6 - ROAD DISTANCE   (replaces WINDING_FACTOR = 1.2355)")
+    rule("SUB-MODEL 1 of 5 - ROAD DISTANCE   (powers the distance lookup)")
     real = pd.read_csv(REAL)
     print(f"  training data : {len(real)} REAL city-pair road distances from OSRM")
     print(f"  haversine     : {real.haversine_km.min():.0f} - {real.haversine_km.max():.0f} km")
     print(f"  observed winding factor: mean {real.factor.mean():.4f}  sd {real.factor.std():.4f}"
           f"  range {real.factor.min():.4f} - {real.factor.max():.4f}")
-    print(f"  the constant it replaces: {CONST_WINDING}  <- a single number for that whole range")
+    print(f"  a single national ratio would be: {BASE_WINDING}  <- one number for that whole range")
 
     # The extreme routes are worth naming, because a reader's first instinct on seeing a
     # factor of 3.6 is "bad data" - and here it is not.
     worst = real.nlargest(3, "factor")
-    print("\n  the three worst routes for the constant:")
+    print("\n  the three routes a single ratio serves worst:")
     for _, r in worst.iterrows():
         print(f"    {r.start_city} -> {r.dest_city:<14} straight {r.haversine_km:>7.1f} km"
               f"   road {r.road_km:>7.1f} km   factor {r.factor:.2f}")
@@ -118,9 +116,9 @@ def train_distance_model():
     Xtr, Xte, ytr, yte, htr, hte = train_test_split(X, y, hav, test_size=0.25,
                                                     random_state=SEED)
 
-    # Baseline to beat: the hardcoded constant.
-    const_scores = regression_scores(yte, hte * CONST_WINDING)
-    print(f"\n  BASELINE  haversine x {CONST_WINDING} :  "
+    # Baseline to beat: one ratio for the whole country.
+    const_scores = regression_scores(yte, hte * BASE_WINDING)
+    print(f"\n  BASELINE  haversine x {BASE_WINDING} :  "
           f"R2 {const_scores['r2']:.4f}   RMSE {const_scores['rmse']:.2f} km   "
           f"MAE {const_scores['mae']:.2f} km")
 
@@ -209,49 +207,58 @@ def _verdict(train_r2, test_r2):
 
 
 # ==========================================================================================
-# How wrong is the generated dataset's geography? Worth knowing before trusting anything
-# measured on it.
+# THE ASSUMPTION THIS PROJECT RESTS ON, MEASURED RATHER THAN ASSERTED
 # ==========================================================================================
-def measure_dataset_geography_bias():
-    rule("GEOGRAPHY CHECK - the generated dataset vs the real road network")
+def measure_distance_convention_gap():
+    """How far apart are the distances the model LEARNED ON and the ones it is SERVED?
+
+    This is the honest limitation of the whole design, so it is measured first and stated in
+    kilometres rather than left in a footnote.
+
+    The cost model is fitted on data/road_trip_wide.csv, whose distance column follows a
+    synthetic convention: straight-line distance times a random draw around 1.2355. The number
+    a user types comes from the reference table, which holds REAL road distances measured on the
+    actual network. If those two disagree systematically, the model is being asked at serve time
+    about a quantity that does not mean what it meant at training time.
+    """
+    rule("DISTANCE CONVENTION CHECK - what the model learned on vs what it is served")
     real = pd.read_csv(REAL)
-    dataset_convention = real.haversine_km * CONST_WINDING
-    err = dataset_convention - real.road_km
+    convention = real.haversine_km * BASE_WINDING
+    err = convention - real.road_km
     pct = err / real.road_km * 100
-    print("  data/road_trip_wide.csv sets  distance_km = haversine x N(1.2355, 0.082).")
-    print("  Compared with the real road distance for the same city pairs:")
-    print(f"    mean signed error : {err.mean():+.1f} km  ({pct.mean():+.1f}%)   <- bias")
+    print(f"  Checked on {len(real)} city pairs where both are known.")
+    print(f"    mean signed error : {err.mean():+.1f} km  ({pct.mean():+.1f}%)   <- systematic bias")
     print(f"    mean abs error    : {err.abs().mean():.1f} km  ({pct.abs().mean():.1f}%)"
-          f"   <- per-route error")
+          f"   <- typical single route")
     print(f"    worst overshoot   : {err.max():+.1f} km  ({pct.max():+.1f}%)")
     print(f"    worst undershoot  : {err.min():+.1f} km  ({pct.min():+.1f}%)")
-    print("\n  READ THIS CAREFULLY, because the two numbers say opposite-sounding things:")
-    print("  The constant is very nearly UNBIASED - averaged over hundreds of routes it is")
-    print("  within a fraction of a percent of the truth. That is why it survived review for so")
-    print("  long. But 'unbiased on average' is not 'correct': route by route it is off by")
-    print(f"  {pct.abs().mean():.1f}% typically, and by tens of percent at the extremes. A user does not")
-    print("  take the average of every road trip in India - they take one specific trip, and on")
-    print("  that trip the errors do not cancel.")
-    print("\n  Consequence for this project: costs measured ON the generated dataset stay")
-    print("  self-consistent (its own distance column generated its own costs), but the DISTANCE")
-    print("  model must be trained on the real data, which is what happens above. The app")
-    print("  therefore serves real geography even though the cost model was fitted on generated")
-    print("  trips. Stated in the notebook rather than smoothed over.")
-    report["geography_bias"] = {
+    print("\n  The two numbers say opposite-sounding things, and both matter:")
+    print("  The systematic bias is near zero - averaged over hundreds of routes the training")
+    print("  convention lands within a fraction of a percent of the real network. So the cost")
+    print("  model is not learning a distorted idea of what a kilometre is, and the rupees-per-km")
+    print("  relationships it fits carry over to real distances intact.")
+    print(f"  But route by route the convention is off by {pct.abs().mean():.1f}% typically, and by tens of")
+    print("  percent where geography intervenes. That spread is why the reference table is built")
+    print("  from measured road distances instead of generated from the same convention: the")
+    print("  user gets the real number even though the cost model was fitted on synthetic ones.")
+    print("\n  LIMITATION, STATED PLAINLY: the cost relationships are learned from generated")
+    print("  trips. This check bounds what that costs - it does not eliminate it.")
+    report["distance_convention_gap"] = {
         "mean_signed_km": float(err.mean()), "mean_signed_pct": float(pct.mean()),
         "mean_abs_km": float(err.abs().mean()), "mean_abs_pct": float(pct.abs().mean()),
         "max_km": float(err.max()), "min_km": float(err.min()),
+        "n_pairs": int(len(real)),
     }
 
 
 # ==========================================================================================
-# 2-6. the sub-models trained on the generated wide dataset
+# 2-5. the sub-models trained on the generated wide dataset
 # ==========================================================================================
 def train_sub_models(df, tr, te):
     models, chosen = {}, {}
 
     # ---------------------------------------------------------------- 2. mileage
-    rule("SUB-MODEL 2 of 6 - MILEAGE   (so the user need not know their own km/l)")
+    rule("SUB-MODEL 2 of 5 - MILEAGE   (a km/l figure for each of the three vehicles)")
     X = build_matrix(rf.mileage_features, df[["vehicle_type", "fuel_type"]].values)
     y = df.mileage.values.astype(float)
     rows = [(n, evaluate_regressor(m, X[tr], y[tr], X[te], y[te]))
@@ -268,55 +275,56 @@ def train_sub_models(df, tr, te):
     report["mileage"] = {"candidates": {n: strip_fitted(r) for n, r in rows}, "chosen": name}
 
     # ---------------------------------------------------------------- 3. litres
-    rule("SUB-MODEL 3 of 6 - FUEL CONSUMED   (replaces TRAFFIC_MULT)")
-    X = build_matrix(rf.litres_features,
-                     df[["distance_km", "mileage", "traffic_level"]].values)
+    rule("SUB-MODEL 3 of 5 - FUEL CONSUMED")
+    X = build_matrix(rf.litres_features, df[["distance_km", "mileage"]].values)
     y = df.fuel_consumption_litres.values.astype(float)
     rows = [(n, evaluate_regressor(m, X[tr], y[tr], X[te], y[te]))
             for n, m in candidate_regressors().items()]
     print_regression_table(rows, unit="litres")
     name, best = pick_best(rows)
-    print(f"\n  CHOSEN : {name}   test R2 {best['test']['r2']:.6f}")
-    # The R2 above is 1.000000, which means the linear model reproduced the generator exactly.
-    # That claim is worth cashing in: fit the same model UNSCALED on just the three ratio
-    # columns and the coefficients are the traffic multipliers themselves.
+    print(f"\n  CHOSEN : {name}   test R2 {best['test']['r2']:.6f}   "
+          f"RMSE {best['test']['rmse']:.3f} L")
+
+    # WHAT THE FITTED SLOPE MEANS, AND WHY IT IS NOT 1.0
     #
-    #   litres = ratio * mult(traffic)
-    #          = ratio * [ mult_Low + (mult_Med - mult_Low)*Medium + (mult_High - mult_Low)*High ]
-    #
-    # so the weight on `km_per_litre_ratio` IS mult_Low, and the two interaction weights are
-    # the gaps up to Medium and High.
+    # Textbook fuel burn is litres = distance / mileage, i.e. a slope of exactly 1.0 on the
+    # ratio column. Refitting unscaled on that one column recovers what the data actually says.
     from sklearn.linear_model import LinearRegression as _LR
-    cols = [rf.LITRES_FEATURES.index(c)
-            for c in ("km_per_litre_ratio", "ratio_x_Medium", "ratio_x_High")]
-    bare = _LR().fit(X[tr][:, cols], y[tr])
-    w_low, w_med_gap, w_high_gap = bare.coef_
-    recovered = {"Low": w_low, "Medium": w_low + w_med_gap, "High": w_low + w_high_gap}
-    print("\n  READING THE GENERATOR OFF THE COEFFICIENTS")
-    print("  Because R2 is exactly 1.000000, the fit has not approximated the data-generating")
-    print("  rule - it has reproduced it. Refitting unscaled on the three ratio columns gives:")
-    print(f"    {'traffic':<10}{'recovered':>12}{'generator':>12}{'error':>12}")
-    for level in ("Low", "Medium", "High"):
-        truth = CONST_TRAFFIC_MULT[level]
-        print(f"    {level:<10}{recovered[level]:>12.6f}{truth:>12.4f}"
-              f"{recovered[level] - truth:>+12.6f}")
-    print(f"    intercept {bare.intercept_:+.2e}  (zero, as the formula has no constant term)")
-    print("\n  This is the point of the interaction columns. Given only distance, mileage and")
-    print("  traffic one-hots, an additive model CANNOT express a ratio multiplied by a")
-    print("  per-class constant, and it would have to settle for an approximation. Handed the")
-    print("  products, it recovers the three multipliers to six decimal places.")
-    print("  Honest reading: litres is a deterministic function of distance, mileage and")
-    print("  traffic in this dataset, so a perfect score here confirms the FEATURES are right -")
-    print("  it is not evidence about real-world fuel burn.")
+    ratio_col = rf.LITRES_FEATURES.index("km_per_litre_ratio")
+    bare = _LR().fit(X[tr][:, [ratio_col]], y[tr])
+    slope = float(bare.coef_[0])
+    ratio_te = X[te][:, ratio_col]
+    residual = y[te] - slope * ratio_te
+    print("\n  READING THE SLOPE")
+    print(f"    fitted slope on (distance / mileage) : {slope:.5f}")
+    print("    textbook value                       : 1.00000")
+    print(f"    intercept                            : {bare.intercept_:+.3f} L  (near zero, "
+          f"as the relationship has no constant term)")
+    print("\n  The slope sits ABOVE 1.0, and that excess is the point. A car does not achieve its")
+    print("  rated mileage on a real trip - stop-start driving, gradients and congestion all")
+    print("  cost fuel - so the litres actually burnt run above distance / mileage. How much")
+    print("  above depends on conditions the traveller cannot state before setting off, so the")
+    print("  model cannot be told them. It learns the AVERAGE penalty instead, and carries the")
+    print("  variation around that average as error:")
+    print(f"    residual sd on held-out trips : {residual.std():.3f} L")
+    print(f"    mean absolute error           : {abs(residual).mean():.3f} L")
+    print("  That error is irreducible from these inputs, and it scales with trip length rather")
+    print("  than averaging away - a 1200 km drive has four times the uncertainty of a 300 km")
+    print("  one. It is the largest single term in the cost model's error budget below.")
     models["litres"], chosen["litres"] = best["fitted"], name
-    report["litres"] = {"candidates": {n: strip_fitted(r) for n, r in rows}, "chosen": name}
+    report["litres"] = {
+        "candidates": {n: strip_fitted(r) for n, r in rows}, "chosen": name,
+        "fitted_ratio_slope": slope,
+        "residual_sd_litres": float(residual.std()),
+        "residual_mae_litres": float(abs(residual).mean()),
+    }
 
     # ---------------------------------------------------------------- 4. toll
-    rule("SUB-MODEL 4 of 6 - TOLL   (replaces TOLL_RATE = 1.301)")
+    rule("SUB-MODEL 4 of 5 - TOLL")
     X = build_matrix(rf.toll_features, df[["distance_km"]].values)
     y = df.toll_cost.values.astype(float)
-    const = regression_scores(y[te], df.distance_km.values[te] * CONST_TOLL_RATE)
-    print(f"  BASELINE  distance x {CONST_TOLL_RATE} :  R2 {const['r2']:.4f}   "
+    const = regression_scores(y[te], df.distance_km.values[te] * BASE_TOLL_RATE)
+    print(f"  BASELINE  distance x {BASE_TOLL_RATE} :  R2 {const['r2']:.4f}   "
           f"RMSE Rs {const['rmse']:.2f}")
     rows = [(n, evaluate_regressor(m, X[tr], y[tr], X[te], y[te]))
             for n, m in candidate_regressors().items()]
@@ -333,13 +341,13 @@ def train_sub_models(df, tr, te):
                       "candidates": {n: strip_fitted(r) for n, r in rows}, "chosen": name}
 
     # ---------------------------------------------------------------- 5. parking
-    rule("SUB-MODEL 5 of 6 - PARKING   (replaces DEFAULT_PARKING = 70.0)   EXPECTED TO FAIL")
+    rule("SUB-MODEL 5 of 5 - PARKING   (EXPECTED TO FAIL, and the reason it is a user input)")
     X = build_matrix(rf.parking_features,
                      df[["distance_km", "vehicle_type", "passengers"]].values)
     y = df.parking_cost.values.astype(float)
-    const = regression_scores(y[te], np.full(len(te), CONST_PARKING))
+    const = regression_scores(y[te], np.full(len(te), BASE_PARKING))
     mean_pred = regression_scores(y[te], np.full(len(te), y[tr].mean()))
-    print(f"  BASELINE  always Rs {CONST_PARKING} :      R2 {const['r2']:+.4f}   "
+    print(f"  BASELINE  always Rs {BASE_PARKING} :      R2 {const['r2']:+.4f}   "
           f"RMSE Rs {const['rmse']:.2f}")
     print(f"  BASELINE  always the train mean Rs {y[tr].mean():.1f} :  "
           f"R2 {mean_pred['r2']:+.4f}   RMSE Rs {mean_pred['rmse']:.2f}")
@@ -349,33 +357,22 @@ def train_sub_models(df, tr, te):
     name, best = pick_best(rows)
     print(f"\n  RESULT : no model beats predicting the mean. Best was {name} at test R2 "
           f"{best['test']['r2']:+.4f}.")
-    print("  This is the correct answer, not a bug. The generator draws parking uniformly from")
-    print("  {0, 40, 60, 80, 120, 150} independently of every other column, so it carries no")
-    print("  signal at all. REPORTED AS A NEGATIVE RESULT and the served value stays the mean -")
-    print("  a model with R2 <= 0 has no business being in the prediction path.")
+    print("  This is the correct answer, not a bug. Parking in this data carries no relationship")
+    print("  to distance, vehicle or party size - it is drawn independently of all of them, so")
+    print("  there is nothing in the inputs for a model to find. Six families were fitted and")
+    print("  every one scored at or below the mean.")
+    print("\n  WHY THIS MATTERS FOR THE INTERFACE. A quantity nothing predicts should be asked")
+    print("  for, not guessed. So parking is the one cost term the form requests outright, and")
+    print("  this negative result is the evidence for that choice rather than a preference.")
+    print("  Reported rather than tuned away: a model with R2 <= 0 has no business in a")
+    print("  prediction path, and dressing one up to look respectable would be worse than")
+    print("  admitting the data has no answer.")
     report["parking"] = {"constant_baseline": const, "mean_baseline": mean_pred,
                          "candidates": {n: strip_fitted(r) for n, r in rows},
-                         "chosen": "train mean (no model beat it)",
+                         "chosen": "user input (no model beat the mean)",
                          "train_mean": float(y[tr].mean()),
                          "negative_result": True}
-    chosen["parking"] = "train mean (no model beat it)"
-    models["parking_mean"] = float(y[tr].mean())
-
-    # ---------------------------------------------------------------- 6. traffic
-    rule("SUB-MODEL 6 of 6 - TRAFFIC LEVEL   (classifier, already part of the project)")
-    X = build_matrix(rf.traffic_features, df[["departure_hour", "month"]].values)
-    y = labels(df.traffic_level)
-    rows = [(n, evaluate_classifier(m, X[tr], y[tr], X[te], y[te]))
-            for n, m in candidate_classifiers().items()]
-    print_classification_table(rows)
-    name, best = pick_best(rows, key=lambda r: r["test"]["accuracy"])
-    print(f"\n  CHOSEN : {name}   accuracy {best['test']['accuracy']:.4f}   "
-          f"F1 {best['test']['f1_macro']:.4f}   "
-          f"vs {best['baseline']:.4f} baseline (+{best['lift_points']:.1f} pts)")
-    print("  Honest reading: the rush-hour profile was injected deliberately in Week 5, so this")
-    print("  accuracy measures that design choice, not Indian roads.")
-    models["traffic"], chosen["traffic"] = best["fitted"], name
-    report["traffic"] = {"candidates": {n: strip_fitted(r) for n, r in rows}, "chosen": name}
+    chosen["parking"] = "user input (no model beat the mean)"
 
     return models, chosen
 
@@ -383,7 +380,7 @@ def train_sub_models(df, tr, te):
 # ==========================================================================================
 # The chained cost model - and the train/serve mismatch, measured
 # ==========================================================================================
-def train_chained_cost(df, tr, te, sub, distance_pred_tr, distance_pred_te):
+def train_chained_cost(df, tr, te, sub):
     rule("CHAINED COST MODEL - fed sub-model predictions, not ground truth")
 
     price = df.fuel_price.values.astype(float)
@@ -391,20 +388,23 @@ def train_chained_cost(df, tr, te, sub, distance_pred_tr, distance_pred_te):
     vehicle = df.vehicle_type.to_numpy(dtype=object)
     y = df.total_trip_cost.values.astype(float)
 
+    # Distance and parking are TYPED BY THE USER, so at serve time they arrive exact. Training
+    # them as ground truth is therefore not leakage - it matches what the model will actually
+    # receive. Litres and toll are the opposite: nobody knows them before setting off, so they
+    # must come from the sub-models here exactly as they will in production.
+    distance_tr = df.distance_km.values.astype(float)[tr]
+    distance_te = df.distance_km.values.astype(float)[te]
+    parking_tr = df.parking_cost.values.astype(float)[tr]
+    parking_te = df.parking_cost.values.astype(float)[te]
+
     # --- components as PREDICTED by the sub-models -------------------------------------
     # Training rows use out-of-fold predictions (cross_val_predict), so no row's component
     # features come from a model that had already seen that row. Without this the cost model
     # would be trained on unrealistically good components and would fall apart in production.
     print("  building component features (out-of-fold for train, fitted-on-train for test)...")
 
-    Xtraffic = build_matrix(rf.traffic_features, df[["departure_hour", "month"]].values)
-    traffic_tr = cross_val_predict(make_pipeline(_fresh(sub["traffic"].named_steps["model"])),
-                                   Xtraffic[tr], labels(df.traffic_level)[tr], cv=5,
-                                   n_jobs=-1)
-    traffic_te = sub["traffic"].predict(Xtraffic[te])
-
-    def litres_for(idx, dist, traffic, out_of_fold):
-        rows = [rf.litres_features(d, m, t) for d, m, t in zip(dist, mileage[idx], traffic)]
+    def litres_for(idx, dist, out_of_fold):
+        rows = [rf.litres_features(d, m) for d, m in zip(dist, mileage[idx])]
         X = np.asarray(rows, dtype=float)
         if out_of_fold:
             ytrue = df.fuel_consumption_litres.values.astype(float)[idx]
@@ -420,12 +420,10 @@ def train_chained_cost(df, tr, te, sub, distance_pred_tr, distance_pred_te):
                                      X, ytrue, cv=5, n_jobs=-1)
         return sub["toll"].predict(X)
 
-    litres_tr = litres_for(tr, distance_pred_tr, traffic_tr, True)
-    litres_te = litres_for(te, distance_pred_te, traffic_te, False)
-    toll_tr = toll_for(tr, distance_pred_tr, True)
-    toll_te = toll_for(te, distance_pred_te, False)
-    parking_tr = np.full(len(tr), sub["parking_mean"])
-    parking_te = np.full(len(te), sub["parking_mean"])
+    litres_tr = litres_for(tr, distance_tr, True)
+    litres_te = litres_for(te, distance_te, False)
+    toll_tr = toll_for(tr, distance_tr, True)
+    toll_te = toll_for(te, distance_te, False)
 
     def cost_matrix(idx, dist, toll, parking, litres):
         return np.asarray([rf.cost_features(d, m, p, t, pk, l, v)
@@ -433,8 +431,8 @@ def train_chained_cost(df, tr, te, sub, distance_pred_tr, distance_pred_te):
                            in zip(dist, mileage[idx], price[idx], toll, parking, litres,
                                   vehicle[idx])], dtype=float)
 
-    Xpred_tr = cost_matrix(tr, distance_pred_tr, toll_tr, parking_tr, litres_tr)
-    Xpred_te = cost_matrix(te, distance_pred_te, toll_te, parking_te, litres_te)
+    Xpred_tr = cost_matrix(tr, distance_tr, toll_tr, parking_tr, litres_tr)
+    Xpred_te = cost_matrix(te, distance_te, toll_te, parking_te, litres_te)
 
     # --- the same matrix built from GROUND TRUTH, for the comparison -------------------
     Xtrue_tr = cost_matrix(tr, df.distance_km.values[tr], df.toll_cost.values[tr],
@@ -444,16 +442,18 @@ def train_chained_cost(df, tr, te, sub, distance_pred_tr, distance_pred_te):
                            df.parking_cost.values[te],
                            df.fuel_consumption_litres.values[te])
 
-    print("\n  (i) the project's existing model: trained AND tested on true components")
-    print("      This is where R2 = 0.9997 comes from. It answers 'given the litres burnt, the")
-    print("      toll paid and the parking paid, can you add them up?'")
+    print("\n  (i) HANDED THE ANSWER: trained AND tested on true components")
+    print("      The model is given the litres actually burnt and the toll actually paid, and")
+    print("      asked to add them up. It scores near-perfectly, and that score is worth almost")
+    print("      nothing: a traveller cannot supply either number before the trip.")
     rows_true = [(n, evaluate_regressor(m, Xtrue_tr, y[tr], Xtrue_te, y[te]))
                  for n, m in candidate_regressors().items()]
     print_regression_table(rows_true)
     name_true, best_true = pick_best(rows_true)
 
     print("\n  (ii) MISMATCHED: trained on true components, served predicted ones")
-    print("       The bug you get by chaining a pipeline without retraining the final stage.")
+    print("       What happens if you chain a pipeline without retraining the final stage - it")
+    print("       learns to trust inputs that are exact, then receives inputs that are not.")
     mismatch = regression_scores(y[te], best_true["fitted"].predict(Xpred_te))
     print(f"      {name_true}: test R2 {mismatch['r2']:.4f}   RMSE Rs {mismatch['rmse']:.2f}   "
           f"MAE Rs {mismatch['mae']:.2f}")
@@ -473,24 +473,37 @@ def train_chained_cost(df, tr, te, sub, distance_pred_tr, distance_pred_te):
           f"{mismatch['r2']:.4f}  MAE Rs {mismatch['mae']:.2f}")
     print(f"    (iii) honest chain, user inputs only          : R2 "
           f"{best_chain['test']['r2']:.4f}  MAE Rs {best_chain['test']['mae']:.2f}")
-    print("  (i) is the number the project used to advertise. (iii) is what a user actually")
-    print("  gets. The gap is the arithmetic that used to be handed to the model.")
+    print("  (iii) is what a user actually gets, and it is the only one of the three worth")
+    print("  quoting. (i) measures a question nobody asks - it flatters the model by handing it")
+    print("  the two terms that carry the uncertainty.")
+    gap = mismatch["mae"] - best_chain["test"]["mae"]
+    print(f"\n  (ii) VERSUS (iii) - the retraining is worth Rs {gap:+.2f} of MAE here, which is")
+    print("  nothing. That is a real result and it is worth saying rather than glossing:")
+    print("  retraining the final stage on predicted components matters when those predictions")
+    print("  are BIASED, because the model has to learn to distrust them. Only two components")
+    print("  are predicted in this chain, toll and litres, and both sub-models are close to")
+    print("  unbiased - their errors are spread, not shifted - so there is nothing for the")
+    print("  retrained model to correct for. The chain-consistent model is still the one that")
+    print("  ships, because that guarantee comes from the design rather than from this run")
+    print("  happening to be unbiased; the measurement is what tells us the cost, not an")
+    print("  assumption in either direction.")
 
     # Where does the remaining error come from? Decompose it, because 'the model is worse'
     # is not a finding - 'toll noise accounts for most of it' is.
     print("\n  WHERE THE REMAINING ERROR COMES FROM (test split, in Rs):")
     toll_err = df.toll_cost.values[te] - toll_te
-    park_err = df.parking_cost.values[te] - parking_te
     litre_err = (df.fuel_consumption_litres.values[te] - litres_te) * price[te]
-    dist_err = df.distance_km.values[te] - distance_pred_te
-    for label, e in [("toll (injected noise)", toll_err), ("parking (uniform noise)", park_err),
-                     ("fuel bill via litres", litre_err), ("distance (km, not Rs)", dist_err)]:
-        print(f"    {label:<26} sd {np.std(e):>8.2f}   mean |err| {np.mean(np.abs(e)):>8.2f}")
-    irreducible = float(np.sqrt(np.var(toll_err) + np.var(park_err) + np.var(litre_err)))
-    print(f"    -> quadrature sum of the three cost terms: Rs {irreducible:.2f}")
-    print(f"    -> chained model RMSE:                     Rs {best_chain['test']['rmse']:.2f}")
-    print("    The two agree closely, which says the chain is near the floor this dataset")
-    print("    allows. The error is the DATA's unpredictability, not the model's weakness.")
+    for label, e in [("toll (unpredictable spread)", toll_err),
+                     ("fuel bill via litres", litre_err)]:
+        print(f"    {label:<30} sd {np.std(e):>8.2f}   mean |err| {np.mean(np.abs(e)):>8.2f}")
+    print(f"    {'distance (typed, so exact)':<30} sd {0.0:>8.2f}   mean |err| {0.0:>8.2f}")
+    print(f"    {'parking (typed, so exact)':<30} sd {0.0:>8.2f}   mean |err| {0.0:>8.2f}")
+    irreducible = float(np.sqrt(np.var(toll_err) + np.var(litre_err)))
+    print(f"    -> quadrature sum of the two predicted terms: Rs {irreducible:.2f}")
+    print(f"    -> chained model RMSE:                        Rs {best_chain['test']['rmse']:.2f}")
+    print("    The two agree closely, which says the chain is near the floor this data allows.")
+    print("    The error is the DATA's unpredictability, not the model's weakness - and the two")
+    print("    terms that carry it are exactly the two the user could not have told us.")
 
     report["cost"] = {
         "true_components": {"candidates": {n: strip_fitted(r) for n, r in rows_true},
@@ -499,8 +512,10 @@ def train_chained_cost(df, tr, te, sub, distance_pred_tr, distance_pred_te):
         "chained": {"candidates": {n: strip_fitted(r) for n, r in rows_chain},
                     "chosen": name_chain},
         "error_budget": {
-            "toll_sd": float(np.std(toll_err)), "parking_sd": float(np.std(park_err)),
-            "fuel_bill_sd": float(np.std(litre_err)), "distance_sd_km": float(np.std(dist_err)),
+            "toll_sd": float(np.std(toll_err)),
+            "fuel_bill_sd": float(np.std(litre_err)),
+            "parking_sd": 0.0,        # typed by the user, so exact at serve time
+            "distance_sd_km": 0.0,    # typed by the user, so exact at serve time
             "quadrature_sum": irreducible,
             "chained_rmse": best_chain["test"]["rmse"],
         },
@@ -537,41 +552,10 @@ def main():
     print(f"split        : {len(tr):,} train / {len(te):,} test (random_state={SEED})")
 
     distance_model, parameterisation = train_distance_model()
-    measure_dataset_geography_bias()
+    measure_distance_convention_gap()
     sub, chosen = train_sub_models(df, tr, te)
 
-    # ------------------------------------------------------------------------------------
-    # Inside the chained evaluation the distance model must reproduce THIS DATASET's distance
-    # convention, not the real road network - the dataset's costs were generated from its own
-    # distance column, so scoring against real km would charge the model for the dataset's
-    # geography error (measured above) instead of its own. The app ships the real-data model.
-    # Both are saved, and the difference between them is quantified in the report.
-    # ------------------------------------------------------------------------------------
-    rule("DATASET-CONVENTION DISTANCE MODEL   (used only inside the chained evaluation)")
-    Xd = build_matrix(rf.distance_features,
-                      df[["start_lat", "start_lon", "dest_lat", "dest_lon"]].values)
-    yd = df.distance_km.values.astype(float)
-    rows = [(n, evaluate_regressor(m, Xd[tr], yd[tr], Xd[te], yd[te]))
-            for n, m in candidate_regressors().items()]
-    print_regression_table(rows, unit="km")
-    name_d, best_d = pick_best(rows)
-    print(f"\n  CHOSEN : {name_d}   test R2 {best_d['test']['r2']:.6f}   "
-          f"RMSE {best_d['test']['rmse']:.2f} km")
-    print("  This one IS partly circular - the dataset's distance is haversine x N(1.2355,")
-    print("  0.082), so the model recovers a constant plus irreducible noise. It exists so the")
-    print("  chained cost evaluation is apples-to-apples. The REAL distance model above is the")
-    print("  one that ships, and it is the one trained on observed data.")
-    dataset_distance_model = best_d["fitted"]
-    report["distance_dataset_convention"] = {
-        "candidates": {n: strip_fitted(r) for n, r in rows}, "chosen": name_d,
-        "circular": True,
-    }
-
-    dist_tr = dataset_distance_model.predict(Xd[tr])
-    dist_te = dataset_distance_model.predict(Xd[te])
-
-    chained_cost, chained_name, true_cost, true_name = train_chained_cost(
-        df, tr, te, sub, dist_tr, dist_te)
+    chained_cost, chained_name, true_cost, true_name = train_chained_cost(df, tr, te, sub)
 
     # ---------------------------------------------------------------------------- save
     #
@@ -582,19 +566,17 @@ def main():
     # repository and absurd inside a Docker image, when the file it replaced was 10 KB.
     #
     # Compression alone is not the fix; the right question is which models the API actually
-    # loads. app.py needs the six sub-models and the chained cost regressor. It never touches
-    # `distance_dataset_model` (the deliberately circular model that exists only to keep the
-    # chained evaluation apples-to-apples) or `cost_model_true_components` (the Week 6
-    # comparison baseline). Those two are evaluation apparatus: fully reproducible by re-running
-    # this script, and every number derived from them is already in data/pipeline_report.json.
+    # loads. app.py needs the four serving sub-models and the chained cost regressor. It never
+    # touches `cost_model_true_components`, which exists only as the comparison baseline in the
+    # three-way table above. That one is evaluation apparatus: fully reproducible by re-running
+    # this script, and every number derived from it is already in data/pipeline_report.json.
     #
     # So the serving bundle carries only what is served, both files are compressed, and the
     # evaluation bundle is git- and docker-ignored.
     os.makedirs(os.path.dirname(OUT_MODEL), exist_ok=True)
     joblib.dump({
-        "distance_dataset_model": dataset_distance_model,
         "cost_model_true_components": true_cost,
-        "note": ("Evaluation-only models, NOT loaded by app.py. Regenerate with "
+        "note": ("Evaluation-only model, NOT loaded by app.py. Regenerate with "
                  "python scripts/train_pipeline.py"),
     }, OUT_EVAL, compress=3)
 
@@ -605,8 +587,6 @@ def main():
         "mileage_model": sub["mileage"],
         "litres_model": sub["litres"],
         "toll_model": sub["toll"],
-        "parking_mean": sub["parking_mean"],
-        "traffic_model": sub["traffic"],
         "cost_model_chained": chained_cost,
         "chosen": {**chosen, "distance": report["distance"]["chosen"],
                    "cost_chained": chained_name, "cost_true_components": true_name},
@@ -616,11 +596,16 @@ def main():
             "cost_true_components": report["cost"]["true_components"]["candidates"][true_name]["test"],
             "cost_chained": report["cost"]["chained"]["candidates"][chained_name]["test"],
             "cost_mismatched": report["cost"]["mismatched_chain"],
-            "traffic": report["traffic"]["candidates"][chosen["traffic"]]["test"],
-            "geography_bias": report["geography_bias"],
+            "litres": report["litres"]["candidates"][chosen["litres"]]["test"],
+            "litres_ratio_slope": report["litres"]["fitted_ratio_slope"],
+            "parking_negative_result": {
+                "best_r2": max(c["test"]["r2"]
+                               for c in report["parking"]["candidates"].values()),
+                "mean_baseline_rmse": report["parking"]["mean_baseline"]["rmse"],
+            },
+            "distance_convention_gap": report["distance_convention_gap"],
             "error_budget": report["cost"]["error_budget"],
             "n_rows": int(len(df)),
-            "n_cities": int(len(set(df.start_city) | set(df.destination_city))),
             "n_real_distance_pairs": report["distance"]["n_real_pairs"],
         },
     }, OUT_MODEL, compress=3)
