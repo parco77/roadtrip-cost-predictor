@@ -358,13 +358,22 @@ w(f"<p>Best parameters: <span class='mono'>{esc(r_c['best_params'])}</span>, bes
   f"{r_c['best_cv_r2']:.6f}. "
   f"<strong>{'Improved' if r_c['improved'] else 'No improvement'}: "
   f"{delta:+.2f} km of MAE.</strong></p>")
-w(f"<p>This is the one search with room to work. An unrestricted forest memorises the training "
-  f"rows; capping <span class='mono'>max_depth</span> at "
-  f"{r_c['best_params'].get('max_depth')} and raising "
-  f"<span class='mono'>min_samples_leaf</span> to "
-  f"{r_c['best_params'].get('min_samples_leaf')} stops it, and the <em>test</em> score improves "
-  f"while the training score comes down. That is the same finding as the overfitting table, "
-  f"reached from the other direction.</p>")
+if r_c["improved"]:
+    w("<p>This is the one search with room to work: an unrestricted forest memorises the "
+      "training rows, and constraining it removes error the defaults were leaving on the "
+      "table.</p>")
+else:
+    w('<div class="box warn">')
+    w("<h4>The search expected to succeed, and did not</h4>")
+    w(f"<p>This was the one target with genuine observational noise &mdash; "
+      f"{r_c['test_before']['mae']:.2f} km of MAE from 300 trees at their defaults &mdash; so it "
+      f"was the place capacity control should have paid. Eighteen combinations over five folds "
+      f"came back <strong>{delta:+.2f} km</strong>: worse than doing nothing.</p>")
+    w("<p>The reason is worth more than the result would have been. <strong>A RandomForest is "
+      "already an averaging machine</strong>: it fits each tree to a bootstrap sample and means "
+      "the predictions, which is precisely the variance control the grid was shopping for. "
+      "Restricting the individual trees on top of that removes signal along with the noise.</p>")
+    w("</div>")
 
 n_improved = sum(1 for v in tune.values() if v["improved"])
 w(f"<h3>&ldquo;Confirm score improved&rdquo; &mdash; {n_improved} of {len(tune)} did</h3>")

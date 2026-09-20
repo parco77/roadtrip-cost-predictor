@@ -15,6 +15,8 @@ const FUELS = ["Petrol", "Diesel", "CNG"]
 const PRICE_FIELD = { Petrol: "petrol_price", Diesel: "diesel_price", CNG: "cng_price" }
 const UNIT = { Petrol: "l", Diesel: "l", CNG: "kg" }
 
+const INPUT = "w-full h-11 px-3 border border-ink bg-page font-mono text-base"
+
 function Field({ label, hint, children, htmlFor }) {
   return (
     <div>
@@ -141,7 +143,9 @@ export default function Predictor({ picked }) {
       data-section-name="The Estimator"
       className="rule-heavy py-24 md:py-32 px-6"
     >
-      <div className="mx-auto max-w-6xl">
+      {/* Wider than the other sections on purpose: three vehicle cards sit side by side
+          below, and at max-w-6xl they were being squeezed into a column and stacked. */}
+      <div className="mx-auto max-w-7xl">
         <header className="max-w-[62ch]">
           <p className="label-mono">Section 04 — The Estimator</p>
           <RevealText
@@ -156,8 +160,10 @@ export default function Predictor({ picked }) {
           </p>
         </header>
 
-        <div className="mt-14 grid gap-12 lg:grid-cols-2 lg:gap-16 items-start">
-          <form onSubmit={onSubmit} noValidate className="space-y-7">
+        {/* The form is a full-width band, not a column beside the result. Three cards cannot
+            be compared stacked in half a page, so the answer goes underneath in a row. */}
+        <form onSubmit={onSubmit} noValidate className="mt-12 border-t-2 border-ink pt-8">
+          <div className="grid gap-x-8 gap-y-7 lg:grid-cols-[15rem_1fr] items-start">
             <Field
               label="Distance"
               htmlFor="distance"
@@ -166,8 +172,7 @@ export default function Predictor({ picked }) {
                   kilometres —{" "}
                   <a href="#distances" className="underline hover:text-ink">
                     look it up
-                  </a>{" "}
-                  if you do not know it
+                  </a>
                 </>
               }
             >
@@ -183,25 +188,16 @@ export default function Predictor({ picked }) {
                   value={distance}
                   onChange={(e) => setDistance(e.target.value)}
                   placeholder="500"
-                  className="w-44 h-14 px-3 border-2 border-ink bg-page font-mono text-2xl tabular-nums"
+                  className="w-40 h-14 px-3 border-2 border-ink bg-page font-mono text-2xl
+                             tabular-nums"
                 />
                 <span className="font-mono text-lg text-muted">km</span>
               </div>
             </Field>
 
-            {distanceError && (
-              <p role="alert" className="font-mono text-[13px] text-band-poor -mt-3">
-                {distanceError}
-              </p>
-            )}
-
             <fieldset>
               <legend className="label-mono mb-2">Fuel price ₹</legend>
-              <p className="font-mono text-[13px] text-muted mb-3">
-                Fill in the one you drive. Leave the others and they use the national average,
-                which the result marks as an estimate.
-              </p>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
                 {FUELS.map((fuel) => (
                   <div key={fuel}>
                     <label
@@ -222,92 +218,66 @@ export default function Predictor({ picked }) {
                         setPrices((p) => ({ ...p, [fuel]: e.target.value }))
                         setPriceEdited((p) => ({ ...p, [fuel]: true }))
                       }}
-                      className="w-full h-11 px-3 border border-ink bg-page font-mono text-base"
+                      className={INPUT}
                     />
                   </div>
                 ))}
+
+                <div>
+                  <label
+                    htmlFor="parking"
+                    className="font-mono text-[12px] uppercase tracking-[0.14em] block mb-1.5"
+                  >
+                    Parking <span className="text-muted">₹</span>
+                  </label>
+                  <input
+                    id="parking"
+                    type="number"
+                    min="0"
+                    max="2000"
+                    value={parking}
+                    onChange={(e) => setParking(e.target.value)}
+                    className={INPUT}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="passengers"
+                    className="font-mono text-[12px] uppercase tracking-[0.14em] block mb-1.5"
+                  >
+                    Passengers
+                  </label>
+                  <input
+                    id="passengers"
+                    type="number"
+                    min="1"
+                    max="8"
+                    value={passengers}
+                    onChange={(e) => setPassengers(e.target.value)}
+                    className={INPUT}
+                  />
+                </div>
               </div>
-            </fieldset>
-
-            <div className="grid sm:grid-cols-2 gap-6">
-              <Field label="Parking ₹" htmlFor="parking" hint="for the whole trip">
-                <input
-                  id="parking"
-                  type="number"
-                  min="0"
-                  max="2000"
-                  value={parking}
-                  onChange={(e) => setParking(e.target.value)}
-                  className="w-full h-11 px-3 border border-ink bg-page font-mono text-base"
-                />
-              </Field>
-
-              <Field label="Passengers" htmlFor="passengers" hint="1 to 8">
-                <input
-                  id="passengers"
-                  type="number"
-                  min="1"
-                  max="8"
-                  value={passengers}
-                  onChange={(e) => setPassengers(e.target.value)}
-                  className="w-full h-11 px-3 border border-ink bg-page font-mono text-base"
-                />
-              </Field>
-            </div>
-
-            <details className="border-t border-hairline pt-5">
-              <summary className="label-mono cursor-pointer min-h-11 flex items-center">
-                Mileage — predicted for each vehicle
-              </summary>
-              <p className="font-mono text-[13px] text-muted mt-3">
-                From the mileage model, shown on{" "}
-                <select
-                  value={mileageFuel}
-                  onChange={(e) => setMileageFuel(e.target.value)}
-                  aria-label="Fuel to predict mileage for"
-                  className="border border-ink bg-page font-mono text-[13px] px-1.5 py-0.5"
-                >
-                  {FUELS.map((f) => (
-                    <option key={f}>{f}</option>
-                  ))}
-                </select>
-                . Override any of them if you know your own car.
+              <p className="font-mono text-[13px] text-muted mt-2.5">
+                Fill in the fuel you drive. Leave the others and they use the national average,
+                which the result marks as an estimate.
               </p>
-              <div className="grid grid-cols-3 gap-3 mt-4">
-                {VEHICLES.map((vehicle) => (
-                  <div key={vehicle}>
-                    <label
-                      htmlFor={`mileage-${vehicle}`}
-                      className="font-mono text-[12px] uppercase tracking-[0.14em] block mb-1.5"
-                    >
-                      {vehicle}
-                    </label>
-                    <input
-                      id={`mileage-${vehicle}`}
-                      type="number"
-                      min="4"
-                      max="60"
-                      step="0.1"
-                      value={mileage[vehicle] ?? ""}
-                      onChange={(e) => {
-                        editedRef.current[vehicle] = true
-                        setMileage((m) => ({ ...m, [vehicle]: e.target.value }))
-                        setMileageEdited((m) => ({ ...m, [vehicle]: true }))
-                      }}
-                      className="w-full h-11 px-3 border border-ink bg-page font-mono text-base"
-                    />
-                    <p className="font-mono text-[11px] text-muted mt-1">
-                      {mileageEdited[vehicle] ? "yours" : "km/l, predicted"}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </details>
+            </fieldset>
+          </div>
 
+          {distanceError && (
+            <p role="alert" className="font-mono text-[13px] text-band-poor mt-4">
+              {distanceError}
+            </p>
+          )}
+
+          <div className="mt-8 flex flex-wrap items-center gap-x-10 gap-y-5 border-t
+                          border-hairline pt-6">
             <button
               type="submit"
               disabled={status === "loading"}
-              className="group w-full sm:w-auto rounded-full bg-accent text-white px-10 h-12
+              className="group rounded-full bg-accent text-white px-10 h-12
                          font-mono text-[13px] uppercase tracking-[0.18em] cursor-pointer
                          inline-flex items-center justify-center gap-2.5
                          transition-opacity duration-200 hover:opacity-90
@@ -319,11 +289,62 @@ export default function Predictor({ picked }) {
                 className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-1"
               />
             </button>
-          </form>
 
-          <div className="lg:sticky lg:top-10 min-w-0">
-            <ResultCard status={status} result={result} error={error} />
+            <details className="min-w-0">
+              <summary className="label-mono cursor-pointer min-h-11 flex items-center">
+                Mileage — predicted for each vehicle
+              </summary>
+              <div className="mt-4">
+                <p className="font-mono text-[13px] text-muted">
+                  From the mileage model, shown on{" "}
+                  <select
+                    value={mileageFuel}
+                    onChange={(e) => setMileageFuel(e.target.value)}
+                    aria-label="Fuel to predict mileage for"
+                    className="border border-ink bg-page font-mono text-[13px] px-1.5 py-0.5"
+                  >
+                    {FUELS.map((f) => (
+                      <option key={f}>{f}</option>
+                    ))}
+                  </select>
+                  . Override any of them if you know your own car.
+                </p>
+                <div className="grid grid-cols-3 gap-4 mt-4 max-w-xl">
+                  {VEHICLES.map((vehicle) => (
+                    <div key={vehicle}>
+                      <label
+                        htmlFor={`mileage-${vehicle}`}
+                        className="font-mono text-[12px] uppercase tracking-[0.14em] block mb-1.5"
+                      >
+                        {vehicle}
+                      </label>
+                      <input
+                        id={`mileage-${vehicle}`}
+                        type="number"
+                        min="4"
+                        max="60"
+                        step="0.1"
+                        value={mileage[vehicle] ?? ""}
+                        onChange={(e) => {
+                          editedRef.current[vehicle] = true
+                          setMileage((m) => ({ ...m, [vehicle]: e.target.value }))
+                          setMileageEdited((m) => ({ ...m, [vehicle]: true }))
+                        }}
+                        className={INPUT}
+                      />
+                      <p className="font-mono text-[11px] text-muted mt-1">
+                        {mileageEdited[vehicle] ? "yours" : "km/l, predicted"}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </details>
           </div>
+        </form>
+
+        <div className="mt-14">
+          <ResultCard status={status} result={result} error={error} />
         </div>
       </div>
     </section>

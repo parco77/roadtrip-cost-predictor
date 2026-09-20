@@ -149,7 +149,8 @@ export default function ResultCard({ status, result, error }) {
     <div ref={root} aria-live="polite">
       {/* Fuel toggle. All nine combinations arrived in one response, so this is a
           pure client-side switch — no refetch, no chance of a stale answer landing. */}
-      <div role="tablist" aria-label="Fuel type" className="flex border border-ink divide-x divide-ink">
+      <div role="tablist" aria-label="Fuel type"
+           className="flex border border-ink divide-x divide-ink max-w-lg">
         {FUELS.map((f) => {
           const selected = f === fuel
           return (
@@ -176,7 +177,10 @@ export default function ResultCard({ status, result, error }) {
         {" · "}± ₹{inr(result.prediction.typical_error)} typical error
       </p>
 
-      <div className="mt-5 space-y-4">
+      {/* A ROW, not a stack. Three prices exist to be compared, and comparison needs them on
+          screen together - stacked in a column they ran 1,759px tall and you could never see
+          the second and third at once. */}
+      <div className="mt-6 grid gap-5 md:grid-cols-3 items-start">
         {rows.map((row) => (
           <VehicleCard
             key={row.vehicle_type}
