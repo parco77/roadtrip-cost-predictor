@@ -67,6 +67,21 @@ ideal litres (<span class="mono">distance / mileage</span>) and grouping by traf
 <p class="small">Grouped by weather instead: Clear 1.0513, Cloudy 1.0434, Fog 1.0408, Rain 1.0478
 &mdash; flat, confirming weather does nothing.</p>
 
+<div class="box">
+<h4>Where that multiplier goes in the finished product</h4>
+<p>The recovered formula says fuel burn runs <em>above</em> the textbook
+<span class="mono">distance / mileage</span>, by an amount that depends on driving conditions.
+That is a real effect and it is worth about 4&ndash;17%.</p>
+<p>But the interface never asks about conditions, because <strong>a traveller cannot state them
+before setting off</strong> &mdash; nobody knows what traffic they will meet. So the litres
+sub-model is given distance and mileage only, and it absorbs the multiplier into a single fitted
+slope: <strong>1.0497</strong>, which sits almost exactly on the mix of conditions in the data.
+The spread around it becomes irreducible error rather than a feature, and Part 12.4 measures what
+that costs.</p>
+<p>This is the pattern the whole project turns on: <em>an effect being real is not sufficient
+reason to put it in the form.</em> It also has to be something the user can answer.</p>
+</div>
+
 <div class="box key">
 <h4>What this result means, and why it is the intellectual centre of the project</h4>
 <p><strong>R&sup2; = 0.999162 from arithmetic alone.</strong> No model was fitted &mdash; the
@@ -85,7 +100,7 @@ intelligence &mdash; the point Weeks 9 and 10 pursue to its conclusion.</p>
 </div>
 
 <!-- ============================== PART 7 ============================== -->
-<h1 class="part"><span class="num">Part 7 &middot; Week 5</span>Scaling from 9 routes to 534 cities</h1>
+<h1 class="part"><span class="num">Part 7 &middot; Week 5</span>Scaling to real geography, and the distance table</h1>
 
 <h2>7.1 Why this was necessary</h2>
 <p>The original dataset covers only <strong>9 fixed city pairs</strong>, 110&ndash;460 km. A model
@@ -101,7 +116,7 @@ was not given. To build something usable, the dataset had to cover arbitrary Ind
   <tr><td>Trips per route</td><td>5 &rarr; <strong>25,000 trips</strong>, covering <strong>534</strong> distinct cities</td></tr>
   <tr><td>Distance band</td><td>50&ndash;1,500 km</td></tr>
   <tr><td>Straight-line distance</td><td><strong>Haversine</strong> on the real coordinates</td></tr>
-  <tr><td>Road distance</td><td>haversine &times; N(1.2355, 0.082) &mdash; the winding factor measured on the project's own 9 routes</td></tr>
+  <tr><td>Road distance</td><td>haversine &times; N(1.2355, 0.082) &mdash; the winding ratio measured on the project's own 9 routes</td></tr>
   <tr><td>Costs</td><td>Generated with the Week 4 formula, so they are physically consistent with the original data</td></tr>
 </table>
 
@@ -115,30 +130,79 @@ was not given. To build something usable, the dataset had to cover arbitrary Ind
 <table>
   <tr><th style="width:26mm">Status</th><th>Which parts</th></tr>
   <tr><td><strong>Real</strong></td><td>City names, states, latitude and longitude (GeoNames, 3,739 cities). Straight-line distances computed by haversine on those real coordinates.</td></tr>
-  <tr><td><strong>Calibrated</strong></td><td>Road distance = haversine &times; 1.2355, measured on the project's own 9 routes and cross-checked against OSRM (agreed within 5&ndash;9%). Maintenance rate, traffic multipliers, toll rate and mileage ranges &mdash; all measured from the original CSV in Week 4.</td></tr>
+  <tr><td><strong>Calibrated</strong></td><td>Road distance = haversine &times; 1.2355, measured on the project's own 9 routes and cross-checked against OSRM (agreed within 5&ndash;9%). Running-cost rate, toll rate and mileage ranges &mdash; all measured from the original CSV in Week 4.</td></tr>
   <tr><td><strong>Partly real</strong></td><td>Fuel prices &mdash; 6 states verified from public reporting, 29 estimated. <span class="mono">data/fuel_prices.csv</span> records which is which per row.</td></tr>
-  <tr><td><strong>Generated</strong></td><td>Every trip record: vehicle, fuel, mileage, departure hour, month, traffic, weather, and all cost columns.</td></tr>
+  <tr><td><strong>Generated</strong></td><td>Every trip record: vehicle, fuel, mileage, weather, and all cost columns.</td></tr>
 </table>
 
 <div class="box warn">
-<h4>The one deliberate departure from the original data &mdash; disclose this before being asked</h4>
-<p>In the original CSV, <span class="mono">traffic_level</span> is <strong>statistically
-independent</strong> of <span class="mono">departure_hour</span>: P(High) wanders between 0.13 and
-0.35 with no rush-hour pattern. That makes traffic unpredictable, and any traffic classifier
-trained on it can do no better than the majority baseline.</p>
-<p>The generator therefore gives traffic a <strong>real rush-hour profile</strong> &mdash; morning
-8&ndash;11 and evening 17&ndash;21 weighted toward High, night weighted toward Low:</p>
-<table style="margin-top:2mm">
-  <tr><th>Window</th><th class="n">P(Low)</th><th class="n">P(Medium)</th><th class="n">P(High)</th></tr>
-  <tr><td>Peak (8&ndash;11, 17&ndash;21)</td><td class="n">0.10</td><td class="n">0.35</td><td class="n">0.55</td></tr>
-  <tr><td>Shoulder (6&ndash;7, 12&ndash;16, 22)</td><td class="n">0.30</td><td class="n">0.50</td><td class="n">0.20</td></tr>
-  <tr><td>Night / early morning</td><td class="n">0.62</td><td class="n">0.31</td><td class="n">0.07</td></tr>
-</table>
-<p>Weather is also made monsoon-aware (June&ndash;September weighted to Rain, December&ndash;January
-to Fog). <strong>This is more realistic AND it makes traffic classification a genuine task rather
-than decoration.</strong> It is a modelling choice, and it means the Week 7 traffic accuracy
-measures that design decision rather than Indian roads. Part 11 shows the two side by side.</p>
+<h4>The limitation this creates, stated before being asked</h4>
+<p>The cost relationships are learned from generated trips. They are physically consistent with
+the original data &mdash; same recovered formula, real coordinates, real geography &mdash; but
+they are not independent evidence, and no amount of volume changes that. 25,000 rows of generated
+data is 25,000 rows of the same assumption.</p>
+<p>One thing does break out of it: the <strong>distance</strong> side of the product is measured,
+not generated. Part 12 fits the distance model on 840 real OSRM routes, and the reference table
+below is built the same way. The limitation is therefore bounded rather than merely admitted
+&mdash; Part 12.2 measures how far the generated convention sits from the real road network
+(&minus;0.42% in the mean, 6.3% route by route).</p>
 </div>
+
+<h2>7.4 The distance reference table</h2>
+<p>A user is asked for exactly one thing they have to look up: <strong>how far they are
+driving</strong>. So the site ships the answer rather than making them find it elsewhere &mdash;
+a searchable table of measured road distances, built offline and served as a static file.</p>
+
+<table>
+  <tr><th style="width:44mm">Property</th><th>Value</th></tr>
+  <tr><td>Cities</td><td><strong>139</strong>, hand-picked, across 28 states</td></tr>
+  <tr><td>Pairs fetched</td><td>9,591</td></tr>
+  <tr><td>Routes shipped</td><td><strong>5,538</strong> (50&ndash;1,500 km)</td></tr>
+  <tr><td>File size</td><td>74.7 KB raw, <strong>25.6 KB gzipped</strong></td></tr>
+  <tr><td>Build cost</td><td>6 HTTP requests, about 10 seconds, run once and committed</td></tr>
+  <tr><td>Source</td><td>OSRM <span class="mono">/table</span>, driving profile</td></tr>
+</table>
+
+<h3>Why <span class="mono">/table</span> and not <span class="mono">/route</span></h3>
+<p><span class="mono">scripts/fetch_real_distances.py</span> asks OSRM for one route at a time,
+which is right when the routes are unrelated. Here every city is wanted against every other, and
+the <span class="mono">/table</span> endpoint answers that shape directly: one request returns a
+full N&times;N distance matrix.</p>
+<p>The limit is <strong>exactly 100 coordinates</strong> &mdash; 101 returns HTTP 400
+<span class="mono">TooBig</span> &mdash; so larger lists are covered by pairing blocks of 50 and
+slicing the cross sub-matrix out of each response. A 100-coordinate request returns 4,950 pairs
+in about 1.3 seconds. The same work through the per-pair loop would take hours and would trip
+rate limiting long before finishing.</p>
+<p>The two endpoints were checked against each other on the 34 pairs that appear both in this
+table and in <span class="mono">data/real_distances.csv</span>: <strong>mean difference
+0.008%</strong>, worst 0.131%. They are the same road network, asked a different way.</p>
+
+<div class="box key">
+<h4>Why the city list is hand-written, and not the top 139 by population</h4>
+<p>GeoNames ranks administrative units, not the places people name when they describe a drive.
+Taking its top rows verbatim puts <strong>Rasapudipalem</strong> above Visakhapatnam, lists Pimpri
+twice (once as Pimpri, once as Pimpri-Chinchwad), and fills the table with
+<strong>Mumbai &rarr; Dharavi at 8.5 km</strong>.</p>
+<p>A city autocomplete hides that, because nobody searches for a suburb they have never heard of.
+<strong>A browsable table does not.</strong> Every name in the list is therefore written out by
+hand; the coordinates still come from <span class="mono">india_cities.csv</span>, so the names are
+curated and the geography is not.</p>
+<p>A proximity pass runs afterwards as a safety net: walking in population order, any city within
+40 km of one already accepted is dropped. It caught 15 satellites the names alone let through
+&mdash; Noida beside Delhi, Bhiwandi beside Mumbai, Howrah beside Kolkata, Bokaro beside
+Dhanbad.</p>
+</div>
+
+<h3>Why the table is filtered to 50&ndash;1,500 km</h3>
+<p>That is the range the cost model was trained on. Random pairs drawn from a national city list
+are mostly long-haul, and <strong>4,053 of the 9,591 fetched pairs exceed 1,500 km</strong>. An
+unfiltered table would invite the user to type a number the estimator then has to flag as
+extrapolation, roughly two times in five.</p>
+<p>Those routes are real and they are fetched; they are simply left out of the shipped file.
+<strong>A reference page should not hand the user a number its own calculator distrusts.</strong>
+Anything outside the band, or any pair the table does not carry, goes to
+<span class="mono">/api/distance</span>, which asks OSRM live and falls back to the fitted
+distance model when routing is unreachable &mdash; and says which of the two answered.</p>
 
 <!-- ============================== PART 8 ============================== -->
 <h1 class="part"><span class="num">Part 8 &middot; Week 6</span>One engineered feature beats two ensembles</h1>
@@ -199,74 +263,84 @@ coordinates, and the result reverses. Knowing the boundary of your own finding i
 the finding.</p>
 
 <!-- ============================== PART 9 ============================== -->
-<h1 class="part"><span class="num">Part 9 &middot; Week 7</span>Classification &mdash; and which target is real</h1>
+<h1 class="part"><span class="num">Part 9 &middot; Week 7</span>Classification &mdash; the cost band, and what it is worth</h1>
 
-<p>The task asked for classification where it adds value. Two targets were available, and they are
-<strong>not of equal quality</strong>. Saying which is which is part of the work.</p>
+<p>The task asked for classification where it adds value. The interface needs one label that a
+number cannot supply, so that is the target: <strong>is this trip cheap or expensive for its
+length?</strong></p>
 
-<h2>9.1 Target 1 &mdash; <span class="mono">traffic_level</span> (the genuinely hard one)</h2>
-<p>First, why this was <em>impossible</em> on the original dataset. Cross-tabulating
-P(traffic | hour) across the 24 hours of the original CSV:</p>
+<h2>9.1 Why the target is &#8377;/km and not rupees</h2>
+<p>Absolute cost is close to determined by distance. A 1,200 km drive costs more than a 200 km one
+without being worse value, so classifying total cost would tell a user nothing they could not read
+off the headline figure.</p>
+<p><span class="mono">cost_band</span> is therefore a <strong>quartile split of &#8377;/km</strong>
+into Excellent / Good / Average / Poor. That isolates the thing the user is actually choosing
+between: vehicle, mileage and fuel.</p>
+
+<h2>9.2 The result, and the honest caveat</h2>
+<p>Both rows below are <span class="mono">LogisticRegression</span> on the canonical split, so
+they are directly comparable. Part 11 runs all five model families on both.</p>
 <table>
-  <tr><th>Finding</th><th>Value</th></tr>
-  <tr><td>P(High) across hours</td><td>wanders between <strong>0.13 and 0.35</strong> with no rush-hour structure</td></tr>
-  <tr><td>Majority-class baseline</td><td>0.5088</td></tr>
-  <tr><td>Conclusion</td><td>Traffic is independent of departure hour &rarr; <strong>no classifier can beat the baseline</strong></td></tr>
+  <tr><th>Feature set</th><th class="n">Accuracy</th><th class="n">Baseline</th></tr>
+  <tr><td>Everything the pipeline produces</td><td class="n"><strong>71.4%</strong></td><td class="n">25.7%</td></tr>
+  <tr><td>Only what the form collects</td><td class="n">65.4%</td><td class="n">25.7%</td></tr>
 </table>
-<p>On the wide dataset, which has the injected rush-hour profile, the task becomes learnable.</p>
 
-<h4>Feature encoding &mdash; and why hour is not fed as 0&ndash;23</h4>
-<p>Departure hour is <strong>cyclical</strong>: 23:00 and 00:00 are one hour apart, not
-twenty-three. Feeding the raw integer would make the model treat them as maximally distant. So hour
-and month go in as sine/cosine pairs:</p>
-<pre>hour_sin  = sin(2*pi*hour/24)      month_sin = sin(2*pi*month/12)
-hour_cos  = cos(2*pi*hour/24)      month_cos = cos(2*pi*month/12)
-is_peak   = 1 if (8 &lt;= hour &lt;= 11) or (17 &lt;= hour &lt;= 21) else 0</pre>
-<p><span class="mono">is_peak</span> is included because sin/cos alone cannot express
-&ldquo;high between 8&ndash;11 <em>and again</em> between 17&ndash;21&rdquo; &mdash; that is a
-two-humped shape a single sinusoid cannot make, so a linear model is handed it directly.</p>
-
-<h4>Result (Week 7, LogisticRegression)</h4>
-<table>
-  <tr><th class="n">Accuracy</th><th class="n">Majority baseline</th><th class="n">Lift</th></tr>
-  <tr><td class="n">53.9%</td><td class="n">38.8%</td><td class="n">+15.1 points</td></tr>
-</table>
-<p><strong>Modest, and correct to be modest.</strong> Departure hour genuinely only <em>partly</em>
-determines traffic. A classifier claiming 95% here would be evidence of leakage, not skill.</p>
-
-<h2>9.2 Target 2 &mdash; <span class="mono">cost_band</span> (useful, but high by construction)</h2>
-<p>The second target is a <strong>quartile split of &#8377;/km</strong> into Excellent / Good /
-Average / Poor. Note: cost <em>per kilometre</em>, not absolute cost &mdash; absolute cost is
-essentially determined by distance, so classifying it would tell a user nothing. Efficiency
-isolates the effect of vehicle, mileage, fuel and traffic.</p>
-<table>
-  <tr><th class="n">Accuracy</th><th class="n">Baseline (4 balanced classes)</th></tr>
-  <tr><td class="n">85.8%</td><td class="n">25%</td></tr>
-</table>
 <div class="box warn">
-<p><strong>85.8% is high by construction, not because the problem is hard.</strong>
-<span class="mono">cost_band</span> is a discretisation of a quantity the Week 6 regressor already
-predicts to within &#8377;42. It earns its place because the interface needs the label, not because
-it demonstrates difficult learning. <strong>The traffic classifier is the one that shows real
-modelling.</strong> Volunteering this distinction is stronger than being caught by it.</p>
+<h4>71.4% is partly high by construction, and saying so is part of the answer</h4>
+<p><span class="mono">cost_band</span> is a discretisation of a quantity the Week 6 regressor
+already predicts to within &#8377;34. Some of this accuracy is therefore inherited rather than
+earned, and a report that quoted it without that sentence would be overselling.</p>
+<p>It earns its place because the interface needs the label, not because it demonstrates difficult
+learning. <strong>Volunteering this distinction is stronger than being caught by it.</strong></p>
 </div>
 
-<h2>9.3 How the classifier earns its place in the product</h2>
-<p>A classifier that outputs one word is decoration. This one drives a feature: after an estimate,
-the site charts expected cost across <strong>all 24 departure hours</strong>.</p>
-<p>The bars are the classifier's <strong>probabilities weighted against the cost at each traffic
-level</strong> &mdash; <em>not</em> the cost at the single most likely level. Taking the argmax
-would collapse 24 hours onto 3 values and discard everything the model knows about its own
-confidence: an hour that is 55% High reads very differently from one that is 95% High.</p>
-<div class="formula">
-E[cost | hour] = &sum;<sub>levels</sub> P(level | hour) &times; cost(level)
+<h2>9.3 The second row is the experiment</h2>
+<p>The two rows above are the same target, the same split and the same model. The only difference
+is that the second run drops <span class="mono">toll_cost</span> and
+<span class="mono">fuel_consumption_litres</span> &mdash; the two columns no traveller can supply,
+which the sub-models in Part 12 predict on their behalf.</p>
+<p>So the <strong>6.0-point gap</strong> is not a footnote about feature selection. It is a
+measurement of what those sub-models are worth, in the currency of the thing they feed. Without
+them the classifier still beats a 25.7% baseline comfortably; with them it does measurably better,
+and the difference is attributable rather than asserted.</p>
+
+<div class="box key">
+<h4>This is also where the overfitting diagnosis finally bites</h4>
+<p>On the cost target, step 2 of the Task 5 checklist was close to uninformative: every model
+scored above R&sup2; 0.99 because the target is a formula, so train-versus-test told you almost
+nothing. Here it separates the models immediately.</p>
+<table style="margin-top:2mm">
+  <tr><th>Model</th><th class="n">Train</th><th class="n">Test</th><th class="n">Gap</th><th>Verdict</th></tr>
+  <tr><td>LogisticRegression</td><td class="n">0.7279</td><td class="n">0.7142</td><td class="n">+0.014</td><td>Good fit</td></tr>
+  <tr><td>RandomForest (300)</td><td class="n">1.0000</td><td class="n">0.7160</td><td class="n">+0.284</td><td><strong>Overfitting</strong></td></tr>
+  <tr><td>DecisionTree</td><td class="n">1.0000</td><td class="n">0.6438</td><td class="n">+0.356</td><td><strong>Overfitting</strong></td></tr>
+</table>
+<p>A tree grown to purity memorises every training row and reports perfect training accuracy while
+losing 28 to 36 points on held-out data.</p>
+<p><strong>Note which model has the best raw test score.</strong> RandomForest edges
+LogisticRegression by 0.0018 &mdash; well inside the cross-validation spread &mdash; while
+carrying a train-test gap twenty times larger. The selection rule used throughout this project
+(error band, then the one-standard-error rule, then simplicity) picks the logistic model, and this
+is exactly the case it exists for: <strong>a score that is higher by less than its own uncertainty
+is not higher.</strong></p>
 </div>
-<p>The chart also takes a <strong>departure window</strong> &mdash; the hours you could realistically
-leave in, wrapping past midnight for overnight drives. Hours outside it dim but stay visible as
-context, and the recommendation is the best hour <em>you can actually use</em>: &ldquo;leave at
-1am&rdquo; is not advice most people can act on. On Jaipur &rarr; Agra the full day spreads
-<strong>&#8377;177</strong>; restricted to a 6&ndash;11am departure it is still
-<strong>&#8377;152</strong>.</p>
+
+<h2>9.4 How the label earns its place in the product</h2>
+<p>A classifier that outputs one word is decoration unless the word changes a decision. This one
+sits on every result card, beside a figure the user is about to compare against two others.</p>
+<p>Because the interface prices a hatchback, a sedan and an SUV on the same route, the three bands
+are read together rather than alone &mdash; and they separate cleanly. On Agra &rarr; Jaipur at
+241 km:</p>
+<table>
+  <tr><th>Fuel</th><th>Hatchback</th><th>Sedan</th><th>SUV</th></tr>
+  <tr><td>Petrol at &#8377;106.50</td><td>Good &mdash; &#8377;2,028</td><td>Average &mdash; &#8377;2,299</td><td>Poor &mdash; &#8377;2,930</td></tr>
+  <tr><td>Diesel at &#8377;98.20</td><td>Excellent &mdash; &#8377;1,793</td><td>Good &mdash; &#8377;2,022</td><td>Average &mdash; &#8377;2,542</td></tr>
+</table>
+<p>The rupee figures alone would leave the user to work out whether &#8377;2,930 is bad value or
+simply a bigger car. The band answers that directly &mdash; and the second row shows the same
+three vehicles each moving up one band on a cheaper fuel, which is the comparison the whole
+section exists to make.</p>
 
 <!-- ============================== PART 10 ============================== -->
 <h1 class="part"><span class="num">Part 10 &middot; Week 8</span>Why gradient descent stopped converging</h1>
