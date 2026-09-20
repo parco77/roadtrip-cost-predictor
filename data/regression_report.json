@@ -1,0 +1,75 @@
+{
+  "feature_set": [
+    "distance_km",
+    "mileage",
+    "fuel_price",
+    "toll_cost",
+    "parking_cost",
+    "fuel_consumption_litres",
+    "fuel_bill",
+    "vehicle_type_SUV",
+    "vehicle_type_Sedan",
+    "distance_x_SUV",
+    "distance_x_Sedan"
+  ],
+  "regression": {
+    "r2": 0.9997776391170049,
+    "rmse": 47.18785216640327,
+    "mae": 33.85730749956029
+  },
+  "ablations": {
+    "no litres x price": {
+      "dropped": [
+        "fuel_bill"
+      ],
+      "mae": 139.01237893024776,
+      "r2": 0.9949184168859453
+    },
+    "no distance x vehicle": {
+      "dropped": [
+        "distance_x_SUV",
+        "distance_x_Sedan"
+      ],
+      "mae": 39.65897692125842,
+      "r2": 0.9997070708845426
+    },
+    "no interactions at all": {
+      "dropped": [
+        "fuel_bill",
+        "distance_x_SUV",
+        "distance_x_Sedan"
+      ],
+      "mae": 139.7519831365014,
+      "r2": 0.9947948467708049
+    }
+  },
+  "band": {
+    "accuracy": 0.7238,
+    "accuracy_without_submodels": 0.6616,
+    "categorical": [
+      "vehicle_type",
+      "fuel_type"
+    ],
+    "columns": [
+      "distance_km",
+      "mileage",
+      "fuel_price",
+      "toll_cost",
+      "parking_cost",
+      "fuel_consumption_litres",
+      "vehicle_type_SUV",
+      "vehicle_type_Sedan",
+      "fuel_type_Diesel",
+      "fuel_type_Petrol"
+    ]
+  },
+  "gradient_descent": {
+    "epochs_used": 60000,
+    "final_loss": 2196.3836048879066,
+    "max_weight_gap": 722.5889477262275,
+    "max_prediction_gap": 83.95342919811264,
+    "r2_sklearn": 0.9997776391170049,
+    "r2_gradient_descent": 0.9997716514068637
+  },
+  "n_rows": 25000
+}

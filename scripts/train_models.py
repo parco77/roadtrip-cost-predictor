@@ -10,6 +10,7 @@ Outputs models/model.joblib containing:
 
 Run:  python scripts/train_models.py
 """
+import json
 import os
 import sys
 
@@ -29,6 +30,9 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "data", "road_trip_wide.csv")
 OUT_DIR = os.path.join(ROOT, "models")
 OUT = os.path.join(OUT_DIR, "model.joblib")
+# The report builders read JSON, never the pickles, so the numbers in the PDF cannot drift
+# from the numbers in the bundle: both come from this one run.
+OUT_REPORT = os.path.join(ROOT, "data", "regression_report.json")
 
 SEED = 42
 
@@ -117,14 +121,22 @@ def main():
 
     # Ablations: drop each interaction group and show what it was carrying. A feature that
     # cannot be shown to change the answer does not belong in the list.
+    ablations = {}
     for label, drop in [("no litres x price", ["fuel_bill"]),
-                        ("no distance x vehicle", ["distance_x_SUV", "distance_x_Sedan"])]:
+                        ("no distance x vehicle", ["distance_x_SUV", "distance_x_Sedan"]),
+                        ("no interactions at all",
+                         ["fuel_bill", "distance_x_SUV", "distance_x_Sedan"])]:
         keep = [i for i, f in enumerate(REG_FEATURES) if f not in drop]
         Xn = MinMaxScaler().fit_transform(X[:, keep])
         Xntr, Xnte, _, _ = train_test_split(Xn, y, test_size=0.2, random_state=SEED)
         base = LinearRegression().fit(Xntr, ytr).predict(Xnte)
-        print(f"  ablation, {label:<22} -> MAE Rs {mean_absolute_error(yte, base):8.2f} "
-              f"(R2 {r2_score(yte, base):.6f})")
+        ablations[label] = {"dropped": drop,
+                            "mae": float(mean_absolute_error(yte, base)),
+                            "r2": float(r2_score(yte, base))}
+        print(f"  ablation, {label:<22} -> MAE Rs {ablations[label]['mae']:8.2f} "
+              f"(R2 {ablations[label]['r2']:.6f})")
+    print(f"  full feature set             -> MAE Rs {reg_metrics['mae']:8.2f} "
+          f"(R2 {reg_metrics['r2']:.6f})")
 
     # ---------------------------------------------------------------- cost band
     rule("2. COST-EFFICIENCY BAND CLASSIFIER  (target: cost_band)")
@@ -214,13 +226,31 @@ def main():
         },
         "metrics": {
             "regression": reg_metrics,
+            "ablations": ablations,
             "band_accuracy": band_acc,
             "band_accuracy_without_submodels": thin_acc,
             "n_rows": int(len(df)),
             "distance_range": [float(df.distance_km.min()), float(df.distance_km.max())],
         },
     }, OUT)
-    rule(f"saved -> {OUT}")
+    with open(OUT_REPORT, "w", encoding="utf-8") as fh:
+        json.dump({
+            "feature_set": REG_FEATURES,
+            "regression": reg_metrics,
+            "ablations": ablations,
+            "band": {"accuracy": band_acc, "accuracy_without_submodels": thin_acc,
+                     "categorical": BAND_CATEGORICAL, "columns": band_columns},
+            "gradient_descent": {
+                "epochs_used": int(stopped_at),
+                "final_loss": float(loss_history[-1]),
+                "max_weight_gap": max_weight_gap,
+                "max_prediction_gap": max_pred_gap,
+                "r2_sklearn": float(r2_score(yte, pred)),
+                "r2_gradient_descent": float(r2_score(yte, gd_pred)),
+            },
+            "n_rows": int(len(df)),
+        }, fh, indent=2)
+    rule(f"saved -> {OUT}\nsaved -> {OUT_REPORT}")
 
 
 if __name__ == "__main__":

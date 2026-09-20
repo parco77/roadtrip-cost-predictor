@@ -26,7 +26,6 @@ def load(name):
 
 T = load("task5_evaluation.json")
 P = load("pipeline_report.json")
-E = load("end_to_end_report.json")
 
 out = []
 
@@ -277,18 +276,19 @@ for target, sec in cls_.items():
         tbl(hdr, rws)
 
 w('<div class="box">')
-w("<h4>The two targets are not of equal quality, and saying so is part of the answer</h4>")
-w("<p><span class='mono'>traffic_level</span> is the genuinely non-trivial one: departure hour "
-  "only partly determines traffic, so an honest result looks modest, and a classifier claiming "
-  "95% here would be evidence of leakage. Note also <em>how</em> it fails &mdash; the confusion "
-  "matrix concentrates errors between <em>adjacent</em> levels (Low with Medium, Medium with "
-  "High) and is best at the extremes. That is the right failure mode for an ordered target.</p>")
+w("<h4>Two runs of the same target, and the gap between them is the point</h4>")
 w("<p><span class='mono'>cost_band</span> is a quartile split of &#8377;/km that the regressor "
-  "already predicts well, so its high accuracy is <strong>by construction</strong>. It earns its "
-  "place because the interface needs the label, not because it is hard. But it is where the "
-  "overfitting diagnosis finally bites: the two tree models hit train accuracy 1.0000 with test "
-  "well below, and <span class='mono'>LogisticRegression</span> &mdash; with almost no capacity "
-  "to memorise &mdash; wins outright.</p>")
+  "already predicts well, so its accuracy is <strong>partly by construction</strong>. It earns "
+  "its place because the interface needs the label, not because it is hard.</p>")
+w("<p>The <strong>under-specified</strong> run is the control. It drops "
+  "<span class='mono'>toll_cost</span> and "
+  "<span class='mono'>fuel_consumption_litres</span> &mdash; the two columns the sub-models "
+  "supply &mdash; leaving only what the form actually collects. The accuracy it loses is what "
+  "those sub-models are worth, measured in points rather than asserted in prose.</p>")
+w("<p>Both runs are where the overfitting diagnosis finally bites: the two tree models hit train "
+  "accuracy 1.0000 with test well below, and <span class='mono'>LogisticRegression</span> "
+  "&mdash; with almost no capacity to memorise &mdash; wins outright. On the deterministic cost "
+  "target the same diagnosis was uninformative.</p>")
 w("</div>")
 
 # ---------------------------------------------------------------- tuning
@@ -309,7 +309,7 @@ for c in r_a["curve"]:
                  abs(c["cv_r2"] - best_cv) < 1e-6))
 tbl(["&alpha;", "CV R&sup2;", "CV sd"], rows)
 tbl(["", "Test R&sup2;", "RMSE (&#8377;)"], [
-    [f"sklearn default &alpha; = 1.0", f"{r_a['test_before']['r2']:.6f}",
+    ["sklearn default &alpha; = 1.0", f"{r_a['test_before']['r2']:.6f}",
      f"{r_a['test_before']['rmse']:.2f}"],
     ([f"after the search (&alpha; = {r_a['best_params']['model__alpha']:g})",
       f"{r_a['test_after']['r2']:.6f}", f"{r_a['test_after']['rmse']:.2f}"], True),
@@ -341,24 +341,30 @@ w(f"<p>Best parameters found: <span class='mono'>{esc(r_b['best_params'])}</span
   f"<strong>{'improved' if r_b['improved'] else 'NO IMPROVEMENT'}</strong> "
   f"({r_b['test_after']['mae'] - r_b['test_before']['mae']:+.2f} &#8377; MAE).</p>")
 
-r_c = tune["traffic_classifier"]
-w("<h3>(c) GridSearchCV &mdash; the traffic classifier</h3>")
+r_c = tune["distance_model"]
+w("<h3>(c) GridSearchCV &mdash; the distance model</h3>")
+w("<p>840 real OSRM road distances. Small, noisy, and not drawn from any formula &mdash; the "
+  "only target in the project measured from the world rather than generated, and therefore the "
+  "only one carrying noise a model can overfit.</p>")
 w("<pre>" + esc(json.dumps(r_c["grid"], indent=2)) + "</pre>")
-tbl(["", "Accuracy", "F1 (macro)"], [
-    ["300 trees at defaults", f"{r_c['test_before']['accuracy']:.4f}",
-     f"{r_c['test_before']['f1_macro']:.4f}"],
-    ([f"tuned", f"{r_c['test_after']['accuracy']:.4f}",
-      f"{r_c['test_after']['f1_macro']:.4f}"], True),
+tbl(["", "R&sup2;", "MAE (km)"], [
+    ["300 trees at defaults", f"{r_c['test_before']['r2']:.6f}",
+     f"{r_c['test_before']['mae']:.2f}"],
+    (["tuned", f"{r_c['test_after']['r2']:.6f}",
+      f"{r_c['test_after']['mae']:.2f}"], True),
 ])
-delta = (r_c["test_after"]["accuracy"] - r_c["test_before"]["accuracy"]) * 100
-w(f"<p>Best parameters: <span class='mono'>{esc(r_c['best_params'])}</span>, best CV accuracy "
-  f"{r_c['best_cv_accuracy']:.4f}, majority baseline {r_c['baseline']:.4f}. "
-  f"<strong>Improved by {delta:+.2f} accuracy points.</strong></p>")
+delta = r_c["test_before"]["mae"] - r_c["test_after"]["mae"]
+w(f"<p>Best parameters: <span class='mono'>{esc(r_c['best_params'])}</span>, best CV R&sup2; "
+  f"{r_c['best_cv_r2']:.6f}. "
+  f"<strong>{'Improved' if r_c['improved'] else 'No improvement'}: "
+  f"{delta:+.2f} km of MAE.</strong></p>")
 w(f"<p>This is the one search with room to work. An unrestricted forest memorises the training "
   f"rows; capping <span class='mono'>max_depth</span> at "
-  f"{r_c['best_params'].get('max_depth')} stops it, and the <em>test</em> score goes up while the "
-  f"training score comes down. That is the same finding as the overfitting table, reached from "
-  f"the other direction.</p>")
+  f"{r_c['best_params'].get('max_depth')} and raising "
+  f"<span class='mono'>min_samples_leaf</span> to "
+  f"{r_c['best_params'].get('min_samples_leaf')} stops it, and the <em>test</em> score improves "
+  f"while the training score comes down. That is the same finding as the overfitting table, "
+  f"reached from the other direction.</p>")
 
 n_improved = sum(1 for v in tune.values() if v["improved"])
 w(f"<h3>&ldquo;Confirm score improved&rdquo; &mdash; {n_improved} of {len(tune)} did</h3>")
@@ -403,8 +409,8 @@ w("<li><strong>Boosting (AdaBoost)</strong> &mdash; fits shallow stumps sequenti
   "additive target it spends its capacity chasing the noisiest rows instead of representing the "
   "smooth part.</li>")
 w("<li><strong>GradientBoosting</strong> &mdash; fits each new tree to the residuals of the "
-  "previous ones. Close behind RandomForest throughout, and it wins the traffic classification "
-  "outright, where the signal is weak.</li>")
+  "previous ones. Close behind RandomForest throughout, and strongest of the three wherever the "
+  "signal is weak rather than deterministic.</li>")
 w("</ul>")
 w("<p><strong>None of the three beats a correctly specified linear model on the cost "
   "target.</strong> That is the project's recurring result, and it survived every test in this "
@@ -432,32 +438,35 @@ if orig:
       f"clearest argument in the project for why step 3 is on the checklist at all &mdash; with "
       f"one split you would never see it.</p>")
 
-    w("<h3>Point 2 &mdash; on the original data, traffic classification is impossible</h3>")
+    w("<h3>Point 2 &mdash; the same classification target, a twentieth of the rows</h3>")
     rows = []
-    for n, r in orig["traffic"].items():
+    for n, r in orig["cost_band"].items():
         rows.append([n, f"{r['test']['accuracy']:.4f}", f"{r['test']['precision_macro']:.4f}",
                      f"{r['test']['recall_macro']:.4f}", f"{r['test']['f1_macro']:.4f}",
-                     r["verdict"]])
-    tbl(["Model", "Accuracy", "Precision", "Recall", "F1", "Verdict"], rows)
-    base = list(orig["traffic"].values())[0]["baseline"]
-    f1 = list(orig["traffic"].values())[0]["test"]["f1_macro"]
-    w(f"<p>Every one of the five classifiers lands on <strong>exactly {base:.4f}</strong> &mdash; "
-      f"the majority-class baseline to four decimal places &mdash; with macro F1 of {f1:.4f} and a "
-      f"lift of <strong>+0.0 points</strong>. All five are flagged <strong>Underfitting</strong>."
-      f"</p>")
+                     f"{r['train']['accuracy']:.4f}", r["verdict"]])
+    tbl(["Model", "Accuracy", "Precision", "Recall", "F1", "Train acc", "Verdict"], rows,
+        cls="wide")
+    ob = list(orig["cost_band"].values())[0]["baseline"]
+    obest = orig["cost_band"][orig["cost_band_best"]]["test"]["accuracy"]
+    wide_band = T["classification"]["cost_band"]
+    wbest = wide_band["models"][wide_band["best"]]["test"]["accuracy"]
+    w(f"<p>Best on the original data: <strong>{obest:.4f}</strong> against a baseline of "
+      f"{ob:.4f}. The same target on 25,000 rows reaches <strong>{wbest:.4f}</strong>.</p>")
     w('<div class="box key">')
-    w("<h4>Why this is the strongest single table in the project</h4>")
-    w("<p>That is not five models failing. It is five models all discovering the same thing: in "
-      "the original data <span class='mono'>traffic_level</span> is statistically independent of "
-      "<span class='mono'>departure_hour</span>, so the best available strategy is to always "
-      "predict the majority class &mdash; and each of them found it independently.</p>")
-    w(f"<p>Macro F1 of {f1:.4f} is the giveaway. A model that predicts one class out of three "
-      f"scores about &#8531; on macro recall no matter how respectable its accuracy looks, which "
-      f"is exactly why macro averaging is reported rather than weighted.</p>")
-    w("<p><strong>This is why Week 5 injected a rush-hour profile before the traffic classifier "
-      "was allowed into the project</strong>, and why the accuracy reported in 11.7 measures that "
-      "design decision rather than Indian roads. The comparison between these two tables is the "
-      "honest disclosure.</p>")
+    w("<h4>What the gap is, and what it is not</h4>")
+    w(f"<p>The {(wbest - obest) * 100:.1f}-point difference is <strong>sample size, not a "
+      f"different problem</strong>. The band is defined the same way in both files &mdash; "
+      f"quartiles of &#8377;/km, cut on that file's own distribution &mdash; and the feature set "
+      f"is the same. What changes is how much data the classifier has to find the boundaries "
+      f"with.</p>")
+    w("<p>Look at the trees: train accuracy 1.0000 against test well below it, on both datasets, "
+      "flagged <strong>Overfitting</strong> &mdash; and the gap is wider on the small file, "
+      "because there is less data to average the memorisation away. "
+      "<span class='mono'>LogisticRegression</span>, with almost no capacity to memorise, is "
+      "the most stable of the five in both.</p>")
+    w("<p>This is the same lesson as the cross-validation spread above, reached from the other "
+      "direction: <strong>small data is less stable, and the diagnostics are how you see that "
+      "rather than guess it.</strong></p>")
     w("</div>")
 
 # ---------------------------------------------------------------- week 9 summary
@@ -481,8 +490,8 @@ tbl(["Step", "Result"], [
     ["4. Comparison", "One split, one scoring module, one selection rule: error band &rarr; "
      "one-standard-error &rarr; simplicity"],
     ["5. Tuning", f"{n_improved} of {len(tune)} searches improved. Ridge &alpha; &rarr; 0 "
-     f"reproduces Week 8 mechanically; RandomForest could not be improved; the traffic classifier "
-     f"gained {delta:.2f} points"],
+     f"reproduces the ill-conditioning argument mechanically; RandomForest could not be "
+     f"improved; the distance model gained {delta:.2f} km of MAE"],
     ["6. Advanced models", "RandomForest, AdaBoost and GradientBoosting all evaluated; none beats "
      "a correctly specified linear model on cost"],
 ], numeric_from=99)

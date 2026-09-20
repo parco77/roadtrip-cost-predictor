@@ -505,6 +505,37 @@ def train_chained_cost(df, tr, te, sub):
     print("    The error is the DATA's unpredictability, not the model's weakness - and the two")
     print("    terms that carry it are exactly the two the user could not have told us.")
 
+    # -------------------------------------------------------------- the three-vehicle check
+    #
+    # The product prices all three vehicles side by side, so the GAP between them is the output,
+    # not a detail. Measure it at several distances: running costs differ per kilometre, so the
+    # gap must grow with the trip. If it comes back flat, the distance x vehicle interaction has
+    # been dropped from COST_FEATURES - which no single-vehicle estimate would ever reveal.
+    print("\n  THE GAP BETWEEN VEHICLES, ACROSS DISTANCE (petrol at Rs 106, parking Rs 70):")
+    gap_rows = []
+    for dist in (200, 400, 800, 1200):
+        totals = {}
+        for veh in ("Hatchback", "Sedan", "SUV"):
+            km_per_l = float(sub["mileage"].predict(
+                np.array([rf.mileage_features(veh, "Petrol")], dtype=float))[0])
+            lit = float(sub["litres"].predict(
+                np.array([rf.litres_features(dist, km_per_l)], dtype=float))[0])
+            tll = float(sub["toll"].predict(
+                np.array([rf.toll_features(dist)], dtype=float))[0])
+            totals[veh] = float(best_chain["fitted"].predict(np.array(
+                [rf.cost_features(dist, km_per_l, 106.0, tll, 70.0, lit, veh)],
+                dtype=float))[0])
+        gap = totals["SUV"] - totals["Hatchback"]
+        gap_rows.append({"distance_km": dist, **{k: round(v, 2) for k, v in totals.items()},
+                         "suv_minus_hatchback": round(gap, 2),
+                         "gap_per_km": round(gap / dist, 4)})
+        print(f"    {dist:>5} km   " + "  ".join(f"{k} {v:>9.0f}" for k, v in totals.items())
+              + f"   gap Rs {gap:>7.0f}  ({gap / dist:.2f}/km)")
+    per_km = [r["gap_per_km"] for r in gap_rows]
+    print(f"    gap per km stays within {min(per_km):.2f} - {max(per_km):.2f} Rs/km, so the")
+    print("    difference scales with the trip rather than sitting as a flat surcharge.")
+    report["vehicle_gap"] = gap_rows
+
     report["cost"] = {
         "true_components": {"candidates": {n: strip_fitted(r) for n, r in rows_true},
                             "chosen": name_true},

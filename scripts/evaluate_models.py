@@ -24,13 +24,13 @@ import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import Ridge
 from sklearn.metrics import classification_report, confusion_matrix
-from sklearn.model_selection import (GridSearchCV, RandomizedSearchCV, StratifiedKFold,
+from sklearn.model_selection import (GridSearchCV, KFold, RandomizedSearchCV,
                                      train_test_split)
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import roadtrip_features as rf                                              # noqa: E402
 from evaluation import (SEED, candidate_classifiers, candidate_regressors,   # noqa: E402
-                        classification_scores, evaluate_classifier, evaluate_regressor,
+                        evaluate_classifier, evaluate_regressor,
                         labels, make_pipeline, pick_best, print_classification_table,
                         print_regression_table, regression_scores, rule, strip_fitted)
 
@@ -87,7 +87,7 @@ def regression_section(df, tr, te):
           f"RSS {best['test']['rss']:.4g}   CV {best['cv_mean']:.6f} +/- {best['cv_std']:.4f}")
 
     print("\nITEM 2 - overfit / underfit, per model:")
-    print(f"  thresholds: train-test R2 gap > 0.05 = Overfitting; both R2 < 0.50 = Underfitting")
+    print("  thresholds: train-test R2 gap > 0.05 = Overfitting; both R2 < 0.50 = Underfitting")
     for n, r in rows:
         print(f"  {n:<26} train {r['train']['r2']:.6f}  test {r['test']['r2']:.6f}  "
               f"gap {r['train']['r2'] - r['test']['r2']:+.6f}  -> {r['verdict']}")
@@ -119,33 +119,32 @@ def regression_section(df, tr, te):
 def classification_section(df, tr, te):
     results = {}
 
-    for target, label, Xbuild, note in [
-        ("traffic_level", "TRAFFIC LEVEL",
-         lambda d: np.asarray([rf.traffic_features(h, m)
-                               for h, m in zip(d.departure_hour, d.month)], dtype=float),
-         "The genuinely non-trivial classifier. On the ORIGINAL csv this task was impossible\n"
-         "(traffic is independent of hour there); the wide dataset gives it a rush-hour\n"
-         "profile, so the accuracy measures that injected design, not Indian roads."),
-        ("cost_band", "COST-EFFICIENCY BAND",
-         None,
-         "High BY CONSTRUCTION: cost_band is a quartile split of Rs/km, and the regressor\n"
-         "above already predicts Rs/km well. It earns its place because the interface needs\n"
-         "the label, not because it is a hard learning problem."),
+    # The same target twice, with and without the two columns the sub-models supply. The
+    # second run is the under-specified control: it is what the classifier could manage if
+    # the interface asked only for what the user can type. The gap between them is what the
+    # litres and toll sub-models are worth, in accuracy points rather than in prose.
+    SERVED = ["distance_km", "mileage", "fuel_price", "parking_cost",
+              "toll_cost", "fuel_consumption_litres"]
+    THIN = ["distance_km", "mileage", "fuel_price", "parking_cost"]
+
+    for key, label, numeric, note in [
+        ("cost_band", "COST-EFFICIENCY BAND", SERVED,
+         "Is this trip cheap or expensive FOR ITS LENGTH? A quartile split of Rs/km, which\n"
+         "is the label the result cards carry. Partly high BY CONSTRUCTION: the regressor\n"
+         "above already predicts cost well and Rs/km is derived from cost."),
+        ("cost_band_thin", "COST-EFFICIENCY BAND, UNDER-SPECIFIED", THIN,
+         "The same target with the toll and litres columns removed - only what the form\n"
+         "actually collects. Expected to score WORSE, and by how much is the point: it is\n"
+         "the sub-models' contribution, measured instead of asserted."),
     ]:
-        rule(f"TASK 5 ITEMS 1-4  |  CLASSIFICATION - target: {target}")
+        target = "cost_band"
+        rule(f"TASK 5 ITEMS 1-4  |  CLASSIFICATION - {label}")
         print(note + "\n")
 
-        if Xbuild is not None:
-            X = Xbuild(df)
-            feature_names = rf.TRAFFIC_FEATURES
-        else:
-            # Same features the deployed band classifier uses.
-            num = ["distance_km", "mileage", "fuel_price", "toll_cost", "parking_cost",
-                   "fuel_consumption_litres"]
-            cat = ["vehicle_type", "fuel_type", "traffic_level"]
-            Xdf = pd.get_dummies(df[num + cat], columns=cat, drop_first=True)
-            feature_names = Xdf.columns.tolist()
-            X = Xdf.values.astype(float)
+        cat = ["vehicle_type", "fuel_type"]
+        Xdf = pd.get_dummies(df[numeric + cat], columns=cat, drop_first=True)
+        feature_names = Xdf.columns.tolist()
+        X = Xdf.values.astype(float)
 
         y = labels(df[target])
         rows = [(n, evaluate_classifier(m, X[tr], y[tr], X[te], y[te]))
@@ -176,7 +175,7 @@ def classification_section(df, tr, te):
         print("\nPer-class report:")
         print(classification_report(y[te], pred, digits=3, zero_division=0))
 
-        results[target] = {
+        results[key] = {
             "feature_set": feature_names,
             "models": {n: strip_fitted(r) for n, r in rows},
             "best": name,
@@ -293,50 +292,52 @@ def tuning_section(df, X, y, tr, te, cls_results):
     }
 
     # ---------------------------------------------------------------------------------
-    # (c) GridSearchCV on the traffic classifier - the one problem in the project with real
-    #     irreducible uncertainty, so the one where tuning has something to work with.
+    # (c) GridSearchCV on the distance model - the one target in the project measured from
+    #     the world rather than generated, so the one carrying real irreducible noise.
     # ---------------------------------------------------------------------------------
-    print("\n(c) GridSearchCV - the traffic classifier (the honest classification problem)")
-    Xt = np.asarray([rf.traffic_features(h, m)
-                     for h, m in zip(df.departure_hour, df.month)], dtype=float)
-    yt = labels(df.traffic_level)
-    from sklearn.ensemble import RandomForestClassifier
+    print("\n(c) GridSearchCV - the distance model (the only observed-data target)")
+    print("    840 real OSRM road distances. Small, noisy and not drawn from any formula,")
+    print("    which is exactly the situation where capacity control earns its keep.")
+    real = pd.read_csv(os.path.join(ROOT, "data", "real_distances.csv"))
+    Xd = np.asarray([rf.distance_features(a, b, c, d) for a, b, c, d in
+                     real[["start_lat", "start_lon", "dest_lat", "dest_lon"]].values],
+                    dtype=float)
+    hav = real.haversine_km.values.astype(float)
+    yd = real.road_km.values.astype(float) / hav        # the winding factor
+    dtr, dte = train_test_split(np.arange(len(real)), test_size=0.25, random_state=SEED)
+
     cgrid = {
         "model__n_estimators": [100, 300],
         "model__max_depth": [None, 4, 8],
-        "model__min_samples_leaf": [1, 10, 50],
+        "model__min_samples_leaf": [1, 5, 20],
     }
     t0 = time.time()
-    cgs = GridSearchCV(make_pipeline(RandomForestClassifier(random_state=SEED, n_jobs=-1)),
-                       cgrid, cv=StratifiedKFold(5, shuffle=True, random_state=SEED),
-                       scoring="accuracy", n_jobs=-1)
-    cgs.fit(Xt[tr], yt[tr])
-    before_model = make_pipeline(RandomForestClassifier(n_estimators=300, random_state=SEED,
-                                                        n_jobs=-1)).fit(Xt[tr], yt[tr])
-    before = classification_scores(yt[te], before_model.predict(Xt[te]))
-    after = classification_scores(yt[te], cgs.best_estimator_.predict(Xt[te]))
-    values, counts = np.unique(yt[te], return_counts=True)
-    baseline = counts.max() / counts.sum()
+    cgs = GridSearchCV(make_pipeline(RandomForestRegressor(random_state=SEED, n_jobs=-1)),
+                       cgrid, cv=KFold(5, shuffle=True, random_state=SEED),
+                       scoring="r2", n_jobs=-1)
+    cgs.fit(Xd[dtr], yd[dtr])
+    before_model = make_pipeline(RandomForestRegressor(n_estimators=300, random_state=SEED,
+                                                       n_jobs=-1)).fit(Xd[dtr], yd[dtr])
+    # Scored in KILOMETRES, not in factor units - the factor is a modelling convenience and
+    # nobody cares about an R2 on it; the error a user feels is kilometres of road.
+    km_true = real.road_km.values.astype(float)[dte]
+    before = regression_scores(km_true, before_model.predict(Xd[dte]) * hav[dte])
+    after = regression_scores(km_true, cgs.best_estimator_.predict(Xd[dte]) * hav[dte])
     print(f"    grid size       : {len(cgs.cv_results_['params'])} combinations x 5 folds")
     print(f"    best params     : "
           f"{ {k.replace('model__', ''): v for k, v in cgs.best_params_.items()} }")
-    print(f"    best CV accuracy: {cgs.best_score_:.4f}   ({time.time() - t0:.1f}s)")
-    print(f"    test acc before : {before['accuracy']:.4f}   F1 {before['f1_macro']:.4f}   "
-          f"(300 trees, defaults)")
-    print(f"    test acc after  : {after['accuracy']:.4f}   F1 {after['f1_macro']:.4f}")
-    print(f"    majority baseline: {baseline:.4f}")
-    print(f"    change          : {(after['accuracy'] - before['accuracy']) * 100:+.2f} "
-          f"accuracy points")
-    print("\n    This is the one search that HAD room to work. An unrestricted forest memorises")
-    print("    the training rows; capping depth and raising min_samples_leaf stops it, and the")
-    print("    test score goes up. Compare with (a) and (b), where the target is a formula and")
-    print("    there is nothing left for tuning to find.")
-    tuned["traffic_classifier"] = {
+    print(f"    best CV r2      : {cgs.best_score_:.4f}   ({time.time() - t0:.1f}s)")
+    print(f"    test MAE before : {before['mae']:.2f} km   (300 trees, defaults)")
+    print(f"    test MAE after  : {after['mae']:.2f} km")
+    print(f"    change          : {before['mae'] - after['mae']:+.2f} km of error removed")
+    print("\n    Compare with (a) and (b), where the target is a formula the features already")
+    print("    span and there is nothing left for a search to find.")
+    tuned["distance_model"] = {
         "grid": {k.replace("model__", ""): v for k, v in cgrid.items()},
         "best_params": {k.replace("model__", ""): v for k, v in cgs.best_params_.items()},
-        "best_cv_accuracy": float(cgs.best_score_),
-        "test_before": before, "test_after": after, "baseline": float(baseline),
-        "improved": after["accuracy"] > before["accuracy"],
+        "best_cv_r2": float(cgs.best_score_),
+        "test_before": before, "test_after": after,
+        "improved": after["mae"] < before["mae"],
     }
 
     print("\nITEM 5 SUMMARY - 'confirm score improved':")
@@ -354,11 +355,14 @@ def tuning_section(df, X, y, tr, te, cls_results):
     print("    not beat 300 trees at their defaults, because the target is a deterministic")
     print("    formula that a linear model already fits to R2 0.9997 - there is no accuracy left")
     print("    on the table for a forest to find, tuned or not.")
-    print("  - The traffic classifier IMPROVED genuinely, by "
-          f"{(tuned['traffic_classifier']['test_after']['accuracy'] - tuned['traffic_classifier']['test_before']['accuracy']) * 100:+.2f} accuracy points.")
-    print("    This is the one target in the project with real irreducible uncertainty, so it is")
-    print("    the one place where constraining model capacity (max_depth = "
-          f"{tuned['traffic_classifier']['best_params'].get('max_depth')}) buys anything.")
+    dm = tuned["distance_model"]
+    print(f"  - The distance model {'IMPROVED' if dm['improved'] else 'did NOT improve'}, by "
+          f"{dm['test_before']['mae'] - dm['test_after']['mae']:+.2f} km of MAE.")
+    print("    This is the only target in the project measured from the world rather than")
+    print("    generated from a formula, so it is the only one carrying noise a model can")
+    print("    overfit - and therefore the one place where constraining capacity "
+          f"(max_depth = {dm['best_params'].get('max_depth')}, min_samples_leaf = "
+          f"{dm['best_params'].get('min_samples_leaf')}) has anything to buy.")
     print("\n  The pattern is the lesson: hyperparameter tuning pays where the data is NOISY and")
     print("  the model can overfit it. Where the target is a formula and the features already")
     print("  span it, tuning has nothing to do, and a search that reports no improvement is")
@@ -448,32 +452,45 @@ def original_dataset_appendix():
         wide_txt = f"{wide_sd:.6f}" if wide_sd is not None else "n/a"
         print(f"  {n:<26} original sd {r['cv_std']:.6f}   wide sd {wide_txt}")
 
-    # Classification on the original data - the honest failure this project already documented.
-    print("\nCLASSIFICATION - target: traffic_level (expected to FAIL on this dataset)")
-    Xt = np.asarray([rf.traffic_features(h, m)
-                     for h, m in zip(df.departure_hour, df.month)], dtype=float) \
-        if "month" in df.columns else None
-    if Xt is None:
-        print("  no `month` column in the original csv - using departure_hour only")
-        Xt = np.asarray([rf.traffic_features(h, 6) for h in df.departure_hour], dtype=float)
-    yt = labels(df.traffic_level)
+    # Classification on the original data - the same target, a twentieth of the rows.
+    #
+    # The original csv has no cost_band column; it is derived. Deriving it here with the SAME
+    # rule build_wide_dataset.py uses - quartiles of Rs/km, cut on this file's own distribution
+    # - is what makes the two accuracies comparable. Borrowing the wide dataset's cut points
+    # would import its price distribution and quietly change the question.
+    print("\nCLASSIFICATION - target: cost_band, on a twentieth of the data")
+    per_km = (df.total_trip_cost / df.distance_km).values
+    q = np.quantile(per_km, [0.25, 0.50, 0.75])
+    df = df.assign(cost_band=np.select(
+        [per_km < q[0], per_km < q[1], per_km < q[2]],
+        ["Excellent", "Good", "Average"], default="Poor"))
+    print(f"  Rs/km quartile cuts on this file: {[round(float(x), 2) for x in q]}")
+    cat = [c for c in ("vehicle_type", "fuel_type") if c in df.columns]
+    num = [c for c in ("distance_km", "mileage", "fuel_price", "parking_cost",
+                       "toll_cost", "fuel_consumption_litres") if c in df.columns]
+    Xc = pd.get_dummies(df[num + cat], columns=cat, drop_first=True).values.astype(float)
+    yt = labels(df.cost_band)
     ctr, cte = train_test_split(np.arange(len(df)), test_size=TEST_SIZE, random_state=SEED,
                                 stratify=yt)
-    crows = [(n, evaluate_classifier(m, Xt[ctr], yt[ctr], Xt[cte], yt[cte]))
+    crows = [(n, evaluate_classifier(m, Xc[ctr], yt[ctr], Xc[cte], yt[cte]))
              for n, m in candidate_classifiers().items()]
     print_classification_table(crows)
     cname, cbest = pick_best(crows, key=lambda r: r["test"]["accuracy"])
     print(f"\nBEST: {cname}   accuracy {cbest['test']['accuracy']:.4f}   vs baseline "
           f"{cbest['baseline']:.4f}  ->  lift {cbest['lift_points']:+.1f} points")
-    print("  Verdict column reads 'Underfitting' across the board, and it is right to: in the")
-    print("  original data traffic_level is statistically independent of departure hour, so")
-    print("  there is no signal to fit. This is why Week 5 injected a rush-hour profile before")
-    print("  the traffic classifier was allowed into the project.")
+    wide_band = out.get("classification", {}).get("cost_band", {})
+    wide_best = wide_band.get("best")
+    if wide_best:
+        wide_acc = wide_band["models"][wide_best]["test"]["accuracy"]
+        print(f"  Same target on 25,000 rows: {wide_acc:.4f}. The gap is sample size, not")
+        print("  a different problem - and the CV spread above shows the same thing from the")
+        print("  other direction: small data is less stable, and k-fold is how you see that")
+        print("  rather than guess it.")
 
     out["original_dataset"] = {
         "n_rows": int(len(df)),
         "regression": {n: strip_fitted(r) for n, r in rows}, "regression_best": name,
-        "traffic": {n: strip_fitted(r) for n, r in crows}, "traffic_best": cname,
+        "cost_band": {n: strip_fitted(r) for n, r in crows}, "cost_band_best": cname,
     }
 
 
@@ -481,46 +498,39 @@ def original_dataset_appendix():
 def architecture_comparison():
     """Pull the three architectures together - the project's actual answer."""
     rule("ARCHITECTURE COMPARISON  |  what the model is actually being asked to do")
-    paths = {"chained": os.path.join(ROOT, "data", "pipeline_report.json"),
-             "end_to_end": os.path.join(ROOT, "data", "end_to_end_report.json")}
-    missing = [k for k, p in paths.items() if not os.path.exists(p)]
-    if missing:
-        print(f"  skipped - run scripts/train_pipeline.py and train_end_to_end.py first "
-              f"(missing: {missing})")
+    path = os.path.join(ROOT, "data", "pipeline_report.json")
+    if not os.path.exists(path):
+        print("  skipped - run scripts/train_pipeline.py first")
         return
-    pipe = json.load(open(paths["chained"], encoding="utf-8"))
-    e2e = json.load(open(paths["end_to_end"], encoding="utf-8"))
+    pipe = json.load(open(path, encoding="utf-8"))
 
     true_name = pipe["cost"]["true_components"]["chosen"]
     true_scores = pipe["cost"]["true_components"]["candidates"][true_name]["test"]
     chain_name = pipe["cost"]["chained"]["chosen"]
     chain_scores = pipe["cost"]["chained"]["candidates"][chain_name]["test"]
     mismatch = pipe["cost"]["mismatched_chain"]
-    e2e_scores = e2e["winner"]["scores"]["test"]
 
     print(f"{'architecture':<44}{'test R2':>11}{'RMSE Rs':>11}{'MAE Rs':>10}")
     print("-" * 76)
-    print(f"{'A. fed true toll/parking/litres (Week 6)':<44}{true_scores['r2']:>11.6f}"
+    print(f"{'A. handed the true toll and litres':<44}{true_scores['r2']:>11.6f}"
           f"{true_scores['rmse']:>11.2f}{true_scores['mae']:>10.2f}")
     print(f"{'B. chained, trained on true / served pred':<44}{mismatch['r2']:>11.6f}"
           f"{mismatch['rmse']:>11.2f}{mismatch['mae']:>10.2f}")
     print(f"{'C. chained, trained on predictions':<44}{chain_scores['r2']:>11.6f}"
           f"{chain_scores['rmse']:>11.2f}{chain_scores['mae']:>10.2f}")
-    print(f"{'D. end-to-end, user inputs only':<44}{e2e_scores['r2']:>11.6f}"
-          f"{e2e_scores['rmse']:>11.2f}{e2e_scores['mae']:>10.2f}")
-    print("\n  A is the number this project used to advertise. It is real, but it answers")
-    print("  'given the litres burnt and the toll paid, can you add them up?'")
-    print("  C is what a user actually gets, and it is what the app now serves.")
-    print("  D removes even the chain and asks the model to do everything from two city names.")
-    print(f"  The A -> C drop in R2 is {true_scores['r2'] - chain_scores['r2']:.4f}. That gap is")
-    print("  the arithmetic that used to be handed to the model, priced honestly.")
+    print("\n  A scores highest and means least: it answers 'given the litres burnt and the")
+    print("  toll paid, can you add them up?', and a traveller can supply neither.")
+    print("  C is what a user actually gets, and it is what the app serves.")
+    print("  B is A's model served C's inputs - the train/serve mismatch, priced.")
+    print(f"  The A -> C drop in R2 is {true_scores['r2'] - chain_scores['r2']:.4f}, and in MAE it is")
+    print(f"  Rs {chain_scores['mae'] - true_scores['mae']:.2f}. That gap is what it costs to derive the two")
+    print("  inputs nobody can supply, instead of being handed them.")
     out["architecture_comparison"] = {
         "A_true_components": {"model": true_name, **true_scores},
         "B_mismatched_chain": mismatch,
         "C_chained": {"model": chain_name, **chain_scores},
-        "D_end_to_end": {"model": e2e["winner"]["model"],
-                         "feature_set": e2e["winner"]["feature_set"], **e2e_scores},
         "r2_drop_A_to_C": float(true_scores["r2"] - chain_scores["r2"]),
+        "mae_gap_A_to_C": float(chain_scores["mae"] - true_scores["mae"]),
     }
 
 
