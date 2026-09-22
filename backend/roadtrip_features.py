@@ -8,8 +8,9 @@ their feature vectors separately, they will drift - a column reordered in one pl
 other produces predictions that are wrong but not obviously wrong. So each model has exactly one
 function here that returns values in a fixed order, and both sides call it.
 
-`scripts/` is excluded from the Docker image, so this module lives at the project root where the
-API can import it.
+It lives in backend/ because backend/ is what deploys. The API imports it directly, and the
+training scripts in ml/ import this same file rather than keeping a copy of their own, so there
+is only ever one definition of a model's columns.
 
 Every builder returns a plain list of floats. No pandas, no sklearn - so app.py stays light and
 the feature logic is readable on its own.

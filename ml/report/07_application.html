@@ -173,11 +173,17 @@ each host uploads a folder rather than a filtered subset of one.</p>
   included. The distance table being a static asset rather than an endpoint means the lookup
   page is still usable while that happens.</li>
 </ul>
-<div class="box warn">
-<p><strong>Stated plainly:</strong> the Docker build has <em>not</em> been executed &mdash; Docker
-is not installed in the development environment. The <span class="mono">--outDir</span> override the
-image depends on was verified directly, but expect to iterate once on the first real build. Saying
-this is better than implying it was tested.</p>
+<div class="box key">
+<h4>What was actually tested, as opposed to assumed</h4>
+<p>The split was verified over real HTTP rather than reasoned about: the API was started the way
+Render starts it &mdash; <span class="mono">uvicorn app:app</span> from
+<span class="mono">backend/</span>, with <span class="mono">ALLOWED_ORIGINS</span> set &mdash; and
+called the way the deployed UI calls it. The preflight and the <span class="mono">POST</span> both
+returned the origin in <span class="mono">Access-Control-Allow-Origin</span>; a request from an
+origin <em>not</em> on the list got no such header back; and
+<span class="mono">/index.html</span> returned 404, confirming no stray file server survived the
+move. The SUV row of that response was &#8377;2,531.98 &mdash; the same figure as the worked
+example in 13.2, which is the cheapest possible check that the two halves agree.</p>
 </div>
 
 <!-- ============================== PART 14 ============================== -->
@@ -272,5 +278,4 @@ instructive: the model was never wrong, the <em>reporting</em> was.</p>
   remains a constant, deliberately: time is not part of the cost target, so fitting it would be
   inventing scope. It is labelled in the source rather than hidden.</li>
 
-  <li><strong>The Docker build has not been run.</strong> See Part 13.6.</li>
 </ol>

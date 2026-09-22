@@ -252,6 +252,10 @@ git push -u origin master
 On [render.com](https://render.com): **New → Blueprint → pick the repo → Apply.** `render.yaml`
 supplies every setting, so there is nothing to type.
 
+This uses Render's **native Python runtime — no Docker.** `runtime: python` in the blueprint is
+what selects it (`docker` is a separate value of that same field), and there is no Dockerfile in
+the repo, so the manual flow below cannot auto-detect one either.
+
 Prefer to click through it instead? **New → Web Service**, then:
 
 | Field | Value |
@@ -305,24 +309,16 @@ way — this narrows it to your origin.
 - **Versions are pinned on purpose.** The model files are pickles; scikit-learn does not promise
   that one minor version reads another's. The failure mode is not a crash but a warning and a
   model that scores differently, so `requirements.txt` is exact where it has to be.
+- **Render's default Python is 3.14.3**, which has no wheels for the pinned numpy, pandas and
+  scikit-learn — the build would try to compile them from source, or just fail. `PYTHON_VERSION`
+  is set to `3.13.5` in `render.yaml` for exactly this reason. It must be *fully qualified* there;
+  Render rejects a bare `3.13` in the environment variable, though `backend/.python-version`
+  accepts one. Both are set, and the environment variable takes precedence.
+- **Single worker, deliberately.** Both model bundles and the 3,739-city table load per process,
+  and the OSRM distance cache is in-process, so a second worker doubles memory and re-fetches
+  every route it has not seen.
 - **OSRM is a public demo server** — rate-limited, no uptime promise. Only `/api/distance` touches
   it, and it falls back to the fitted distance model and says which answered in `source`.
-
-### Anywhere that runs a container
-
-```bash
-cd backend
-docker build -t roadtrip-api .
-docker run -p 8000:8000 roadtrip-api
-```
-
-Hosts that inject `$PORT` (Render, Railway, Fly, Cloud Run) are handled; it defaults to 8000
-otherwise. Single worker on purpose — both bundles and the city table load per process, and the
-OSRM distance cache is in-process, so a second worker doubles memory and re-fetches every route
-it has not seen.
-
-> ⚠️ The Docker build has **not** been run here — Docker isn't installed in this environment.
-> The Render path above uses the native Python runtime and does not touch the Dockerfile.
 
 ---
 
@@ -336,7 +332,7 @@ backend/                     DEPLOYED to Render.  Holds only what answers a requ
   roadtrip_features.py       The feature contract, imported by the API AND by training
   requirements.txt           Exact versions: the model files are pickles
   pytest.ini                 Puts backend/ on sys.path so `pytest` finds app.py
-  Dockerfile                 For any container host; Render uses the blueprint instead
+  .python-version            Pins 3.13.5; Render's own default is 3.14.3
   data/
     india_cities.csv         3,739 cities, real coordinates (GeoNames, CC BY 4.0)
     fuel_prices.csv          35 states — `source` marks verified vs estimated

@@ -8,6 +8,10 @@
 services:
   - type: web
     name: roadtrip-cost-api
+    # Render's NATIVE Python runtime. `docker` is a separate value of this same field, so
+    # naming python here is what rules Docker out - there is no Dockerfile in the repo to
+    # fall back to either, which also stops the manual "New -> Web Service" flow from
+    # auto-detecting one.
     runtime: python
     plan: free
     region: singapore          # closest region to Indian users and to the OSRM demo server
@@ -15,9 +19,12 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/health
-    autoDeploy: true
+    autoDeployTrigger: commit   # replaces the deprecated `autoDeploy: true`
     envVars:
-      # Must match the version the models were pickled under - see requirements.txt.
+      # Render's own default is now 3.14.3, which has no wheels for the pinned numpy,
+      # pandas and scikit-learn - the build would compile from source or simply fail. This
+      # must also be fully qualified: Render rejects a bare "3.13" in PYTHON_VERSION, though
+      # backend/.python-version does accept one. Both are set, and this one wins.
       - key: PYTHON_VERSION
         value: "3.13.5"
       - key: PYTHONUNBUFFERED

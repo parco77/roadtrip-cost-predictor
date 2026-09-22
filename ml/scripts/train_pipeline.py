@@ -598,8 +598,8 @@ def main():
     # TWO FILES, and the split is the point.
     #
     # A RandomForest of 300 trees fitted to 20,000 rows pickles to about 210 MB. Writing every
-    # fitted object into one bundle produced a 227 MB models/pipeline.joblib - unusable in a
-    # repository and absurd inside a Docker image, when the file it replaced was 10 KB.
+    # fitted object into one bundle produced a 227 MB pipeline.joblib - unusable in a repository,
+    # and absurd to push to the host on every deploy, when the file it replaced was 10 KB.
     #
     # Compression alone is not the fix; the right question is which models the API actually
     # loads. app.py needs the four serving sub-models and the chained cost regressor. It never
@@ -607,8 +607,8 @@ def main():
     # three-way table above. That one is evaluation apparatus: fully reproducible by re-running
     # this script, and every number derived from it is already in data/pipeline_report.json.
     #
-    # So the serving bundle carries only what is served, both files are compressed, and the
-    # evaluation bundle is git- and docker-ignored.
+    # So the serving bundle is the only one written into backend/, it carries only what is
+    # served, both files are compressed, and the evaluation bundle stays in ml/ and is git-ignored.
     os.makedirs(os.path.dirname(OUT_MODEL), exist_ok=True)
     joblib.dump({
         "cost_model_true_components": true_cost,

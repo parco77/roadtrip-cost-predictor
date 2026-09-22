@@ -271,7 +271,6 @@ backend/                     DEPLOYED to Render.  Holds only what answers a requ
   app.py                     FastAPI - the chained prediction pipeline
   roadtrip_features.py       The feature contract, imported by the API AND by training
   requirements.txt           Exact versions: the model files are pickles (Part 13.6)
-  Dockerfile                 For any container host; Render uses the blueprint instead
   data/
     india_cities.csv         3,739 cities, real coordinates (GeoNames)
     fuel_prices.csv          35 states; a `source` column marks verified vs estimated
@@ -311,7 +310,8 @@ ml/                          DEPLOYED NOWHERE.  Everything that produced the mod
 <span class="mono">app.py</span>. If those two built their feature vectors independently they
 would drift &mdash; a column reordered in one place and not the other gives predictions that are
 wrong but not <em>obviously</em> wrong. So each model has exactly one function that returns its
-features in a fixed order, and both sides call it. It sits at the project root rather than in
-<span class="mono">scripts/</span> because the Docker image excludes
-<span class="mono">scripts/</span>, so the API could not import from there.</p>
+features in a fixed order, and both sides call it. It lives in
+<span class="mono">backend/</span> because that is the folder which deploys: the API imports it
+directly, and the training scripts in <span class="mono">ml/</span> import that same file instead
+of carrying a copy.</p>
 </div>
