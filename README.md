@@ -9,6 +9,15 @@ predicted by their own fitted sub-model. Nothing in the prediction path is a har
 
 **By Param Kotadiya** · Semester 5 Machine Learning project.
 
+| | |
+|---|---|
+| **Live site** | https://roadtrip-cost.vercel.app |
+| **API** | https://roadtrip-cost-api.onrender.com · [health](https://roadtrip-cost-api.onrender.com/api/health) · [docs](https://roadtrip-cost-api.onrender.com/docs) |
+
+> The API is on a free instance that sleeps after ~15 minutes idle, so the first estimate after
+> a quiet spell can take up to a minute. The distance lookup page is unaffected — that table
+> ships with the UI rather than coming from the API.
+
 ```bash
 cd backend && pip install -r requirements.txt && uvicorn app:app   # API  :8000
 cd frontend && npm ci && npm run dev                               # UI   :5173
