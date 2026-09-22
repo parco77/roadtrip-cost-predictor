@@ -1,0 +1,16 @@
+# Pinned, not floated, and the distinction matters per line.
+#
+# models/*.joblib are pickles written by these exact versions. scikit-learn does not promise
+# that a model pickled by one minor version loads correctly in the next: the usual outcome is
+# an InconsistentVersionWarning and an object that scores differently, which is worse than a
+# crash because the deploy still goes green. numpy is pinned for the same reason - the arrays
+# inside those pickles carry its dtypes.
+scikit-learn==1.9.0
+numpy==2.1.3
+pandas==3.0.3
+joblib==1.4.2
+
+# The web layer holds no pickles, so these only need a floor.
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pydantic>=2.7

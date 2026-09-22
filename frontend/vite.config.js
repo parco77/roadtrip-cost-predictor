@@ -2,11 +2,10 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-// Dev:  vite serves :5173 and proxies /api -> the FastAPI backend on :8000.
-//       That keeps CORS out of the picture and means no backend URL is ever
-//       hardcoded in the app - src/api.js only ever calls relative "/api/...".
-// Prod: `npm run build` writes into ../static, which app.py already mounts at "/",
-//       so `uvicorn app:app` alone then serves both the API and the UI.
+// Dev:  vite serves :5173 and proxies /api -> the FastAPI backend on :8000, so a local
+//       run needs no backend URL and no CORS at all - src/api.js calls relative "/api/...".
+// Prod: `npm run build` writes dist/, which the static host uploads. The backend lives on
+//       another origin there, so src/api.js prefixes VITE_API_URL - see the note in it.
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
@@ -19,7 +18,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: '../static',
+    outDir: 'dist',
     emptyOutDir: true,
   },
 })

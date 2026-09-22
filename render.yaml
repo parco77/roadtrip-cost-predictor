@@ -1,17 +1,29 @@
-# Render blueprint. Push this repo to GitHub, then on render.com:
-#   New → Blueprint → pick the repo. Render reads this file and does the rest.
+# Render blueprint. On render.com: New -> Blueprint -> pick this repo. Render reads this file
+# and creates the service; nothing below needs to be retyped into the dashboard except the one
+# value marked sync:false, which cannot exist until the UI has been deployed once.
 #
-# Uses the Dockerfile so the Node build step and the Python runtime are described in one place
-# and behave identically locally and in the cloud.
+# Only backend/ is deployed. rootDir makes it the working directory, so `uvicorn app:app`
+# resolves app.py, and app.py resolves data/ and models/ beside itself, exactly as it does
+# when run locally. ml/ and frontend/ are never uploaded.
 services:
   - type: web
-    name: roadtrip-cost-predictor
-    runtime: docker
-    dockerfilePath: ./Dockerfile
+    name: roadtrip-cost-api
+    runtime: python
     plan: free
     region: singapore          # closest region to Indian users and to the OSRM demo server
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/health
     autoDeploy: true
     envVars:
+      # Must match the version the models were pickled under - see requirements.txt.
+      - key: PYTHON_VERSION
+        value: "3.13.5"
       - key: PYTHONUNBUFFERED
         value: "1"
+      # The deployed UI's origin, e.g. https://roadtrip-cost-predictor.vercel.app
+      # sync:false = set it in the dashboard once Vercel has issued the URL. Until then the
+      # API falls back to "*", so the frontend works from the first deploy either way.
+      - key: ALLOWED_ORIGINS
+        sync: false

@@ -10,8 +10,8 @@ predicted by their own fitted sub-model. Nothing in the prediction path is a har
 **By Param Kotadiya** · Semester 5 Machine Learning project.
 
 ```bash
-pip install -r requirements.txt
-uvicorn app:app          # → http://127.0.0.1:8000
+cd backend && pip install -r requirements.txt && uvicorn app:app   # API  :8000
+cd frontend && npm ci && npm run dev                               # UI   :5173
 ```
 
 ---
@@ -56,7 +56,7 @@ features — it asks *"given the litres burnt and the toll paid, can you total t
 is not a question anyone can ask before a trip. The first answers the user's actual question, and
 it is the number `/api/metrics` leads with and the site quotes.
 
-Full working: [`TASK5.md`](TASK5.md) and Weeks 9–10 of the notebook.
+Full working: [`Project_Report.pdf`](ml/Project_Report.pdf), Part 12.
 
 ### The findings worth reading
 
@@ -143,56 +143,67 @@ congestion all cost fuel. How much depends on conditions nobody can state before
 the model learns the average penalty and carries the variation as error — 3.52 L RMSE, scaling
 with trip length rather than averaging away. It is the largest single term in the error budget.
 
-Full derivations: [`RoadTripCost.ipynb`](RoadTripCost.ipynb) Weeks 4–10, and
-[`TASK5.md`](TASK5.md) for the evaluation.
+Full derivations: [`Project_Report.pdf`](ml/Project_Report.pdf) — Part 10 for every model
+and what it does, Part 12 for the evaluation.
 
 ---
 
 ## Running it
 
-**Prerequisites:** Python 3.10+, Node 18+.
+**Prerequisites:** Python 3.11+, Node 18+.
 
-### Just the app
+### The app
 
-Everything needed is committed — trained models, datasets, built frontend.
+Two processes, because there are two in production. Nothing needs training first — both model
+bundles and the two data files the API reads at import are committed in `backend/`.
 
 ```bash
+cd backend
 pip install -r requirements.txt
-uvicorn app:app
+uvicorn app:app                  # → http://127.0.0.1:8000
 ```
-
-### Rebuilding from scratch
 
 ```bash
-python scripts/build_cities.py             # 3,739 Indian cities with real lat/lon (GeoNames)
-python scripts/build_fuel_prices.py        # per-state fuel prices
-python scripts/build_wide_dataset.py       # 25,000 trips over real geography
-python scripts/fetch_real_distances.py     # 840 REAL road distances from OSRM (~6 min)
-python scripts/build_distance_matrix.py    # → frontend/public/city_distances.json (~10 s)
-python scripts/train_pipeline.py           # → models/pipeline.joblib (the sub-models)
-python scripts/train_models.py             # → models/model.joblib   (band + GD history)
-python scripts/evaluate_models.py          # → data/task5_evaluation.json  (Task 5)
-python scripts/build_task5_doc.py          # → TASK5.md
-python scripts/build_report_pdf.py         # → Project_Report.pdf
-python scripts/build_notebook_chapters.py  # regenerate notebook Weeks 4–8
-python scripts/build_task5_chapters.py     # regenerate notebook Weeks 9–10
-python scripts/execute_new_chapters.py     # run the appended cells, keep their outputs
+cd frontend
+npm ci
+npm run dev                      # → http://localhost:5173
 ```
 
-> Order matters twice. `train_pipeline.py` must precede `evaluate_models.py`, which reads its
-> report. And `build_notebook_chapters.py` rebuilds everything from Week 4 onwards, so it wipes
-> Weeks 9–10 and they must be re-appended after it.
-
-### Frontend development
-
-```bash
-cd frontend && npm install && npm run dev   # :5173, proxies /api → :8000
-```
-
-`npm run build` emits into `static/`, which FastAPI serves at `/`, so production is one process.
+Vite proxies `/api` → `:8000`, so no backend URL is configured for local work and development
+exercises the same relative paths the deployed build does.
 
 > **Note:** Vite binds to `localhost`, which Node resolves to IPv6 on Windows. Use
 > `http://localhost:5173`, not `127.0.0.1`.
+
+Tests:
+
+```bash
+cd backend && pytest -q          # 70 tests
+```
+
+### Rebuilding the models from scratch
+
+Run from `ml/`. Note where the outputs land — a script that produces something the server loads
+writes it **into `backend/`**, and the distance table is written into `frontend/`. There is no
+copy step to forget, because there is no copy.
+
+```bash
+python scripts/build_cities.py           # 3,739 cities, real lat/lon  → backend/data/
+python scripts/build_fuel_prices.py      # per-state fuel prices       → backend/data/
+python scripts/build_wide_dataset.py     # 25,000 trips over real geography
+python scripts/fetch_real_distances.py   # 840 REAL road distances from OSRM   (~6 min)
+python scripts/build_distance_matrix.py  # → frontend/public/city_distances.json
+
+python scripts/train_pipeline.py         # → backend/models/pipeline.joblib  (sub-models)
+python scripts/train_models.py           # → backend/models/model.joblib     (band + curve)
+
+python scripts/evaluate_models.py        # → ml/data/task5_evaluation.json    (~5 min)
+python scripts/build_report_pdf.py       # → ml/Project_Report.pdf
+```
+
+> Order is load-bearing in two places. `train_pipeline.py` and `train_models.py` are independent
+> of each other, but `evaluate_models.py` reads `pipeline_report.json`, so it must follow the
+> first of them — and `build_report_pdf.py` reads all three JSON reports, so it goes last.
 
 ---
 
@@ -222,89 +233,146 @@ warned about — it arrives as a typed number, so nothing else guarantees it is 
 
 ## Deploying
 
-The `Dockerfile` builds the React app with Node and serves it from the Python image, so one
-container runs both the API and the site.
+The two halves go to two hosts, because they are not the same kind of thing: the built UI is
+static files that want a CDN, the API is a Python process that has to hold two model bundles in
+memory. `backend/` and `frontend/` each contain exactly what their host uploads; `ml/` is
+uploaded nowhere.
 
-### Render (free tier)
+**Do the backend first — the frontend build needs its URL.**
 
-Push to GitHub, then on [render.com](https://render.com): **New → Blueprint** → pick the repo.
-`render.yaml` describes the service; Render reads it and builds. Health check is `/api/health`.
+### 1 · Push to GitHub
+
+```bash
+git remote add origin https://github.com/<you>/<repo>.git
+git push -u origin master
+```
+
+### 2 · Backend → Render
+
+On [render.com](https://render.com): **New → Blueprint → pick the repo → Apply.** `render.yaml`
+supplies every setting, so there is nothing to type.
+
+Prefer to click through it instead? **New → Web Service**, then:
+
+| Field | Value |
+|---|---|
+| Root Directory | `backend` |
+| Runtime | Python 3 |
+| Build command | `pip install -r requirements.txt` |
+| Start command | `uvicorn app:app --host 0.0.0.0 --port $PORT` |
+| Health check path | `/api/health` |
+| Environment variable | `PYTHON_VERSION` = `3.13.5` |
+
+First build takes roughly 3–5 minutes, most of it the scikit-learn wheel. When it goes live,
+copy the URL and check it:
+
+```bash
+curl https://<your-service>.onrender.com/api/health
+```
+
+### 3 · Frontend → Vercel
+
+On [vercel.com](https://vercel.com): **Add New → Project → import the repo**, then:
+
+| Field | Value |
+|---|---|
+| **Root Directory** | **`frontend`** ← the one setting that will break the build if wrong |
+| Framework preset | Vite (auto-detected) |
+| Environment variable | `VITE_API_URL` = your Render URL, **no trailing slash** |
+
+Deploy. Vercel reads `frontend/vercel.json` for the rest.
+
+### 4 · Close the loop
+
+Back on Render → your service → **Environment** → add:
+
+```bash
+ALLOWED_ORIGINS = https://<your-project>.vercel.app
+```
+
+Render restarts on save. Until you set this the API falls back to `*`, so the site works either
+way — this narrows it to your origin.
+
+### Things that actually go wrong
+
+- **`VITE_API_URL` is inlined at build time**, not read at runtime. Changing it needs a
+  **redeploy**, not a restart. If the deployed site is still calling the wrong host, this is why.
+- **A trailing slash on `VITE_API_URL`** produces `//api/predict`. Leave it off.
+- **Vercel's Root Directory must be `frontend`**, or the build never finds `package.json`.
+- **Free Render instances sleep** after ~15 minutes idle, and the next request pays a cold start
+  of up to a minute — model loading included. The distance table is a static asset served by
+  Vercel, so that page stays usable while the API wakes up.
+- **Versions are pinned on purpose.** The model files are pickles; scikit-learn does not promise
+  that one minor version reads another's. The failure mode is not a crash but a warning and a
+  model that scores differently, so `requirements.txt` is exact where it has to be.
+- **OSRM is a public demo server** — rate-limited, no uptime promise. Only `/api/distance` touches
+  it, and it falls back to the fitted distance model and says which answered in `source`.
 
 ### Anywhere that runs a container
 
 ```bash
-docker build -t roadtrip .
-docker run -p 8000:8000 roadtrip
+cd backend
+docker build -t roadtrip-api .
+docker run -p 8000:8000 roadtrip-api
 ```
 
-Hosts that inject `$PORT` (Render, Railway, Fly, Cloud Run) are handled — the container reads it
-and defaults to 8000 otherwise.
+Hosts that inject `$PORT` (Render, Railway, Fly, Cloud Run) are handled; it defaults to 8000
+otherwise. Single worker on purpose — both bundles and the city table load per process, and the
+OSRM distance cache is in-process, so a second worker doubles memory and re-fetches every route
+it has not seen.
 
-**Notes on the deployment:**
-
-- **Single worker, deliberately.** The models and the 3,739-city table load per process, and the
-  OSRM distance cache is in-process. Extra workers multiply memory and cold routing calls for
-  no gain at this traffic level.
-- **The image is lean.** `.dockerignore` excludes the notebook, raw CSVs, scripts, tests and
-  frontend source — only `app.py`, `roadtrip_features.py`, two small data files, the two model
-  bundles and the built site ship.
-- **Free tiers sleep.** Render's free instance spins down when idle; the first request after
-  that takes ~30s. Fine for a demo link, not for anything time-sensitive.
-- **OSRM is a public demo server.** It is rate-limited and makes no uptime promise. The shipped
-  distance table needs no network at all; only `/api/distance` touches OSRM, and it falls back
-  to the fitted model and says so in `source`.
-
-> ⚠️ The Docker build has **not** been run — Docker isn't installed in the environment this was
-> developed in. The `--outDir` override that the image depends on *was* verified directly, but
-> expect to iterate once on the first real build.
+> ⚠️ The Docker build has **not** been run here — Docker isn't installed in this environment.
+> The Render path above uses the native Python runtime and does not touch the Dockerfile.
 
 ---
 
 ## Project structure
 
+Three folders, split by where they end up.
+
 ```
-RoadTripCost.ipynb       Weeks 1–10. The graded artifact — start here.
-Project_Report.pdf       Complete report, Weeks 1–10 + viva Q&A (generated)
-TASK5.md                 Task 5 answered, tables filled (generated — see scripts/)
-road_trip_data.csv       Original 1,140 trips, 9 city pairs. Untouched.
-app.py                   FastAPI backend
-roadtrip_features.py     Feature builders shared by the scripts and the API
-data/
-  india_cities.csv       3,739 cities, real coordinates (GeoNames, CC BY 4.0)
-  fuel_prices.csv        35 states — `source` column marks verified vs estimated
-  road_trip_wide.csv     25,000 generated trips, 534 cities, 50–1500 km
-  real_distances.csv     840 REAL OSRM road distances — the only observed data
-  curated_distances.csv  Fetch cache for the reference table (rebuildable)
-  *_report.json          Saved metrics; TASK5.md and the notebook read these
-models/
-  model.joblib           Cost-band classifier + gradient-descent history
-  pipeline.joblib        The sub-models + the chained cost regressor (served)
-report/                  HTML sources for Project_Report.pdf
-scripts/
-  evaluation.py          The Task 5 checklist, implemented once
-  train_pipeline.py      Fits and scores the sub-models
-  build_distance_matrix.py  Builds the shipped distance reference table
-  build_report_pdf.py    Assembles report/ + generated tables → Project_Report.pdf
-  ...                    Data build, training, notebook and doc generation
-frontend/                React 19 + Vite 7 + Tailwind v4
-  public/city_distances.json   5,538 measured routes (25.6 KB gzipped)
-static/                  Built frontend (generated — do not hand-edit)
-tests/                   pytest suite for the API (70 tests)
-Dockerfile               Two-stage build: Node compiles, Python serves
-render.yaml              Render blueprint
+backend/                     DEPLOYED to Render.  Holds only what answers a request.
+  app.py                     FastAPI — the chained prediction pipeline
+  roadtrip_features.py       The feature contract, imported by the API AND by training
+  requirements.txt           Exact versions: the model files are pickles
+  pytest.ini                 Puts backend/ on sys.path so `pytest` finds app.py
+  Dockerfile                 For any container host; Render uses the blueprint instead
+  data/
+    india_cities.csv         3,739 cities, real coordinates (GeoNames, CC BY 4.0)
+    fuel_prices.csv          35 states — `source` marks verified vs estimated
+  models/
+    model.joblib             Cost-band classifier + gradient-descent history
+    pipeline.joblib          The sub-models + the chained cost regressor (served)
+  tests/test_api.py          70 tests
+
+frontend/                    DEPLOYED to Vercel.  React 19, Vite 7, Tailwind v4, GSAP.
+  src/api.js                 Every URL in the project, in one file
+  public/city_distances.json 5,538 measured routes (25.6 KB gzipped) — shipped WITH
+                             the UI, so the lookup survives the API being asleep
+  vercel.json                Build settings
+  .env.example               Template for VITE_API_URL
+
+ml/                          DEPLOYED NOWHERE.  Everything that produced the models.
+  road_trip_data.csv         Original 1,140 trips, 9 city pairs. Untouched.
+  Project_Report.pdf         The full report (generated)
+  report/                    Its HTML sources; two chapters are generated, not typed
+  data/
+    road_trip_wide.csv       25,000 generated trips, 534 cities, 50–1500 km
+    real_distances.csv       840 REAL OSRM road distances — the only observed data
+    curated_distances.csv    Fetch cache for the reference table (rebuildable)
+    *_report.json            Saved metrics; the report's generated chapters read these
+  scripts/
+    evaluation.py            The Task 5 checklist, implemented once
+    train_pipeline.py        Fits and scores the sub-models   → backend/models/
+    build_distance_matrix.py Builds the shipped distance reference table
+    build_report_pdf.py      Assembles report/ + generated tables → Project_Report.pdf
+    ...                      Data build, training, evaluation
+
+render.yaml                  Render blueprint — names backend/ as the service root
 ```
 
-`models/pipeline_eval.joblib` is **not** committed — it holds the comparison-only regressor, is
-reproducible by re-running `train_pipeline.py`, and nothing needs it at serve time.
-
-Run the tests with:
-
-```bash
-pytest -q
-```
-
-Design and process notes: [`FRONTEND_PLAN.md`](FRONTEND_PLAN.md), [`FINDINGS.md`](FINDINGS.md).
-Task 5 write-up: [`TASK5.md`](TASK5.md).
+`ml/models/pipeline_eval.joblib` is **not** committed — it holds the comparison-only regressor,
+is reproducible by re-running `train_pipeline.py`, and nothing needs it at serve time.
 
 ---
 

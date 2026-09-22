@@ -3,14 +3,17 @@ __pycache__/
 .pytest_cache/
 .venv/
 venv/
-frontend/node_modules/
-frontend/dist/
-.vite/
 .DS_Store
 
-# Large, fully reproducible model artefacts.
-# models/pipeline.joblib IS committed - app.py needs it and it is small once the
-# evaluation-only forests are kept out of it (see scripts/train_pipeline.py).
-# These two are rebuilt by re-running their scripts and are not needed to read the notebook:
-models/pipeline_eval.joblib
-models/end_to_end.joblib
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.vercel/
+# Build-time config, per machine. frontend/.env.example is the committed template.
+frontend/.env
+frontend/.env.local
+
+# Evaluation-only bundle: several hundred MB of forests that exist to be scored, never served.
+# backend/models/*.joblib ARE committed - the API loads them at import and Render installs no
+# training dependencies, so they have to arrive with the repo.
+ml/models/pipeline_eval.joblib

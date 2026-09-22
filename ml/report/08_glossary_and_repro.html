@@ -1,0 +1,241 @@
+<!-- ============================== PART 16 ============================== -->
+<h1 class="part"><span class="num">Part 15</span>Glossary &mdash; every technical term used in this project</h1>
+
+<p>Alphabetical. If an examiner uses one of these words, this is the definition to give, with the
+project's own example attached where there is one.</p>
+
+<table class="wide">
+  <tr><th style="width:40mm">Term</th><th>Definition, and where it appears here</th></tr>
+
+  <tr><td><strong>AdaBoost</strong></td><td>Adaptive Boosting. Trains weak learners (usually shallow stumps) sequentially, re-weighting the rows the previous learner got wrong. Consistently the weakest ensemble in this project, because chasing the noisiest rows is the wrong instinct on a smooth additive target.</td></tr>
+
+  <tr><td><strong>Bagging</strong></td><td>Bootstrap Aggregating. Trains many models in parallel on bootstrap samples of the rows and averages them, reducing <em>variance</em>. RandomForest is bagging plus random feature subsets per split.</td></tr>
+
+  <tr><td><strong>Baseline</strong></td><td>The score to beat before a model means anything. For classification, the majority-class rate; for a replaced constant, the constant's own error. Every table in this project carries one.</td></tr>
+
+  <tr><td><strong>Bias (statistical)</strong></td><td>Systematic error &mdash; being wrong in the same direction on average. The winding-factor constant is nearly <em>unbiased</em> (&minus;0.4%) yet wrong by 6.3% per route, which is the distinction Part 10 turns on.</td></tr>
+
+  <tr><td><strong>Bias&ndash;variance tradeoff</strong></td><td>Error decomposes into bias&sup2; (model too simple) + variance (model fits noise) + irreducible noise. Capping the traffic classifier's <span class="mono">max_depth</span> at 4 added bias, cut variance, and improved the test score.</td></tr>
+
+  <tr><td><strong>Bootstrap</strong></td><td>Resampling the data <em>with replacement</em> to estimate the variability of a statistic. Used here as the alternative to k-fold: 200 resamples gave a 95% interval of width 3e&minus;6.</td></tr>
+
+  <tr><td><strong>Boosting</strong></td><td>Training models sequentially, each correcting its predecessors' errors. Attacks <em>bias</em>, unlike bagging which attacks variance.</td></tr>
+
+  <tr><td><strong>Chained model / pipeline</strong></td><td>Feeding one model's output into another's input. This project chains six sub-models into a cost regressor. See also <em>stacking</em>.</td></tr>
+
+  <tr><td><strong>Coefficient / weight</strong></td><td>The number a linear model multiplies a feature by. Because features here are scaled to 0&ndash;1, each weight reads as &ldquo;rupees of change as this feature goes from its minimum to its maximum&rdquo;.</td></tr>
+
+  <tr><td><strong>Condition number &kappa;</strong></td><td>Ratio of largest to smallest eigenvalue of the Hessian; how &ldquo;stretched&rdquo; the loss surface is. At &kappa; &asymp; 16,000 the surface is a long narrow valley, which is why gradient descent stopped converging on weights in Part 9.</td></tr>
+
+  <tr><td><strong>Confusion matrix</strong></td><td>A table of actual class against predicted class. Shows <em>how</em> a classifier fails, not just how often &mdash; this project's traffic errors concentrate between adjacent levels, which is the right failure mode for an ordered target.</td></tr>
+
+  <tr><td><strong>Convex function</strong></td><td>A function with a single minimum and no local minima. MSE for linear regression is convex, which is <em>why</em> gradient descent and the normal equations must reach the same answer.</td></tr>
+
+  <tr><td><strong>Correlation (Pearson r)</strong></td><td>Strength and direction of a linear relationship, from &minus;1 to +1. <span class="mono">fuel_consumption_litres</span> correlates +0.9606 with the target; <span class="mono">passengers</span> &minus;0.0468.</td></tr>
+
+  <tr><td><strong>Cross-validation (k-fold)</strong></td><td>Split the training data into k parts, train on k&minus;1 and validate on the rest, k times. Gives a mean and, more usefully, a <strong>standard deviation</strong> that reveals instability.</td></tr>
+
+  <tr><td><strong><span class="mono">cross_val_predict</span></strong></td><td>Produces out-of-fold predictions: each row's prediction comes from a model that did <em>not</em> see that row. Essential for building stacking features without optimism.</td></tr>
+
+  <tr><td><strong>Data leakage</strong></td><td>Information from outside the training data influencing the model, making evaluation optimistic. This project had it &mdash; a scaler fitted before the split &mdash; and fixed it with Pipelines.</td></tr>
+
+  <tr><td><strong>DecisionTree</strong></td><td>Recursively splits the feature space on thresholds. Grown to purity it memorises the training set (train R&sup2; = 1.0000), which is why it is the project's clearest overfitting example.</td></tr>
+
+  <tr><td><strong>Design matrix</strong></td><td>The <span class="mono">X</span> matrix of features, rows = samples, columns = features.</td></tr>
+
+  <tr><td><strong>Dummy variable trap</strong></td><td>Keeping all one-hot columns of a group makes them sum to 1 in every row, which is collinear with the intercept and makes the matrix singular. Avoided with <span class="mono">drop_first=True</span>.</td></tr>
+
+  <tr><td><strong>Epoch</strong></td><td>One full pass of gradient descent over the training data. This project's six-feature fit converged at epoch 14,317 of a 50,000 budget.</td></tr>
+
+  <tr><td><strong>F1 score</strong></td><td>Harmonic mean of precision and recall, <span class="mono">2PR/(P+R)</span>. Penalises a model that is good at one and bad at the other.</td></tr>
+
+  <tr><td><strong>Feature engineering</strong></td><td>Constructing new input columns from existing ones. The project's largest single accuracy gain: adding <span class="mono">litres &times; price</span> cut MAE from &#8377;143.85 to &#8377;42.60.</td></tr>
+
+  <tr><td><strong>Feature importance</strong></td><td>How much each feature contributed. For trees, impurity reduction; for a scaled linear model, |coefficient|. It reports what the model <em>used</em>, not what is <em>true</em> &mdash; see the vehicle one-hot trap in Part 9.7.</td></tr>
+
+  <tr><td><strong>GradientBoosting</strong></td><td>Boosting where each new tree is fitted to the residuals of the ensemble so far. Won the traffic classification here.</td></tr>
+
+  <tr><td><strong>Gradient descent</strong></td><td>Iterative optimisation: compute the loss, compute its gradient, step in the opposite direction. Implemented from scratch in NumPy in Part 7.</td></tr>
+
+  <tr><td><strong>GridSearchCV</strong></td><td>Exhaustive search over every combination in a parameter grid, scored by cross-validation. Used for Ridge &alpha; and the traffic classifier.</td></tr>
+
+  <tr><td><strong>Haversine</strong></td><td>Great-circle (straight-line) distance between two points on a sphere. The starting point for road distance, which is always longer.</td></tr>
+
+  <tr><td><strong>Hessian</strong></td><td>Matrix of second derivatives of the loss; describes the curvature of the loss surface. Its condition number is what diagnosed the Part 9 problem.</td></tr>
+
+  <tr><td><strong>Hyperparameter</strong></td><td>A setting chosen <em>before</em> training, not learned from data &mdash; learning rate, number of trees, <span class="mono">max_depth</span>, Ridge &alpha;. Contrast with <em>parameters</em> (weights), which are learned.</td></tr>
+
+  <tr><td><strong>Interaction term</strong></td><td>A feature formed by multiplying two others, letting an additive model express a product. This project's central technique &mdash; used for the fuel bill, for the litres model's traffic multipliers, and for the mileage model's nine cells.</td></tr>
+
+  <tr><td><strong>IQR method</strong></td><td>Outlier rule: drop points outside <span class="mono">[Q1 &minus; 1.5&times;IQR, Q3 + 1.5&times;IQR]</span>. Removed 11 of 1,140 rows in Part 4.</td></tr>
+
+  <tr><td><strong>Irreducible error</strong></td><td>Error no model can remove because the data itself is random. Here: toll noise (&plusmn;&#8377;219) and parking noise (&plusmn;&#8377;50), which together with the fuel-bill term account for &#8377;529 of the &#8377;596 RMSE.</td></tr>
+
+  <tr><td><strong>L1 / L2 regularisation</strong></td><td>L1 (Lasso) penalises &sum;|w| and can force weights to exactly zero, so it selects features. L2 (Ridge) penalises &sum;w&sup2; and shrinks weights smoothly without zeroing them.</td></tr>
+
+  <tr><td><strong>Learning rate</strong></td><td>Step size in gradient descent. Too small and it never arrives (lr = 0.001 left weights 2,025 away); too large and it diverges (above lr &asymp; 0.44 here). This project uses 0.2.</td></tr>
+
+  <tr><td><strong>LinearRegression</strong></td><td>Fits <span class="mono">&#375; = Xw + b</span> by minimising squared error. sklearn solves it in closed form via the normal equations. The model this project ships.</td></tr>
+
+  <tr><td><strong>LogisticRegression</strong></td><td>Linear model for <em>classification</em> &mdash; fits a linear function then squashes it through a sigmoid/softmax into class probabilities. Best model on <span class="mono">cost_band</span>.</td></tr>
+
+  <tr><td><strong>Loss function</strong></td><td>The quantity being minimised. Here MSE, <span class="mono">(1/n)&sum;(&#375; &minus; y)&sup2;</span>.</td></tr>
+
+  <tr><td><strong>Macro vs weighted averaging</strong></td><td>Macro weights every class equally; weighted weights by class frequency. Macro is reported here because weighted averaging can hide a class the model never predicts &mdash; demonstrated by macro F1 0.2248 at 50.88% accuracy on the original data.</td></tr>
+
+  <tr><td><strong>MAE</strong></td><td>Mean absolute error, <span class="mono">(1/n)&sum;|y &minus; &#375;|</span>. The number to tell a user. Served value here: &#8377;391.16.</td></tr>
+
+  <tr><td><strong>MinMaxScaler</strong></td><td>Rescales each feature to 0&ndash;1 via <span class="mono">(x &minus; min)/(max &minus; min)</span>.</td></tr>
+
+  <tr><td><strong>MSE / RMSE</strong></td><td>Mean squared error and its square root. RMSE reads in the target's units and penalises large errors more heavily than MAE.</td></tr>
+
+  <tr><td><strong>Multicollinearity</strong></td><td>Features strongly linearly related to each other. The fit stays valid but individual coefficients become unstable. Here: <span class="mono">corr(litres, fuel_bill) = 0.989</span>.</td></tr>
+
+  <tr><td><strong>Multiple linear regression</strong></td><td>Linear regression with more than one feature: <span class="mono">&#375; = w&#8321;X&#8321; + &hellip; + w&#8342;X&#8342; + c</span>.</td></tr>
+
+  <tr><td><strong>Normal equations</strong></td><td>The closed-form solution <span class="mono">w = (X&#7488;X)&#8315;&sup9;X&#7488;y</span>. Exact, one step, and indifferent to the condition number &mdash; which is why this project ships it instead of gradient descent.</td></tr>
+
+  <tr><td><strong>One-hot encoding</strong></td><td>Turning a categorical column into one binary column per category, asserting no ordering between them.</td></tr>
+
+  <tr><td><strong>One-standard-error rule</strong></td><td>Model-selection rule from Hastie, Tibshirani &amp; Friedman &sect;7.10: among models within one standard error of the best CV score, choose the simplest, because smaller differences are not real.</td></tr>
+
+  <tr><td><strong>Out-of-fold prediction</strong></td><td>A prediction for a row made by a model trained without that row. The correct way to build stacking features.</td></tr>
+
+  <tr><td><strong>Overfitting</strong></td><td>Learning the training data's noise; good train score, poor test score. Seen here on <span class="mono">cost_band</span> (gap 0.21) and the toll sub-model (gap 0.37).</td></tr>
+
+  <tr><td><strong>Pipeline (sklearn)</strong></td><td>Chains transformers and a final estimator into one object, so cross-validation re-fits the transformers <em>per fold</em>. The fix for this project's scaler leak.</td></tr>
+
+  <tr><td><strong>Precision</strong></td><td><span class="mono">TP/(TP+FP)</span> &mdash; of the items predicted positive, how many were. &ldquo;When it says High traffic, how often is it right?&rdquo;</td></tr>
+
+  <tr><td><strong>R&sup2;</strong></td><td>Coefficient of determination, <span class="mono">1 &minus; RSS/TSS</span>. Fraction of variance explained. Compresses meaningful differences when the target is nearly deterministic.</td></tr>
+
+  <tr><td><strong>RandomForest</strong></td><td>Bagged decision trees with random feature subsets per split. Strongest ensemble here; wins where the relationship is genuinely non-linear.</td></tr>
+
+  <tr><td><strong>RandomizedSearchCV</strong></td><td>Samples a fixed number of random hyperparameter combinations instead of trying all. Covers a bigger space for a fixed budget.</td></tr>
+
+  <tr><td><strong>Rank deficiency</strong></td><td>When columns of the design matrix are linearly dependent, so infinitely many weight vectors give identical predictions. Why the fixed-pair city one-hots were dropped in Part 7.</td></tr>
+
+  <tr><td><strong>Recall</strong></td><td><span class="mono">TP/(TP+FN)</span> &mdash; of the items that <em>are</em> positive, how many were found.</td></tr>
+
+  <tr><td><strong>Regularisation</strong></td><td>Penalising weight size to reduce variance. Rejected here after measuring that it cost six times the error.</td></tr>
+
+  <tr><td><strong>Residual</strong></td><td><span class="mono">y &minus; &#375;</span>. Studying residuals is how Part 5 recovered the generating formula.</td></tr>
+
+  <tr><td><strong>Ridge regression</strong></td><td>Linear regression with an L2 penalty: <span class="mono">w = (X&#7488;X + &alpha;I)&#8315;&sup9;X&#7488;y</span>.</td></tr>
+
+  <tr><td><strong>RSS</strong></td><td>Residual sum of squares, <span class="mono">&sum;(y &minus; &#375;)&sup2;</span>. A sum, so comparable only within one split.</td></tr>
+
+  <tr><td><strong>Stacking</strong></td><td>Using base models' outputs as a meta-model's inputs. This project's chained pipeline, built with out-of-fold predictions.</td></tr>
+
+  <tr><td><strong>Stratified split</strong></td><td>A split preserving each class's proportion in both halves. Used for all classification splits here.</td></tr>
+
+  <tr><td><strong>Target / label</strong></td><td>The column being predicted. Here <span class="mono">total_trip_cost</span>.</td></tr>
+
+  <tr><td><strong>Train/serve mismatch</strong></td><td>Training a model on inputs of a different quality from what it receives in production. Measured explicitly here &mdash; and it cost essentially nothing, because the sub-model errors are zero-mean.</td></tr>
+
+  <tr><td><strong>Underfitting</strong></td><td>Model too simple, or features too weak, to capture the relationship; poor on both splits. All five classifiers on the original dataset's traffic target.</td></tr>
+
+  <tr><td><strong>Variance (of a model)</strong></td><td>Sensitivity to which particular training rows were seen. High-variance models score well on train, poorly on test.</td></tr>
+
+  <tr><td><strong>Winding factor</strong></td><td>This project's term for road distance &divide; straight-line distance. Observed mean 1.2520, range 1.0437 to 3.6015 across 840 real routes &mdash; the variation a single constant cannot express.</td></tr>
+</table>
+
+<!-- ============================== PART 17 ============================== -->
+<h1 class="part"><span class="num">Part 16</span>How to reproduce every number in this report</h1>
+
+<h2>16.1 Just run it</h2>
+<pre>cd backend
+pip install -r requirements.txt
+uvicorn app:app                  # -&gt; http://127.0.0.1:8000   the API
+
+cd ../frontend
+npm ci
+npm run dev                      # -&gt; http://127.0.0.1:5173   the UI</pre>
+<p>Two processes locally, because there are two in production. Vite proxies
+<span class="mono">/api</span> to port 8000, so no backend URL is configured for local work and
+development exercises the same relative paths the deployed build does.</p>
+<p>No training step is needed to serve a prediction: both model bundles and the two data files
+the API reads at import are committed beside it in <span class="mono">backend/</span>.</p>
+
+<h2>16.2 Rebuild everything from scratch, in order</h2>
+<p>Run from <span class="mono">ml/</span>. Note where the outputs land: a script that produces
+something the server loads writes it <em>into</em> <span class="mono">backend/</span>, and the
+distance table is written into <span class="mono">frontend/</span>. There is no copy step to
+forget, because there is no copy.</p>
+<pre>python scripts/build_cities.py           # 3,739 cities, real lat/lon  -&gt; backend/data/
+python scripts/build_fuel_prices.py      # per-state fuel prices       -&gt; backend/data/
+python scripts/build_wide_dataset.py     # 25,000 trips over real geography
+python scripts/fetch_real_distances.py   # 840 REAL road distances from OSRM   (~6 min)
+python scripts/build_distance_matrix.py  # -&gt; frontend/public/city_distances.json
+
+python scripts/train_pipeline.py         # -&gt; backend/models/pipeline.joblib  (the sub-models)
+python scripts/train_models.py           # -&gt; backend/models/model.joblib     (band + curve)
+
+python scripts/evaluate_models.py        # -&gt; ml/data/task5_evaluation.json   (~5 min)
+python scripts/build_report_pdf.py       # -&gt; ml/Project_Report.pdf  (this document)
+
+cd ../backend &amp;&amp; pytest -q              # 70 tests</pre>
+
+<div class="box warn">
+<p><strong>Where the order is load-bearing, and where it is not.</strong> The data builders run
+first because everything downstream reads their output.
+<span class="mono">train_pipeline.py</span> and <span class="mono">train_models.py</span> are
+independent of each other &mdash; both fit from the CSV, neither loads the other's bundle &mdash;
+but <span class="mono">evaluate_models.py</span> reads
+<span class="mono">pipeline_report.json</span>, so it must follow the first of them, and
+<span class="mono">build_report_pdf.py</span> reads all three JSON reports, so it must be last.
+It re-runs its own two generated chapters on every build, so this document cannot quote a number
+older than the run that produced it.</p>
+</div>
+
+<h2>16.3 Which file produces which number</h2>
+<table>
+  <tr><th style="width:56mm">Number in this report</th><th>Produced by</th></tr>
+  <tr><td>Parts 2&ndash;4 &mdash; the dataset and its statistics</td><td><span class="mono">ml/road_trip_data.csv</span>, 1,140 rows. Every figure quoted is a pandas aggregate over that one file</td></tr>
+  <tr><td>Part 5 formula recovery</td><td>The recovered coefficients are the constants block at the head of <span class="mono">scripts/build_wide_dataset.py</span> &mdash; the formula is not merely reported, it is what regenerates the data</td></tr>
+  <tr><td>Part 6 dataset statistics</td><td><span class="mono">scripts/build_wide_dataset.py</span></td></tr>
+  <tr><td>Parts 7&ndash;9 &mdash; regression, interactions, ridge</td><td><span class="mono">ml/data/regression_report.json</span> via <span class="mono">scripts/train_models.py</span></td></tr>
+  <tr><td>Part 10 sub-model tables</td><td><span class="mono">ml/data/pipeline_report.json</span> via <span class="mono">scripts/train_pipeline.py</span></td></tr>
+  <tr><td>Parts 11&ndash;12 &mdash; classification and Task 5</td><td><span class="mono">ml/data/task5_evaluation.json</span> via <span class="mono">scripts/evaluate_models.py</span></td></tr>
+  <tr><td>The 840 real distances</td><td><span class="mono">ml/data/real_distances.csv</span> via <span class="mono">scripts/fetch_real_distances.py</span></td></tr>
+  <tr><td>Parts 10 and 12 of this PDF</td><td><span class="mono">scripts/build_report_week10.py</span> and <span class="mono">scripts/build_report_tables.py</span> &mdash; generated from the JSON at build time, never typed</td></tr>
+</table>
+
+<h2>16.4 Reproducibility guarantees</h2>
+<ul>
+  <li><strong>Every random operation is seeded.</strong>
+  <span class="mono">random_state=42</span> for all splits and models; a fixed seed for route
+  sampling and for the bootstrap.</li>
+  <li><strong>Verified in practice.</strong> After re-running the whole pipeline to fix the model
+  file sizes, every metric returned <em>bit-identical</em> &mdash; R&sup2; 0.981574, MAE
+  &#8377;291.69, distance MAE 30.67 km.</li>
+  <li><strong>One scoring module.</strong> Every metric in this report comes from
+  <span class="mono">scripts/evaluation.py</span>, and the two generated chapters read the JSON it
+  writes, so this document and the API cannot quote different numbers for the same model.</li>
+  <li><strong>One feature contract.</strong> <span class="mono">backend/roadtrip_features.py</span>
+  names each model's columns and their order once. The training scripts import that file out of
+  <span class="mono">backend/</span> rather than keeping a copy, so a feature added for training
+  cannot go missing at serve time &mdash; which is the failure the arrangement exists to
+  prevent.</li>
+  <li><strong>70 tests</strong> pin the behaviour, including the error budget and the honest
+  reporting.</li>
+</ul>
+
+<hr>
+
+<div class="box key">
+<h4>Closing note</h4>
+<p>If only one thing from this report is remembered, make it this: the project reports
+<strong>R&sup2; 0.9816 and MAE &#8377;292</strong> as its accuracy, not the R&sup2; 0.9998
+that appears in Parts 8 and 9. The larger number is real but was measured with the model holding
+the two terms that carry its own uncertainty. Knowing the difference &mdash; and being able to explain
+<em>why</em> the difference exists &mdash; is what the ten weeks were actually for.</p>
+</div>
+
+<p class="small" style="margin-top:8mm; text-align:center; color:#8a95a0">
+Road Trip Cost Prediction &middot; Param Kotadiya &middot; Semester 5 Machine Learning<br>
+Complete project report &mdash; by topic, generated from the project's own saved metrics.
+</p>
+
+</body>
+</html>
